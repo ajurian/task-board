@@ -1,0 +1,63 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id          String      @id @default(auto()) @map("_id") @db.ObjectId
+    email       String      @unique
+    displayName String
+    createdAt   DateTime    @default(now())
+    taskBoards  TaskBoard[]
+
+    @@map("users")
+}
+
+model TaskBoard {
+    id          String     @id @default(auto()) @map("_id") @db.ObjectId
+    ownerId     String     @db.ObjectId
+    owner       User       @relation(fields: [ownerId], references: [id])
+    uniqueName  String
+    displayName String
+    createdAt   DateTime   @default(now())
+    taskLists   TaskList[]
+
+    @@unique(name: "index", fields: [ownerId, uniqueName])
+    @@map("taskBoards")
+}
+
+model TaskList {
+    id          String    @id @default(auto()) @map("_id") @db.ObjectId
+    taskBoardId String    @db.ObjectId
+    taskBoard   TaskBoard @relation(fields: [taskBoardId], references: [id])
+    order       Int
+    title       String
+    createdAt   DateTime  @default(now())
+    tasks       Task[]
+
+    @@map("taskLists")
+}
+
+model Task {
+    id         String     @id @default(auto()) @map("_id") @db.ObjectId
+    taskListId String     @db.ObjectId
+    taskList   TaskList   @relation(fields: [taskListId], references: [id])
+    order      Int        @default(0)
+    title      String
+    details    String
+    status     TaskStatus @default(pending)
+    createdAt  DateTime   @default(now())
+    dueAt      DateTime?
+
+    @@map("tasks")
+}
+
+enum TaskStatus {
+    pending
+    ongoing
+    done
+}
