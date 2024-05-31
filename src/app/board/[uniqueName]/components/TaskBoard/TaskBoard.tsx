@@ -4,9 +4,9 @@ import { TaskBoardModel } from "@/schema/taskBoard";
 import { Droppable } from "@hello-pangea/dnd";
 import { useDirection } from "../../providers/DirectionProvider";
 import { useTaskQuery } from "../../providers/TaskQueryProvider";
-import AddTaskList from "./AddTaskList";
 import TaskBoardHeader from "./TaskBoardHeader";
 import TaskList from "./TaskList";
+import TaskListAdd from "./TaskListAdd";
 import { TaskBoardContainer, TaskBoardListContainer } from "./ui";
 
 interface TaskBoardProps extends TaskBoardModel {}
@@ -36,7 +36,7 @@ export default function TaskBoard({ uniqueName, displayName }: TaskBoardProps) {
                                     <TaskList key={taskList.id} {...taskList} />
                                 ))}
                                 {placeholder}
-                                <AddTaskList />
+                                <TaskListAdd />
                             </>
                         )}
                     </TaskBoardListContainer>

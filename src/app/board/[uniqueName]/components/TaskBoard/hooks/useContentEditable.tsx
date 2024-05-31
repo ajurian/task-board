@@ -29,7 +29,7 @@ export default function useContentEditable<T extends HTMLElement>({
     const ref = useClickOutside<T>(() => {
         onEdit?.(null);
         setFocusedElement(null);
-    });
+    }) as React.MutableRefObject<T | null>;
 
     const onClick: MouseEventHandler<T> = useCallback(
         (e) =>
