@@ -242,8 +242,8 @@ export default function TaskQueryProvider({
 
     const deleteTaskMutation: TaskQueryContextValue["deleteTaskMutation"] =
         useMutation({
-            mutationKey: ["addTask"],
-            mutationFn: ({ id }) => axios.delete(`/api/tasks${id}`),
+            mutationKey: ["deleteTask"],
+            mutationFn: ({ id }) => axios.delete(`/api/tasks/${id}`),
         });
 
     const isMutationPending = useMemo(
@@ -439,11 +439,19 @@ export default function TaskQueryProvider({
         ({ id }: DeleteTaskOptions) =>
             setTaskLists((taskLists) => {
                 const newTaskLists = _.cloneDeep(taskLists);
-                const index = newTaskLists.findIndex(
-                    (taskList) => taskList.id === id
-                );
 
-                newTaskLists.splice(index, 1);
+                for (const taskList of newTaskLists) {
+                    const { tasks } = taskList;
+                    const index = tasks.findIndex(
+                        (taskList) => taskList.id === id
+                    );
+
+                    if (index === -1) {
+                        continue;
+                    }
+
+                    tasks.splice(index, 1);
+                }
 
                 return newTaskLists;
             }),

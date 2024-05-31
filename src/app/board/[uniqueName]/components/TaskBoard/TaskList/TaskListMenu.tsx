@@ -5,7 +5,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconButton, ListItemIcon, Menu, MenuItem } from "@mui/material";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useTaskQuery } from "../../../providers/TaskQueryProvider";
 
 interface TaskListMenuProps {
@@ -17,24 +17,25 @@ export default function TaskListMenu({
     listId,
     onRenameTitle,
 }: TaskListMenuProps) {
-    const { deleteTaskList } = useTaskQuery();
-    const [shouldFocusOnTitle, setShouldFocusOnTitle] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-    const open = Boolean(anchorEl);
+    const shouldFocusOnTitleRef = useRef<boolean>(false);
     const buttonId = useId();
     const menuId = useId();
+    const open = Boolean(anchorEl);
+
+    const { deleteTaskList } = useTaskQuery();
 
     const handleClose = () => setAnchorEl(null);
 
     const handleTransitionEnd = () => {
-        if (!open && shouldFocusOnTitle) {
+        if (!open && shouldFocusOnTitleRef.current) {
             onRenameTitle();
-            setShouldFocusOnTitle(false);
+            shouldFocusOnTitleRef.current = false;
         }
     };
 
     const handleRenameListClick = () => {
-        setShouldFocusOnTitle(true);
+        shouldFocusOnTitleRef.current = true;
         handleClose();
     };
 

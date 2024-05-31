@@ -1,8 +1,8 @@
 import { useTaskQuery } from "@/app/board/[uniqueName]/providers/TaskQueryProvider";
 import { useInputState } from "@mantine/hooks";
-import { Box, InputBase } from "@mui/material";
+import { InputBase } from "@mui/material";
 import { forwardRef, useLayoutEffect, useRef } from "react";
-import { TaskContainer } from "./ui";
+import { TaskItemContainer } from "./ui";
 
 interface TaskItemPlaceholderProps {
     listId: string;
@@ -51,29 +51,27 @@ const TaskItemPlaceholder = forwardRef<
 
     return (
         isVisible && (
-            <TaskContainer ref={ref} isDragging={false} isFocused={true}>
-                <Box sx={{ display: "flex", alignItems: "start", gap: 2 }}>
-                    <InputBase
-                        ref={titleInputRef}
-                        multiline
-                        fullWidth
-                        autoFocus
-                        size="small"
-                        sx={(theme) => ({
-                            ...theme.typography.subtitle1,
-                            px: 9,
-                            py: 0,
-                        })}
-                        placeholder="Title"
-                        value={titleInput}
-                        onChange={setTitleInput}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                                onHide();
-                            }
-                        }}
-                    />
-                </Box>
+            <TaskItemContainer ref={ref} isDragging={false} isFocused={true}>
+                <InputBase
+                    ref={titleInputRef}
+                    multiline
+                    fullWidth
+                    autoFocus
+                    size="small"
+                    sx={(theme) => ({
+                        ...theme.typography.subtitle1,
+                        px: 9,
+                        py: 0,
+                    })}
+                    placeholder="Title"
+                    value={titleInput}
+                    onChange={setTitleInput}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            onHide();
+                        }
+                    }}
+                />
                 <InputBase
                     ref={detailsInputRef}
                     multiline
@@ -98,7 +96,7 @@ const TaskItemPlaceholder = forwardRef<
                         }
                     }}
                 />
-            </TaskContainer>
+            </TaskItemContainer>
         )
     );
 });

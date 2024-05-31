@@ -1,13 +1,6 @@
 "use client";
 
-import { useLocalStorage } from "@mantine/hooks";
-import React, {
-    createContext,
-    PropsWithChildren,
-    useContext,
-    useEffect,
-    useState,
-} from "react";
+import { createContext, PropsWithChildren, useContext, useState } from "react";
 
 export type Direction = "row" | "column";
 

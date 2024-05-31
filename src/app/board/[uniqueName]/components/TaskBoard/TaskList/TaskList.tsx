@@ -7,14 +7,8 @@ import { useDirection } from "../../../providers/DirectionProvider";
 import { useTaskQuery } from "../../../providers/TaskQueryProvider";
 import TaskItem from "./TaskItem";
 import TaskItemPlaceholder from "./TaskItem/TaskItemPlaceholder";
-import TaskListMenu from "./TaskListMenu";
 import TaskListTitle from "./TaskListTitle";
-import {
-    AddTaskButton,
-    TaskItemsWrapper,
-    TaskListContainer,
-    TaskListTitleContainer,
-} from "./ui";
+import { AddTaskButton, TaskItemsWrapper, TaskListContainer } from "./ui";
 
 interface TaskListProps extends TaskListModel {}
 
@@ -22,9 +16,6 @@ export default function TaskList({ id, order, title }: TaskListProps) {
     const { taskLists } = useTaskQuery();
     const { direction } = useDirection();
     const { tasks } = taskLists[order];
-
-    const [isTitleFocused, { open: focusTitle, close: blurTitle }] =
-        useDisclosure(false);
 
     const [
         isTaskPlaceholderVisible,
@@ -43,16 +34,7 @@ export default function TaskList({ id, order, title }: TaskListProps) {
                     direction={direction}
                     tabIndex={0}
                 >
-                    <TaskListTitleContainer>
-                        <TaskListTitle
-                            listId={id}
-                            title={title}
-                            isFocused={isTitleFocused}
-                            onFocus={focusTitle}
-                            onBlur={blurTitle}
-                        />
-                        <TaskListMenu listId={id} onRenameTitle={focusTitle} />
-                    </TaskListTitleContainer>
+                    <TaskListTitle listId={id} title={title} />
                     <AddTaskButton
                         size="small"
                         startIcon={<FontAwesomeIcon icon={faAdd} />}

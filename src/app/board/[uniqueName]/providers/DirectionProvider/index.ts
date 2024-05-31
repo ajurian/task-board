@@ -1,1 +1,1 @@
-export { default, useDirection } from "./DirectionProvider";
+export { default, useDirection, type Direction } from "./DirectionProvider";

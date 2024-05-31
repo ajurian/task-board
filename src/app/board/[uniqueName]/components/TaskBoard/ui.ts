@@ -1,7 +1,15 @@
-import { Box, Paper, styled } from "@mui/material";
-import { Direction } from "../../providers/DirectionProvider/DirectionProvider";
+import { Box, styled } from "@mui/material";
+import { Direction } from "../../providers/DirectionProvider";
 
-export const BoardHeaderWrapper = styled(Box, {
+export const TaskBoardContainer = styled(Box)(({ theme }) => ({
+    flex: 1,
+    position: "relative",
+    minWidth: "calc(100vw - (100vw - 100%))",
+    width: "fit-content",
+    paddingBlock: theme.spacing(4),
+}));
+
+export const TaskBoardHeaderWrapper = styled(Box, {
     shouldForwardProp: (propName) => propName !== "direction",
 })<{ direction: Direction }>(({ theme, direction }) => ({
     display: "flex",
@@ -20,7 +28,7 @@ export const BoardHeaderWrapper = styled(Box, {
     }),
 }));
 
-export const BoardHeaderContainer = styled(Box, {
+export const TaskBoardHeaderContainer = styled(Box, {
     shouldForwardProp: (propName) => propName !== "direction",
 })<{ direction: Direction }>(({ theme, direction }) => ({
     display: "flex",
@@ -37,4 +45,13 @@ export const BoardHeaderContainer = styled(Box, {
         paddingRight: theme.spacing(2.75),
         maxWidth: theme.spacing(180),
     }),
+}));
+
+export const TaskBoardListContainer = styled(Box, {
+    shouldForwardProp: (propName) => propName !== "direction",
+})<{ direction: Direction }>(({ theme, direction }) => ({
+    display: "flex",
+    flexDirection: direction,
+    alignItems: direction === "row" ? "start" : "center",
+    paddingInline: theme.spacing(6),
 }));

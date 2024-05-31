@@ -2,12 +2,12 @@
 
 import { TaskBoardModel } from "@/schema/taskBoard";
 import { Droppable } from "@hello-pangea/dnd";
-import { Box } from "@mui/material";
 import { useDirection } from "../../providers/DirectionProvider";
 import { useTaskQuery } from "../../providers/TaskQueryProvider";
 import AddTaskList from "./AddTaskList";
 import TaskBoardHeader from "./TaskBoardHeader";
 import TaskList from "./TaskList";
+import { TaskBoardContainer, TaskBoardListContainer } from "./ui";
 
 interface TaskBoardProps extends TaskBoardModel {}
 
@@ -17,16 +17,7 @@ export default function TaskBoard({ uniqueName, displayName }: TaskBoardProps) {
     const { isFetchedAfterMount } = taskListsQuery;
 
     return (
-        <Box
-            component="main"
-            sx={{
-                minWidth: "calc(100vw - (100vw - 100%))",
-                width: "fit-content",
-                position: "relative",
-                py: 4,
-                flex: 1,
-            }}
-        >
+        <TaskBoardContainer component="main">
             <TaskBoardHeader displayName={displayName} />
             <Droppable
                 droppableId={uniqueName}
@@ -34,16 +25,10 @@ export default function TaskBoard({ uniqueName, displayName }: TaskBoardProps) {
                 direction={direction === "row" ? "horizontal" : "vertical"}
             >
                 {({ innerRef, placeholder, droppableProps }) => (
-                    <Box
+                    <TaskBoardListContainer
                         {...droppableProps}
                         ref={innerRef}
-                        sx={{
-                            px: 6,
-                            display: "flex",
-                            flexDirection: direction,
-                            alignItems:
-                                direction === "row" ? "start" : "center",
-                        }}
+                        direction={direction}
                     >
                         {isFetchedAfterMount && (
                             <>
@@ -54,9 +39,9 @@ export default function TaskBoard({ uniqueName, displayName }: TaskBoardProps) {
                                 <AddTaskList />
                             </>
                         )}
-                    </Box>
+                    </TaskBoardListContainer>
                 )}
             </Droppable>
-        </Box>
+        </TaskBoardContainer>
     );
 }

@@ -6,7 +6,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconButton, ListItemIcon, Menu, MenuItem } from "@mui/material";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 
 interface TaskItemMenuProps {
     taskId: string;
@@ -17,24 +17,25 @@ export default function TaskItemMenu({
     taskId,
     onEditTask,
 }: TaskItemMenuProps) {
-    const { deleteTask } = useTaskQuery();
-    const [shouldFocusOnTask, setShouldFocusOnTask] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-    const open = Boolean(anchorEl);
+    const shouldFocusOnTaskRef = useRef<boolean>(false);
     const buttonId = useId();
     const menuId = useId();
+    const open = Boolean(anchorEl);
+
+    const { deleteTask } = useTaskQuery();
 
     const handleClose = () => setAnchorEl(null);
 
     const handleTransitionEnd = () => {
-        if (!open && shouldFocusOnTask) {
+        if (!open && shouldFocusOnTaskRef.current) {
             onEditTask();
-            setShouldFocusOnTask(false);
+            shouldFocusOnTaskRef.current = false;
         }
     };
 
     const handleEditTaskClick = () => {
-        setShouldFocusOnTask(true);
+        shouldFocusOnTaskRef.current = true;
         handleClose();
     };
 

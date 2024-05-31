@@ -1,9 +1,9 @@
 import { TaskBoardModel } from "@/schema/taskBoard";
 import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Box, CircularProgress, IconButton, Typography } from "@mui/material";
+import { IconButton, Typography } from "@mui/material";
 import { useDirection } from "../../providers/DirectionProvider";
-import { BoardHeaderContainer, BoardHeaderWrapper } from "./ui";
+import { TaskBoardHeaderContainer, TaskBoardHeaderWrapper } from "./ui";
 
 interface TaskBoardHeaderProps extends Pick<TaskBoardModel, "displayName"> {}
 
@@ -11,8 +11,8 @@ export default function TaskBoardHeader({ displayName }: TaskBoardHeaderProps) {
     const { direction } = useDirection();
 
     return (
-        <BoardHeaderWrapper direction={direction}>
-            <BoardHeaderContainer direction={direction}>
+        <TaskBoardHeaderWrapper direction={direction}>
+            <TaskBoardHeaderContainer direction={direction}>
                 <Typography
                     variant="h6"
                     color="text.secondary"
@@ -23,7 +23,7 @@ export default function TaskBoardHeader({ displayName }: TaskBoardHeaderProps) {
                 <IconButton size="small" tabIndex={-1}>
                     <FontAwesomeIcon icon={faEllipsisVertical} />
                 </IconButton>
-            </BoardHeaderContainer>
-        </BoardHeaderWrapper>
+            </TaskBoardHeaderContainer>
+        </TaskBoardHeaderWrapper>
     );
 }
