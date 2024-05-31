@@ -3,8 +3,8 @@
 import { TaskBoardModel } from "@/schema/taskBoard";
 import { Droppable } from "@hello-pangea/dnd";
 import { Box } from "@mui/material";
-import { useDirection } from "../../_providers/DirectionProvider";
-import { useTaskQuery } from "../../_providers/TaskQueryProvider";
+import { useDirection } from "../../providers/DirectionProvider";
+import { useTaskQuery } from "../../providers/TaskQueryProvider";
 import AddTaskList from "./AddTaskList";
 import TaskBoardHeader from "./TaskBoardHeader";
 import TaskList from "./TaskList";

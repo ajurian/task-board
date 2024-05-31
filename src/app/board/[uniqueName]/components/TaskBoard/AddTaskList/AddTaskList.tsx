@@ -3,8 +3,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useDisclosure, useInputState } from "@mantine/hooks";
 import { Box, InputBase, Paper, Typography } from "@mui/material";
 import { KeyboardEventHandler } from "react";
-import { useDirection } from "../../../_providers/DirectionProvider";
-import { useTaskQuery } from "../../../_providers/TaskQueryProvider";
+import { useDirection } from "../../../providers/DirectionProvider";
+import { useTaskQuery } from "../../../providers/TaskQueryProvider";
 
 export default function AddTaskList() {
     const { direction } = useDirection();

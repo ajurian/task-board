@@ -1,4 +1,3 @@
-import { useTaskQuery } from "@/app/board/[uniqueName]/_providers/TaskQueryProvider";
 import {
     faEllipsisVertical,
     faPen,
@@ -7,18 +6,19 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconButton, ListItemIcon, Menu, MenuItem } from "@mui/material";
 import { useId, useState } from "react";
+import { useTaskQuery } from "../../../providers/TaskQueryProvider";
 
-interface TaskItemMenuProps {
-    taskId: string;
-    onEditTask: () => void;
+interface TaskListMenuProps {
+    listId: string;
+    onRenameTitle: () => void;
 }
 
-export default function TaskItemMenu({
-    taskId,
-    onEditTask,
-}: TaskItemMenuProps) {
-    const { deleteTask } = useTaskQuery();
-    const [shouldFocusOnTask, setShouldFocusOnTask] = useState(false);
+export default function TaskListMenu({
+    listId,
+    onRenameTitle,
+}: TaskListMenuProps) {
+    const { deleteTaskList } = useTaskQuery();
+    const [shouldFocusOnTitle, setShouldFocusOnTitle] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const open = Boolean(anchorEl);
     const buttonId = useId();
@@ -27,19 +27,19 @@ export default function TaskItemMenu({
     const handleClose = () => setAnchorEl(null);
 
     const handleTransitionEnd = () => {
-        if (!open && shouldFocusOnTask) {
-            onEditTask();
-            setShouldFocusOnTask(false);
+        if (!open && shouldFocusOnTitle) {
+            onRenameTitle();
+            setShouldFocusOnTitle(false);
         }
     };
 
-    const handleEditTaskClick = () => {
-        setShouldFocusOnTask(true);
+    const handleRenameListClick = () => {
+        setShouldFocusOnTitle(true);
         handleClose();
     };
 
     const handleDeleteListClick = () => {
-        deleteTask({ id: taskId });
+        deleteTaskList({ id: listId });
         handleClose();
     };
 
@@ -64,14 +64,14 @@ export default function TaskItemMenu({
                 onTransitionEnd={handleTransitionEnd}
                 MenuListProps={{ "aria-labelledby": buttonId, dense: true }}
             >
-                <MenuItem onClick={handleEditTaskClick}>
+                <MenuItem onClick={handleRenameListClick}>
                     <ListItemIcon sx={{ mr: "1em" }} style={{ minWidth: 0 }}>
                         <FontAwesomeIcon
                             icon={faPen}
                             style={{ fontSize: "1em" }}
                         />
                     </ListItemIcon>
-                    Edit task
+                    Rename list
                 </MenuItem>
                 <MenuItem onClick={handleDeleteListClick}>
                     <ListItemIcon sx={{ mr: "1em" }} style={{ minWidth: 0 }}>
@@ -80,7 +80,7 @@ export default function TaskItemMenu({
                             style={{ fontSize: "1em" }}
                         />
                     </ListItemIcon>
-                    Delete task
+                    Delete list
                 </MenuItem>
             </Menu>
         </>

@@ -1,4 +1,4 @@
-import { useTaskQuery } from "@/app/board/[uniqueName]/_providers/TaskQueryProvider";
+import { useTaskQuery } from "@/app/board/[uniqueName]/providers/TaskQueryProvider";
 import { useInputState } from "@mantine/hooks";
 import { Box, InputBase } from "@mui/material";
 import { forwardRef, useLayoutEffect, useRef } from "react";

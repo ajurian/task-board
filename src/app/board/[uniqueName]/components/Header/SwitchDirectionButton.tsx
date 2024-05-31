@@ -6,7 +6,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconButton } from "@mui/material";
-import { useDirection } from "../../_providers/DirectionProvider";
+import { useDirection } from "../../providers/DirectionProvider";
 
 export default function SwitchDirectionButton() {
     const { direction, toggleDirection } = useDirection();

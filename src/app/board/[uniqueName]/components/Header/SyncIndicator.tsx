@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, CircularProgress, IconButton } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect } from "react";
-import { useTaskQuery } from "../../_providers/TaskQueryProvider";
+import { useTaskQuery } from "../../providers/TaskQueryProvider";
 
 export default function SyncIndicator() {
     const queryClient = useQueryClient();

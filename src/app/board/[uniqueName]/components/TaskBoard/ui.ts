@@ -1,5 +1,5 @@
 import { Box, Paper, styled } from "@mui/material";
-import { Direction } from "../../_providers/DirectionProvider/DirectionProvider";
+import { Direction } from "../../providers/DirectionProvider/DirectionProvider";
 
 export const BoardHeaderWrapper = styled(Box, {
     shouldForwardProp: (propName) => propName !== "direction",

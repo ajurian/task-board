@@ -1,7 +1,7 @@
 import { useInputState } from "@mantine/hooks";
 import { Box, InputBase, Typography } from "@mui/material";
 import { KeyboardEventHandler } from "react";
-import { useTaskQuery } from "../../../_providers/TaskQueryProvider";
+import { useTaskQuery } from "../../../providers/TaskQueryProvider";
 
 interface TaskListTitleProps {
     listId: string;

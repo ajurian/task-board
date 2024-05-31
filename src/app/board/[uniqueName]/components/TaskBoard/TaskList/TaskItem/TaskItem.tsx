@@ -1,4 +1,4 @@
-import { useTaskQuery } from "@/app/board/[uniqueName]/_providers/TaskQueryProvider";
+import { useTaskQuery } from "@/app/board/[uniqueName]/providers/TaskQueryProvider";
 import { TaskModel } from "@/schema/task";
 import { faCheck, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

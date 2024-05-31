@@ -1,11 +1,11 @@
 import { TaskBoardsGetResponse } from "@/app/api/taskBoards/route";
 import { Box } from "@mui/material";
 import axios from "axios";
-import Header from "./_components/Header";
-import TaskBoard from "./_components/TaskBoard";
-import DirectionProvider from "./_providers/DirectionProvider";
-import DragDropProvider from "./_providers/DragDropProvider";
-import TaskQueryProvider from "./_providers/TaskQueryProvider";
+import Header from "./components/Header";
+import TaskBoard from "./components/TaskBoard";
+import DirectionProvider from "./providers/DirectionProvider";
+import DragDropProvider from "./providers/DragDropProvider";
+import TaskQueryProvider from "./providers/TaskQueryProvider";
 import { notFound } from "next/navigation";
 
 interface Segment {
