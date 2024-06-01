@@ -37,5 +37,10 @@ export async function DELETE(request: NextRequest, { params }: Segment) {
     const { id } = params;
     const task = await prisma.task.delete({ where: { id } });
 
+    await prisma.task.updateMany({
+        where: { order: { gt: task.order } },
+        data: { order: { decrement: 1 } },
+    });
+
     return NextResponse.json(task);
 }
