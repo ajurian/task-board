@@ -35,6 +35,8 @@ import {
     useMemo,
     useState,
 } from "react";
+import { TaskListProps } from "../../components/TaskBoard/TaskList";
+import { TaskItemProps } from "../../components/TaskBoard/TaskList/TaskItem";
 
 interface MoveTaskListOptions {
     fromIndex: number;
@@ -76,8 +78,8 @@ type MutationDispatch =
     | { type: "addTask"; options: AddTaskOptions }
     | { type: "deleteTask"; options: DeleteTaskOptions };
 
-interface TaskListsQueryData extends TaskListModel {
-    tasks: TaskModel[];
+interface TaskListsQueryData extends TaskListProps {
+    tasks: TaskItemProps[];
 }
 
 interface TaskQueryContextValue {
@@ -156,7 +158,9 @@ export default function TaskQueryProvider({
         initialData: [],
     });
 
-    const [taskLists, setTaskLists] = useState(taskListsQuery.data);
+    const [taskLists, setTaskLists] = useState<TaskListsQueryData[]>(
+        taskListsQuery.data
+    );
     const [mutationQueue, setMutationQueue] = useState<MutationDispatch[]>([]);
 
     const popMutationQueue = useCallback(
@@ -347,6 +351,7 @@ export default function TaskQueryProvider({
                     title,
                     createdAt: now,
                     tasks: [],
+                    isMutationPlaceholder: true,
                 });
 
                 return newTaskLists;
@@ -417,6 +422,7 @@ export default function TaskQueryProvider({
                     status: "pending",
                     createdAt: now,
                     dueAt,
+                    isMutationPlaceholder: true,
                 });
 
                 return newTaskLists;

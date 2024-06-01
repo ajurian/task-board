@@ -86,6 +86,14 @@ export const TaskItemDetailsInput = styled(InputBase, {
     }),
 }));
 
+export const TaskItemLoadingWrapper = styled(Box)(({ theme }) => ({
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    color: theme.palette.text.secondary,
+    padding: theme.spacing(1.25),
+}));
+
 export const TaskItemDetailsText = styled(Typography, {
     shouldForwardProp: (propName) => propName !== "isContainerFocused",
 })<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({

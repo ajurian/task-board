@@ -14,8 +14,8 @@ interface TaskItemMenuProps {
 }
 
 export default function TaskItemMenu({
-    taskId,
     onEditTask,
+    taskId,
 }: TaskItemMenuProps) {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const shouldFocusOnTaskRef = useRef<boolean>(false);

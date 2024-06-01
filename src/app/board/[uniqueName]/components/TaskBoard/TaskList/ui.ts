@@ -76,6 +76,14 @@ export const TaskListHeaderTitleText = styled(Typography, {
     }),
 }));
 
+export const TaskListHeaderLoadingWrapper = styled(Box)(({ theme }) => ({
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    color: theme.palette.text.secondary,
+    padding: theme.spacing(1.25),
+}));
+
 export const AddTaskButton = styled(Button)(({ theme }) => ({
     justifyContent: "start",
     width: "100%",

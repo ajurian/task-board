@@ -7,9 +7,16 @@ import TaskItemPlaceholder from "./TaskItem/TaskItemPlaceholder";
 import TaskListHeader from "./TaskListHeader";
 import { TaskItemsWrapper, TaskListContainer } from "./ui";
 
-interface TaskListProps extends TaskListModel {}
+export interface TaskListProps extends TaskListModel {
+    isMutationPlaceholder?: boolean;
+}
 
-export default function TaskList({ id, order, title }: TaskListProps) {
+export default function TaskList({
+    id,
+    order,
+    title,
+    isMutationPlaceholder = false,
+}: TaskListProps) {
     const { taskLists } = useTaskQuery();
     const { direction } = useDirection();
     const { tasks } = taskLists[order];
@@ -24,7 +31,11 @@ export default function TaskList({ id, order, title }: TaskListProps) {
                     direction={direction}
                     tabIndex={0}
                 >
-                    <TaskListHeader listId={id} title={title} />
+                    <TaskListHeader
+                        listId={id}
+                        title={title}
+                        isMutationPlaceholder={isMutationPlaceholder}
+                    />
                     <Droppable
                         droppableId={order.toString()}
                         type="task"
