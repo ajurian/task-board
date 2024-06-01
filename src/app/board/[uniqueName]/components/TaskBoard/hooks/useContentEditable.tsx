@@ -91,7 +91,8 @@ export default function useContentEditable<T extends HTMLElement>({
         (e) => {
             if (
                 focusedElement === null ||
-                e.currentTarget.contains(e.relatedTarget)
+                (e.currentTarget.contains(e.relatedTarget) &&
+                    e.currentTarget !== e.relatedTarget)
             ) {
                 return;
             }
