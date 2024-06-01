@@ -41,6 +41,9 @@ export async function PATCH(request: NextRequest, { params }: Segment) {
 
 export async function DELETE(request: NextRequest, { params }: Segment) {
     const { id } = params;
+
+    await prisma.taskList.deleteMany({ where: { taskBoardId: id } });
+
     const taskBoard = await prisma.taskBoard.delete({
         where: { id },
     });
