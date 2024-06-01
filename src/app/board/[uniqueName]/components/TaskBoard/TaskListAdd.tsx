@@ -14,13 +14,12 @@ export default function TaskListAdd() {
 
     const { ref, isFocused, contentEditableProps } =
         useContentEditable<HTMLDivElement>({
-            onCancel: () => setTitleInput(""),
+            onStateReset: () => setTitleInput(""),
             onEdit: () => {
                 if (titleInput.length > 0) {
                     addTaskList({ title: titleInput });
                 }
 
-                setTitleInput("");
                 return true;
             },
         });
@@ -31,7 +30,6 @@ export default function TaskListAdd() {
             ref={ref}
             direction={direction}
             isFocused={isFocused}
-            tabIndex={-1}
         >
             {isFocused ? (
                 <InputBase

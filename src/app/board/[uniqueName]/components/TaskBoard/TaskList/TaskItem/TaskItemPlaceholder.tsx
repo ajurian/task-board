@@ -1,105 +1,99 @@
 import { useTaskQuery } from "@/app/board/[uniqueName]/providers/TaskQueryProvider";
+import { faAdd } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useInputState } from "@mantine/hooks";
-import { InputBase } from "@mui/material";
-import { forwardRef, useLayoutEffect, useRef } from "react";
-import { TaskItemContainer } from "./ui";
+import { useRef } from "react";
+import useContentEditable from "../../hooks/useContentEditable";
+import {
+    TaskItemDetailsInput,
+    TaskItemPlaceholderContainer,
+    TaskItemPlaceholderTIconWrapper,
+    TaskItemPlaceholderTitleContainer,
+    TaskItemTitleInput,
+    TaskItemTitleText,
+} from "./ui";
 
 interface TaskItemPlaceholderProps {
     listId: string;
-    isVisible: boolean;
-    onHide: () => void;
 }
 
-const TaskItemPlaceholder = forwardRef<
-    HTMLDivElement,
-    TaskItemPlaceholderProps
->(({ listId, isVisible, onHide }, ref) => {
+export default function TaskItemPlaceholder({
+    listId,
+}: TaskItemPlaceholderProps) {
     const [titleInput, setTitleInput] = useInputState("");
     const [detailsInput, setDetailsInput] = useInputState("");
-    const { addTask } = useTaskQuery();
-
     const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
     const detailsInputRef = useRef<HTMLTextAreaElement | null>(null);
 
-    useLayoutEffect(() => {
-        if (isVisible) {
-            return;
-        }
+    const { addTask } = useTaskQuery();
 
-        setTitleInput("");
-        setDetailsInput("");
+    const { ref, isFocused, contentEditableProps } = useContentEditable({
+        onFocus: () => titleInputRef.current?.focus(),
+        onStateReset: () => {
+            setTitleInput("");
+            setDetailsInput("");
+        },
+        onEdit: (e) => {
+            if (
+                e !== null &&
+                e.target === detailsInputRef.current &&
+                e.shiftKey
+            ) {
+                return false;
+            }
 
-        if (titleInput.length === 0 || detailsInput.length === 0) {
-            return;
-        }
+            if (titleInput.length > 0 && detailsInput.length > 0) {
+                addTask({
+                    taskListId: listId,
+                    title: titleInput,
+                    details: detailsInput,
+                    dueAt: null,
+                });
+            }
 
-        addTask({
-            taskListId: listId,
-            title: titleInput,
-            details: detailsInput,
-            dueAt: null,
-        });
-    }, [
-        listId,
-        isVisible,
-        titleInput,
-        detailsInput,
-        addTask,
-        setTitleInput,
-        setDetailsInput,
-    ]);
+            return true;
+        },
+    });
 
     return (
-        isVisible && (
-            <TaskItemContainer ref={ref} isDragging={false} isFocused={true}>
-                <InputBase
-                    ref={titleInputRef}
-                    multiline
-                    fullWidth
-                    autoFocus
-                    size="small"
-                    sx={(theme) => ({
-                        ...theme.typography.subtitle1,
-                        px: 9,
-                        py: 0,
-                    })}
-                    placeholder="Title"
+        <TaskItemPlaceholderContainer
+            {...contentEditableProps}
+            ref={ref}
+            isFocused={isFocused}
+        >
+            <TaskItemPlaceholderTitleContainer>
+                <TaskItemPlaceholderTIconWrapper>
+                    <FontAwesomeIcon icon={faAdd} />
+                </TaskItemPlaceholderTIconWrapper>
+                <TaskItemTitleInput
+                    inputRef={titleInputRef}
+                    isContainerFocused={isFocused}
                     value={titleInput}
                     onChange={setTitleInput}
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                            onHide();
-                        }
-                    }}
-                />
-                <InputBase
-                    ref={detailsInputRef}
+                    onFocus={(e) => e.currentTarget.select()}
+                    placeholder="Title"
+                    size="small"
                     multiline
                     fullWidth
-                    size="small"
-                    sx={(theme) => ({
-                        ...theme.typography.body2,
-                        color: "text.secondary",
-                        pl: 9,
-                        py: 0,
-                    })}
-                    placeholder="Details"
-                    value={detailsInput}
-                    onChange={setDetailsInput}
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                            if (e.shiftKey) {
-                                return;
-                            }
-
-                            onHide();
-                        }
-                    }}
                 />
-            </TaskItemContainer>
-        )
+                <TaskItemTitleText
+                    isContainerFocused={isFocused}
+                    variant="subtitle1"
+                >
+                    Add new task
+                </TaskItemTitleText>
+            </TaskItemPlaceholderTitleContainer>
+            <TaskItemDetailsInput
+                inputRef={detailsInputRef}
+                isContainerFocused={isFocused}
+                value={detailsInput}
+                onChange={setDetailsInput}
+                onFocus={(e) => e.currentTarget.select()}
+                placeholder="Details"
+                size="small"
+                multiline
+                fullWidth
+            />
+        </TaskItemPlaceholderContainer>
     );
-});
-TaskItemPlaceholder.displayName = "TaskItemPlaceholder";
-
-export default TaskItemPlaceholder;
+}

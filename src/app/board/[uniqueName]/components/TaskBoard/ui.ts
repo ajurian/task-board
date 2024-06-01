@@ -86,6 +86,10 @@ export const TaskListAddContainer = styled(Box, {
             cursor: "default",
             boxShadow: theme.shadows[1],
         }),
+        ":focus-visible": {
+            outline: 0,
+            boxShadow: theme.shadows[1],
+        },
     })
 );
 

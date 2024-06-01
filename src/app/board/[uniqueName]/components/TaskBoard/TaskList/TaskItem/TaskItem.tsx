@@ -37,7 +37,7 @@ export default function TaskItem({ id, order, title, details }: TaskItemProps) {
     const { editTask } = useTaskQuery();
 
     const { ref, isFocused, contentEditableProps } = useContentEditable({
-        onIgnoreNode: (node): boolean =>
+        onNodeIgnore: (node): boolean =>
             node !== titleRef.current &&
             node !== detailsRef.current &&
             node !== ref.current,
@@ -49,7 +49,7 @@ export default function TaskItem({ id, order, title, details }: TaskItemProps) {
 
             titleInputRef.current?.focus();
         },
-        onCancel: () => {
+        onStateReset: () => {
             setTitleInput(initialTitle);
             setDetailsInput(initialDetails);
         },
@@ -69,11 +69,8 @@ export default function TaskItem({ id, order, title, details }: TaskItemProps) {
 
             if (isDataValid && hasDataChanged) {
                 editTask({ id, title: titleInput, details: detailsInput });
-                return true;
             }
 
-            setTitleInput(initialTitle);
-            setDetailsInput(initialDetails);
             return true;
         },
     });
@@ -96,7 +93,11 @@ export default function TaskItem({ id, order, title, details }: TaskItemProps) {
                     isFocused={isFocused}
                 >
                     <TaskItemTitleContainer>
-                        <IconButton size="small" color="success" tabIndex={-1}>
+                        <IconButton
+                            size="small"
+                            color="success"
+                            tabIndex={isFocused ? 0 : -1}
+                        >
                             <FontAwesomeIcon icon={faCheck} />
                         </IconButton>
                         <TaskItemTitleInput

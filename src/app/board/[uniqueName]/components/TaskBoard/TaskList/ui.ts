@@ -1,4 +1,4 @@
-import { Box, Button, styled } from "@mui/material";
+import { Box, Button, InputBase, styled, Typography } from "@mui/material";
 import { Direction } from "../../../providers/DirectionProvider";
 
 export const TaskListContainer = styled(Box, {
@@ -34,7 +34,7 @@ export const TaskListContainer = styled(Box, {
     },
 }));
 
-export const TaskListTitleContainer = styled(Box)(({ theme }) => ({
+export const TaskListHeaderContainer = styled(Box)(({ theme }) => ({
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
@@ -43,6 +43,27 @@ export const TaskListTitleContainer = styled(Box)(({ theme }) => ({
     paddingInline: theme.spacing(4),
     paddingBlock: theme.spacing(3),
     paddingRight: theme.spacing(2.75),
+}));
+
+export const TaskListHeaderTitleInput = styled(InputBase, {
+    shouldForwardProp: (propName) => propName !== "isContainerFocused",
+})<{ isContainerFocused: boolean }>(({ isContainerFocused }) => ({
+    ...(!isContainerFocused && {
+        display: "none",
+        visibility: "hidden",
+        pointerEvents: "none",
+    }),
+}));
+
+export const TaskListHeaderTitleText = styled(Typography, {
+    shouldForwardProp: (propName) => propName !== "isContainerFocused",
+})<{ isContainerFocused: boolean }>(({ isContainerFocused }) => ({
+    cursor: "text",
+    ...(isContainerFocused && {
+        display: "none",
+        visibility: "hidden",
+        pointerEvents: "none",
+    }),
 }));
 
 export const AddTaskButton = styled(Button)(({ theme }) => ({

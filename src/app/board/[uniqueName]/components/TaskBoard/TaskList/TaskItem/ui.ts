@@ -5,22 +5,27 @@ export const TaskItemContainer = styled(Box, {
         propName !== "isDragging" && propName !== "isFocused",
 })<{ isDragging: boolean; isFocused: boolean }>(
     ({ theme, isDragging, isFocused }) => ({
-        backgroundColor: theme.palette.background.paper,
         paddingInline: theme.spacing(2.75),
         paddingBlock: theme.spacing(1.5),
-        transition: theme.transitions.create("box-shadow", {
-            duration: theme.transitions.duration.shortest,
-        }),
+        transition: theme.transitions.create(
+            ["box-shadow", "background-color"],
+            {
+                duration: theme.transitions.duration.shortest,
+            }
+        ),
         boxShadow: theme.shadows[0],
+        backgroundColor: theme.palette.background.paper,
         "&:focus-visible": {
             outline: 0,
             backgroundColor: theme.palette.grey[100],
         },
-        ":hover": {
-            zIndex: 1,
-            cursor: isFocused ? "default" : "pointer",
-            boxShadow: theme.shadows[1],
-        },
+        ...(!isFocused && {
+            ":hover": {
+                zIndex: 1,
+                cursor: "pointer",
+                boxShadow: theme.shadows[1],
+            },
+        }),
         ...(isFocused && {
             zIndex: 2,
             cursor: "default",
@@ -96,4 +101,49 @@ export const TaskItemDetailsText = styled(Typography, {
         visibility: "hidden",
         pointerEvents: "none",
     }),
+}));
+
+export const TaskItemPlaceholderContainer = styled(Box, {
+    shouldForwardProp: (propName) => propName !== "isFocused",
+})<{ isFocused: boolean }>(({ theme, isFocused }) => ({
+    paddingInline: theme.spacing(2.75),
+    paddingBlock: theme.spacing(1.5),
+    color: theme.palette.primary.main,
+    transition: theme.transitions.create(["box-shadow", "background-color"], {
+        duration: theme.transitions.duration.shortest,
+    }),
+    boxShadow: theme.shadows[0],
+    backgroundColor: theme.palette.background.paper,
+    "&:focus-visible": {
+        outline: 0,
+        backgroundColor: theme.palette.grey[50],
+    },
+    ...(isFocused && {
+        zIndex: 2,
+        cursor: "default",
+        boxShadow: theme.shadows[2],
+        backgroundColor: theme.palette.grey[100],
+    }),
+    ...(!isFocused && {
+        ":hover": {
+            zIndex: 1,
+            cursor: "pointer",
+            backgroundColor: theme.palette.grey[50],
+        },
+    }),
+}));
+
+export const TaskItemPlaceholderTitleContainer = styled(Box)(({ theme }) => ({
+    display: "flex",
+    alignItems: "start",
+    gap: theme.spacing(2),
+    paddingRight: theme.spacing(9),
+}));
+
+export const TaskItemPlaceholderTIconWrapper = styled(Box)(({ theme }) => ({
+    display: "flex",
+    alignItems: "center",
+    aspectRatio: "1 / 1",
+    fontSize: "1.125rem",
+    paddingInline: theme.spacing(1.25),
 }));
