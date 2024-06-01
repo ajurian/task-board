@@ -96,9 +96,10 @@ export default function useContentEditable<T extends HTMLElement>({
                 return;
             }
 
+            onStateReset?.();
             setFocusedElement(null);
         },
-        [focusedElement]
+        [onStateReset, focusedElement]
     );
 
     const contentEditableProps = useMemo<HTMLAttributes<T>>(
