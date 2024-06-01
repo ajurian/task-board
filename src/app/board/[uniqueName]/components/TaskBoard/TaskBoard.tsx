@@ -6,7 +6,7 @@ import { useDirection } from "../../providers/DirectionProvider";
 import { useTaskQuery } from "../../providers/TaskQueryProvider";
 import TaskBoardHeader from "./TaskBoardHeader";
 import TaskList from "./TaskList";
-import TaskListAdd from "./TaskListAdd";
+import TaskListPlaceholder from "./TaskList/TaskListPlaceholder";
 import { TaskBoardContainer, TaskBoardListContainer } from "./ui";
 
 interface TaskBoardProps extends TaskBoardModel {}
@@ -36,7 +36,7 @@ export default function TaskBoard({ uniqueName, displayName }: TaskBoardProps) {
                                     <TaskList key={taskList.id} {...taskList} />
                                 ))}
                                 {placeholder}
-                                <TaskListAdd />
+                                <TaskListPlaceholder />
                             </>
                         )}
                     </TaskBoardListContainer>

@@ -80,3 +80,66 @@ export const TaskItemsWrapper = styled(Box)(({ theme }) => ({
     overflowY: "auto",
     paddingBlock: theme.spacing(1.5),
 }));
+
+export const TaskListPlaceholderContainer = styled(Box, {
+    shouldForwardProp: (propName) =>
+        propName !== "direction" && propName !== "isFocused",
+})<{ direction: Direction; isFocused: boolean }>(
+    ({ theme, direction, isFocused }) => ({
+        display: "flex",
+        alignItems: "center",
+        width: "100%",
+        cursor: "pointer",
+        boxShadow: "none",
+        transition: theme.transitions.create("box-shadow", {
+            duration: theme.transitions.duration.shortest,
+        }),
+        backgroundColor: theme.palette.background.paper,
+        paddingInline: theme.spacing(4),
+        paddingBlock: theme.spacing(3),
+        height: theme.spacing(13),
+        ...(direction === "row" && {
+            minWidth: theme.spacing(80),
+            maxWidth: theme.spacing(80),
+        }),
+        ...(direction === "column" && {
+            minWidth: theme.spacing(180),
+            maxWidth: theme.spacing(180),
+            marginBottom: theme.spacing(80),
+        }),
+        ...(isFocused && {
+            cursor: "default",
+            boxShadow: theme.shadows[1],
+        }),
+        ":focus-visible": {
+            outline: 0,
+            boxShadow: theme.shadows[1],
+        },
+    })
+);
+
+export const TaskListPlaceholderInput = styled(InputBase, {
+    shouldForwardProp: (propName) => propName !== "isContainerFocused",
+})<{ isContainerFocused: boolean }>(({ isContainerFocused }) => ({
+    ...(!isContainerFocused && {
+        display: "none",
+        visibility: "hidden",
+        pointerEvents: "none",
+    }),
+}));
+
+export const TaskListPlaceholderTextContainer = styled(Box, {
+    shouldForwardProp: (propName) => propName !== "isContainerFocused",
+})<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
+    flex: 1,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: theme.spacing(2),
+    color: theme.palette.text.secondary,
+    ...(isContainerFocused && {
+        display: "none",
+        visibility: "hidden",
+        pointerEvents: "none",
+    }),
+}));
