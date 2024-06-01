@@ -375,6 +375,10 @@ export default function TaskQueryProvider({
 
                 newTaskLists.splice(index, 1);
 
+                for (let i = index; i < newTaskLists.length; i++) {
+                    newTaskLists[i].order = i;
+                }
+
                 return newTaskLists;
             }),
         []
@@ -392,8 +396,15 @@ export default function TaskQueryProvider({
                     return newTaskLists;
                 }
 
+                const { tasks } = taskList;
+
+                for (const task of tasks) {
+                    task.order++;
+                }
+
                 const now = new Date();
-                taskList.tasks.unshift({
+
+                tasks.unshift({
                     id: now.getTime().toString(),
                     taskListId: taskList.id,
                     order: 0,
@@ -451,6 +462,12 @@ export default function TaskQueryProvider({
                     }
 
                     tasks.splice(index, 1);
+
+                    for (let i = index; i < tasks.length; i++) {
+                        tasks[i].order = i;
+                    }
+
+                    break;
                 }
 
                 return newTaskLists;
