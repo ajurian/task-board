@@ -229,6 +229,10 @@ export default function TaskQueryProvider({
                 const body: TasksPostBody = options;
                 await axios.post("/api/tasks", body);
             },
+            onSettled: () =>
+                queryClient.invalidateQueries({
+                    queryKey: ["taskLists", boardId],
+                }),
         });
 
     const editTaskMutation: TaskQueryContextValue["editTaskMutation"] =
