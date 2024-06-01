@@ -1,5 +1,6 @@
 import { useClickOutside, usePrevious } from "@mantine/hooks";
 import React, {
+    HTMLAttributes,
     KeyboardEventHandler,
     MouseEventHandler,
     useCallback,
@@ -71,7 +72,7 @@ export default function useContentEditable<T extends HTMLElement>({
         [onEdit, onCancel]
     );
 
-    const contentEditableProps = useMemo(
+    const contentEditableProps = useMemo<HTMLAttributes<T>>(
         () => ({ onClick, onKeyDown }),
         [onClick, onKeyDown]
     );
