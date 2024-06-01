@@ -1,25 +1,27 @@
 import { useClickOutside, usePrevious } from "@mantine/hooks";
 import React, {
+    FocusEventHandler,
     HTMLAttributes,
     KeyboardEventHandler,
     MouseEventHandler,
     useCallback,
+    useEffect,
     useLayoutEffect,
     useMemo,
     useState,
 } from "react";
 
 interface UseContentEditableOptions<T extends HTMLElement> {
-    onIgnoreNode?: (node: HTMLElement) => boolean;
+    onNodeIgnore?: (node: HTMLElement) => boolean;
     onFocus?: (node: HTMLElement) => void;
-    onCancel?: () => void;
+    onStateReset?: () => void;
     onEdit?: (e: React.KeyboardEvent<T> | null) => boolean;
 }
 
 export default function useContentEditable<T extends HTMLElement>({
-    onIgnoreNode,
+    onNodeIgnore,
     onFocus,
-    onCancel,
+    onStateReset,
     onEdit,
 }: UseContentEditableOptions<T>) {
     const [focusedElement, setFocusedElement] = useState<HTMLElement | null>(
@@ -28,6 +30,10 @@ export default function useContentEditable<T extends HTMLElement>({
     const previousFocusedElement = usePrevious(focusedElement);
 
     const ref = useClickOutside<T>(() => {
+        if (focusedElement === null) {
+            return;
+        }
+
         onEdit?.(null);
         setFocusedElement(null);
     }) as React.MutableRefObject<T | null>;
@@ -35,22 +41,31 @@ export default function useContentEditable<T extends HTMLElement>({
     const onClick: MouseEventHandler<T> = useCallback(
         (e) =>
             setFocusedElement((focusedElement) => {
-                if (
-                    focusedElement === null &&
-                    onIgnoreNode !== undefined &&
-                    onIgnoreNode(e.target as HTMLElement)
-                ) {
-                    return null;
+                if (focusedElement === null) {
+                    const ignoreNode =
+                        onNodeIgnore?.(e.target as HTMLElement) ?? false;
+
+                    onStateReset?.();
+
+                    if (ignoreNode) {
+                        return null;
+                    }
                 }
 
                 return e.target as HTMLElement;
             }),
-        [onIgnoreNode]
+        [onNodeIgnore, onStateReset]
     );
 
     const onKeyDown: KeyboardEventHandler<T> = useCallback(
         (e) => {
             if (e.key === "Enter") {
+                if (focusedElement === null) {
+                    e.preventDefault();
+                    setFocusedElement(e.currentTarget);
+                    return;
+                }
+
                 const shouldContinue = onEdit?.(e) ?? true;
 
                 if (!shouldContinue) {
@@ -64,17 +79,37 @@ export default function useContentEditable<T extends HTMLElement>({
 
             if (e.key === "Escape") {
                 e.preventDefault();
-                onCancel?.();
+                onStateReset?.();
                 setFocusedElement(null);
                 return;
             }
         },
-        [onEdit, onCancel]
+        [onEdit, onStateReset, focusedElement]
+    );
+
+    const onBlur: FocusEventHandler<T> = useCallback(
+        (e) => {
+            if (
+                focusedElement === null ||
+                e.currentTarget.contains(e.relatedTarget)
+            ) {
+                return;
+            }
+
+            setFocusedElement(null);
+        },
+        [focusedElement]
     );
 
     const contentEditableProps = useMemo<HTMLAttributes<T>>(
-        () => ({ onClick, onKeyDown }),
-        [onClick, onKeyDown]
+        () => ({
+            role: "button",
+            tabIndex: 0,
+            onClick,
+            onKeyDown,
+            onBlur,
+        }),
+        [onClick, onKeyDown, onBlur]
     );
 
     useLayoutEffect(() => {
@@ -83,7 +118,7 @@ export default function useContentEditable<T extends HTMLElement>({
         }
 
         onFocus?.(focusedElement);
-    }, [onFocus, focusedElement, previousFocusedElement]);
+    }, [onFocus, onStateReset, focusedElement, previousFocusedElement]);
 
     return {
         ref,
