@@ -45,6 +45,16 @@ export const TaskListHeaderContainer = styled(Box)(({ theme }) => ({
     paddingRight: theme.spacing(2.75),
 }));
 
+export const TaskListHeaderTitleContainer = styled(Box, {
+    shouldForwardProp: (propName) => propName !== "isFocused",
+})<{ isFocused: boolean }>(({ isFocused }) => ({
+    overflowX: "auto",
+    flexGrow: isFocused ? 1 : 0,
+    ":focus-visible": {
+        outline: 0,
+    },
+}));
+
 export const TaskListHeaderTitleInput = styled(InputBase, {
     shouldForwardProp: (propName) => propName !== "isContainerFocused",
 })<{ isContainerFocused: boolean }>(({ isContainerFocused }) => ({

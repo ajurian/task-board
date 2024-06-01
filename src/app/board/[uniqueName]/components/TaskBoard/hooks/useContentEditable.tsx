@@ -106,12 +106,12 @@ export default function useContentEditable<T extends HTMLElement>({
     const contentEditableProps = useMemo<HTMLAttributes<T>>(
         () => ({
             role: "button",
-            tabIndex: 0,
+            tabIndex: focusedElement === null ? 0 : -1,
             onClick,
             onKeyDown,
             onBlur,
         }),
-        [onClick, onKeyDown, onBlur]
+        [onClick, onKeyDown, onBlur, focusedElement]
     );
 
     useLayoutEffect(() => {

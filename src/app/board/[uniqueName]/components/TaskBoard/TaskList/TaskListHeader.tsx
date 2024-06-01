@@ -5,6 +5,7 @@ import useContentEditable from "../hooks/useContentEditable";
 import TaskListMenu from "./TaskListMenu";
 import {
     TaskListHeaderContainer,
+    TaskListHeaderTitleContainer,
     TaskListHeaderTitleInput,
     TaskListHeaderTitleText,
 } from "./ui";
@@ -35,14 +36,11 @@ export default function TaskListHeader({ listId, title }: TaskListHeaderProps) {
 
     return (
         <TaskListHeaderContainer>
-            <Box
+            <TaskListHeaderTitleContainer
                 {...contentEditableProps}
                 ref={ref}
-                tabIndex={-1}
-                sx={{
-                    overflowX: "auto",
-                    flexGrow: isFocused ? 1 : 0,
-                }}
+                isFocused={isFocused}
+                onFocus={() => ref.current?.click()}
             >
                 <TaskListHeaderTitleInput
                     inputRef={titleInputRef}
@@ -57,7 +55,7 @@ export default function TaskListHeader({ listId, title }: TaskListHeaderProps) {
                 <TaskListHeaderTitleText isContainerFocused={isFocused} noWrap>
                     {title}
                 </TaskListHeaderTitleText>
-            </Box>
+            </TaskListHeaderTitleContainer>
             <TaskListMenu
                 listId={listId}
                 onRenameTitle={() => ref.current?.click()}
