@@ -4,7 +4,7 @@ import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Draggable } from "@hello-pangea/dnd";
 import { useInputState } from "@mantine/hooks";
-import { CircularProgress, IconButton, Typography } from "@mui/material";
+import { IconButton, Typography } from "@mui/material";
 import { useMemo, useRef } from "react";
 import useContentEditable from "../../hooks/useContentEditable";
 import TaskItemMenu from "./TaskItemMenu";
@@ -12,23 +12,14 @@ import {
     TaskItemContainer,
     TaskItemDetailsInput,
     TaskItemDetailsText,
-    TaskItemLoadingWrapper,
     TaskItemTitleContainer,
     TaskItemTitleInput,
     TaskItemTitleText,
 } from "./ui";
 
-export interface TaskItemProps extends TaskModel {
-    isMutationPlaceholder?: boolean;
-}
+export interface TaskItemProps extends TaskModel {}
 
-export default function TaskItem({
-    id,
-    order,
-    title,
-    details,
-    isMutationPlaceholder = false,
-}: TaskItemProps) {
+export default function TaskItem({ id, order, title, details }: TaskItemProps) {
     const initialTitle = useMemo(() => title.replace(/\\n/g, "\n"), [title]);
     const initialDetails = useMemo(
         () => details.replace(/\\n/g, "\n"),
@@ -127,16 +118,10 @@ export default function TaskItem({
                         >
                             {initialTitle}
                         </TaskItemTitleText>
-                        {isMutationPlaceholder ? (
-                            <TaskItemLoadingWrapper>
-                                <CircularProgress size={18} color="inherit" />
-                            </TaskItemLoadingWrapper>
-                        ) : (
-                            <TaskItemMenu
-                                taskId={id}
-                                onEditTask={() => ref.current?.click()}
-                            />
-                        )}
+                        <TaskItemMenu
+                            taskId={id}
+                            onEditTask={() => ref.current?.click()}
+                        />
                     </TaskItemTitleContainer>
                     <TaskItemDetailsInput
                         inputRef={detailsInputRef}

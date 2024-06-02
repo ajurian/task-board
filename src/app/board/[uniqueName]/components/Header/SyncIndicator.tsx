@@ -17,9 +17,9 @@ export default function SyncIndicator() {
         [queryClient]
     );
 
-    useEffect(() => {
+    /* useEffect(() => {
         console.log("PENDING:", isMutationPending);
-    }, [isMutationPending]);
+    }, [isMutationPending]); */
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {

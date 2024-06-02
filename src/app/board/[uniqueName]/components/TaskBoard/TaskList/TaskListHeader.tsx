@@ -1,12 +1,10 @@
 import { useInputState } from "@mantine/hooks";
-import { CircularProgress } from "@mui/material";
 import { useRef } from "react";
 import { useTaskQuery } from "../../../providers/TaskQueryProvider";
 import useContentEditable from "../hooks/useContentEditable";
 import TaskListMenu from "./TaskListMenu";
 import {
     TaskListHeaderContainer,
-    TaskListHeaderLoadingWrapper,
     TaskListHeaderTitleContainer,
     TaskListHeaderTitleInput,
     TaskListHeaderTitleText,
@@ -15,14 +13,9 @@ import {
 interface TaskListHeaderProps {
     listId: string;
     title: string;
-    isMutationPlaceholder: boolean;
 }
 
-export default function TaskListHeader({
-    listId,
-    title,
-    isMutationPlaceholder,
-}: TaskListHeaderProps) {
+export default function TaskListHeader({ listId, title }: TaskListHeaderProps) {
     const [titleInput, setTitleInput] = useInputState(title);
     const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -62,16 +55,10 @@ export default function TaskListHeader({
                     {title}
                 </TaskListHeaderTitleText>
             </TaskListHeaderTitleContainer>
-            {isMutationPlaceholder ? (
-                <TaskListHeaderLoadingWrapper>
-                    <CircularProgress size={18} color="inherit" />
-                </TaskListHeaderLoadingWrapper>
-            ) : (
-                <TaskListMenu
-                    listId={listId}
-                    onRenameTitle={() => ref.current?.click()}
-                />
-            )}
+            <TaskListMenu
+                listId={listId}
+                onRenameTitle={() => ref.current?.click()}
+            />
         </TaskListHeaderContainer>
     );
 }

@@ -9,7 +9,12 @@ import { z } from "zod";
 
 export type TaskListsGetResponse = { taskLists: TaskListModel[] };
 export type TaskListsPostBody = TaskListCreate;
-export type TaskListsPostResponse = { taskList: TaskListModel };
+export type TaskListsPostResponse =
+    | {
+          status: "success";
+          taskList: TaskListModel;
+      }
+    | { status: "error" };
 
 export async function GET(request: NextRequest) {
     const { nextUrl } = request;
@@ -24,16 +29,21 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     const rawBody = await request.json();
-    const { taskBoardId, title } = TaskListCreateSchema.parse(rawBody);
-    const order = await prisma.taskList.count({ where: { taskBoardId } });
-
-    const taskList = await prisma.taskList.create({
-        data: {
-            taskBoardId,
-            order,
-            title,
-        },
+    const data = TaskListCreateSchema.parse(rawBody);
+    const order = await prisma.taskList.count({
+        where: { taskBoardId: data.taskBoardId },
     });
 
-    return NextResponse.json({ taskList });
+    try {
+        const taskList = await prisma.taskList.create({
+            data: {
+                ...data,
+                order,
+            },
+        });
+
+        return NextResponse.json({ status: "success", taskList });
+    } catch (e) {
+        return NextResponse.json({ status: "error" });
+    }
 }

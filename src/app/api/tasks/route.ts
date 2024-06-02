@@ -5,7 +5,9 @@ import { z } from "zod";
 
 export type TasksGetResponse = { tasks: TaskModel[] };
 export type TasksPostBody = TaskCreate;
-export type TasksPostResponse = { task: TaskModel };
+export type TasksPostResponse =
+    | { status: "success"; task: TaskModel }
+    | { status: "error" };
 
 export async function GET(request: NextRequest) {
     const { nextUrl } = request;
@@ -22,12 +24,16 @@ export async function POST(request: NextRequest) {
     const rawBody = await request.json();
     const data = TaskCreateSchema.parse(rawBody);
 
-    await prisma.task.updateMany({
-        where: { taskListId: data.taskListId },
-        data: { order: { increment: 1 } },
-    });
+    try {
+        await prisma.task.updateMany({
+            where: { taskListId: data.taskListId },
+            data: { order: { increment: 1 } },
+        });
 
-    const task = await prisma.task.create({ data });
+        const task = await prisma.task.create({ data });
 
-    return NextResponse.json({ task });
+        return NextResponse.json({ status: "success", task });
+    } catch (e) {
+        return NextResponse.json({ status: "error" });
+    }
 }

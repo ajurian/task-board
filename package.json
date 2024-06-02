@@ -6,7 +6,8 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "lint": "next lint"
+        "lint": "next lint",
+        "test": "tsc test.ts --target esnext --module esnext"
     },
     "dependencies": {
         "@emotion/cache": "^11.11.0",
@@ -23,6 +24,7 @@
         "@prisma/client": "^5.14.0",
         "@tanstack/react-query": "^5.37.1",
         "axios": "^1.7.2",
+        "bson-objectid": "^2.0.4",
         "clsx": "^2.1.1",
         "firebase": "^10.12.1",
         "lodash": "^4.17.21",

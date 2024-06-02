@@ -9,12 +9,12 @@ export const TaskListModelSchema = z.object({
 });
 
 export const TaskListCreateSchema = TaskListModelSchema.omit({
-    id: true,
     order: true,
     createdAt: true,
 });
 
 export const TaskListUpdateSchema = TaskListCreateSchema.omit({
+    id: true,
     taskBoardId: true,
 });
 

@@ -13,7 +13,7 @@ import reorderArray, {
     removeFromAndInsertTo,
 } from "@/app/board/[uniqueName]/providers/TaskQueryProvider/utils/reorderArray";
 import { usePrevious } from "@mantine/hooks";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import {
     createContext,
@@ -24,6 +24,7 @@ import {
     useMemo,
     useState,
 } from "react";
+import useInsert from "./hooks/useInsert";
 import useOptimisticUpdate from "./hooks/useOptimisticUpdate";
 import useUpdate from "./hooks/useUpdate";
 import {
@@ -57,8 +58,6 @@ export default function TaskQueryProvider({
     boardId,
     children,
 }: TaskQueryProviderProps) {
-    const queryClient = useQueryClient();
-
     const taskListsQuery = useQuery({
         queryKey: ["taskLists", boardId],
         queryFn: async ({ signal }) => {
@@ -120,7 +119,7 @@ export default function TaskQueryProvider({
     const dispatchMutation = useCallback(() => {
         if (mutationQueue.length > 0) {
             const mutate = mutationQueue[0];
-            mutate().then(dequeueMutation);
+            mutate().then(dequeueMutation).catch(dequeueMutation);
         }
 
         if (asyncMutationList.length > 0) {
@@ -169,10 +168,6 @@ export default function TaskQueryProvider({
 
                 await axios.post("/api/taskLists", body);
             },
-            onSettled: () =>
-                queryClient.invalidateQueries({
-                    queryKey: ["taskLists", boardId],
-                }),
         });
 
     const renameTaskListMutation: TaskQueryContextValue["renameTaskListMutation"] =
@@ -197,10 +192,6 @@ export default function TaskQueryProvider({
                 const body: TasksPostBody = options;
                 await axios.post("/api/tasks", body);
             },
-            onSettled: () =>
-                queryClient.invalidateQueries({
-                    queryKey: ["taskLists", boardId],
-                }),
         });
 
     const editTaskMutation: TaskQueryContextValue["editTaskMutation"] =
@@ -280,17 +271,14 @@ export default function TaskQueryProvider({
 
     const addTaskListOptimistic = useOptimisticUpdate<AddTaskListOptions>({
         setTaskLists,
-        onTaskListsChange: (taskLists, { title }) => {
-            const now = new Date();
-
+        onTaskListsChange: (taskLists, { id, title }) => {
             taskLists.push({
-                id: now.getTime().toString(),
+                id,
                 taskBoardId: boardId,
                 order: taskLists.length,
                 title,
-                createdAt: now,
+                createdAt: new Date(),
                 tasks: [],
-                isMutationPlaceholder: true,
             });
 
             return taskLists;
@@ -335,7 +323,7 @@ export default function TaskQueryProvider({
         setTaskLists,
         onTaskListsChange: (
             taskLists,
-            { taskListId, title, details, dueAt }
+            { id, taskListId, title, details, dueAt }
         ) => {
             const taskList = taskLists.find(
                 (taskList) => taskList.id === taskListId
@@ -351,18 +339,15 @@ export default function TaskQueryProvider({
                 task.order++;
             }
 
-            const now = new Date();
-
             tasks.unshift({
-                id: now.getTime().toString(),
+                id,
                 taskListId: taskList.id,
                 order: 0,
                 title,
                 details,
                 status: "pending",
-                createdAt: now,
+                createdAt: new Date(),
                 dueAt,
-                isMutationPlaceholder: true,
             });
 
             return taskLists;
@@ -422,49 +407,49 @@ export default function TaskQueryProvider({
     const moveTaskList = useUpdate({
         mutation: moveTaskListMutation,
         onOptimisticUpdate: moveTaskListOptimistic,
-        onMutationStateUpdate: enqueueMutation,
+        onMutationStateChange: enqueueMutation,
     });
 
     const moveTask = useUpdate({
         mutation: moveTaskMutation,
         onOptimisticUpdate: moveTaskOptimistic,
-        onMutationStateUpdate: enqueueMutation,
+        onMutationStateChange: enqueueMutation,
     });
 
-    const addTaskList = useUpdate({
+    const addTaskList = useInsert({
         mutation: addTaskListMutation,
         onOptimisticUpdate: addTaskListOptimistic,
-        onMutationStateUpdate: enqueueMutation,
+        onMutationStateChange: enqueueMutation,
     });
 
     const renameTaskList = useUpdate({
         mutation: renameTaskListMutation,
         onOptimisticUpdate: renameTaskListOptimistic,
-        onMutationStateUpdate: addAsyncMutation,
+        onMutationStateChange: addAsyncMutation,
     });
 
     const deleteTaskList = useUpdate({
         mutation: deleteTaskListMutation,
         onOptimisticUpdate: deleteTaskListOptimistic,
-        onMutationStateUpdate: enqueueMutation,
+        onMutationStateChange: enqueueMutation,
     });
 
-    const addTask = useUpdate({
+    const addTask = useInsert({
         mutation: addTaskMutation,
         onOptimisticUpdate: addTaskOptimistic,
-        onMutationStateUpdate: enqueueMutation,
+        onMutationStateChange: enqueueMutation,
     });
 
     const editTask = useUpdate({
         mutation: editTaskMutation,
         onOptimisticUpdate: editTaskOptimistic,
-        onMutationStateUpdate: addAsyncMutation,
+        onMutationStateChange: addAsyncMutation,
     });
 
     const deleteTask = useUpdate({
         mutation: deleteTaskMutation,
         onOptimisticUpdate: deleteTaskOptimistic,
-        onMutationStateUpdate: enqueueMutation,
+        onMutationStateChange: enqueueMutation,
     });
 
     useLayoutEffect(
@@ -483,14 +468,15 @@ export default function TaskQueryProvider({
         }
 
         console.assert(
-            mutationQueue.length !== previousMutationQueueSize &&
-                !moveTaskListMutation.isPending &&
-                !moveTaskMutation.isPending &&
-                !addTaskListMutation.isPending &&
-                !deleteTaskListMutation.isPending &&
-                !addTaskMutation.isPending &&
-                !deleteTaskMutation.isPending,
-            mutationQueue.length !== previousMutationQueueSize,
+            mutationQueue.length >= previousMutationQueueSize ||
+                (!moveTaskListMutation.isPending &&
+                    !moveTaskMutation.isPending &&
+                    !addTaskListMutation.isPending &&
+                    !deleteTaskListMutation.isPending &&
+                    !addTaskMutation.isPending &&
+                    !deleteTaskMutation.isPending),
+            mutationQueue.length,
+            previousMutationQueueSize,
             moveTaskListMutation.isPending,
             moveTaskMutation.isPending,
             addTaskListMutation.isPending,

@@ -7,14 +7,8 @@ import { PropsWithChildren } from "react";
 
 const queryClient = new QueryClient({
     defaultOptions: {
-        queries: {
-            retry: 4,
-            retryDelay: 1000,
-        },
-        mutations: {
-            retry: 4,
-            retryDelay: 1000,
-        },
+        queries: {},
+        mutations: {},
     },
 });
 

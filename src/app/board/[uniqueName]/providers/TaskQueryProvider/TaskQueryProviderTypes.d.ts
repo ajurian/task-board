@@ -33,15 +33,19 @@ interface EditTaskOptions extends TaskUpdate {
     id: string;
 }
 
+interface DeleteTaskOptions {
+    id: string;
+}
+
 type UpdateOptions =
     | MoveTaskListOptions
     | MoveTaskOptions
-    | AddTaskListOptions
     | RenameTaskListOptions
     | DeleteTaskListOptions
-    | AddTaskOptions
     | EditTaskOptions
     | DeleteTaskOptions;
+
+type InsertOptions = AddTaskListOptions | AddTaskOptions;
 
 interface TaskListsQueryData extends TaskListProps {
     tasks: TaskItemProps[];
@@ -68,10 +72,10 @@ interface TaskQueryContextValue {
     deleteTaskMutation: UseMutationResult<void, Error, DeleteTaskOptions>;
     moveTaskList: (options: MoveTaskListOptions) => void;
     moveTask: (options: MoveTaskOptions) => void;
-    addTaskList: (options: AddTaskListOptions) => void;
+    addTaskList: (options: Omit<AddTaskListOptions, "id">) => void;
     renameTaskList: (options: RenameTaskListOptions) => void;
     deleteTaskList: (options: DeleteTaskListOptions) => void;
-    addTask: (options: AddTaskOptions) => void;
+    addTask: (options: Omit<AddTaskOptions, "id">) => void;
     editTask: (options: EditTaskOptions) => void;
     deleteTask: (options: DeleteTaskOptions) => void;
     isMutationPending: boolean;

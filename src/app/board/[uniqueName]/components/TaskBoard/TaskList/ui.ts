@@ -112,6 +112,7 @@ export const TaskListPlaceholderContainer = styled(Box, {
         transition: theme.transitions.create("box-shadow", {
             duration: theme.transitions.duration.shortest,
         }),
+        borderRadius: theme.shape.borderRadius,
         backgroundColor: theme.palette.background.paper,
         paddingInline: theme.spacing(4),
         paddingBlock: theme.spacing(3),

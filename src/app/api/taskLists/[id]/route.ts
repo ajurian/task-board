@@ -15,7 +15,12 @@ interface Segment {
 export type TaskListGetResponse = { taskList: TaskListModel | null };
 export type TaskListPatchBody = TaskListUpdate;
 export type TaskListPatchResponse = { taskList: TaskListModel };
-export type TaskListDeleteResponse = { taskList: TaskListModel };
+export type TaskListDeleteResponse =
+    | {
+          status: "success";
+          taskList: TaskListModel;
+      }
+    | { status: "error" };
 
 export async function GET(request: NextRequest, { params }: Segment) {
     const { id } = params;
@@ -42,15 +47,19 @@ export async function DELETE(request: NextRequest, { params }: Segment) {
 
     await prisma.task.deleteMany({ where: { taskListId: id } });
 
-    const taskList = await prisma.taskList.delete({ where: { id } });
+    try {
+        const taskList = await prisma.taskList.delete({ where: { id } });
 
-    await prisma.taskList.updateMany({
-        where: {
-            taskBoardId: taskList.taskBoardId,
-            order: { gt: taskList.order },
-        },
-        data: { order: { decrement: 1 } },
-    });
+        await prisma.taskList.updateMany({
+            where: {
+                taskBoardId: taskList.taskBoardId,
+                order: { gt: taskList.order },
+            },
+            data: { order: { decrement: 1 } },
+        });
 
-    return NextResponse.json({ taskList });
+        return NextResponse.json({ status: "success", taskList });
+    } catch (e) {
+        return NextResponse.json({ status: "error" });
+    }
 }
