@@ -1,6 +1,6 @@
 "use client";
 
-import { TaskBoardsGetResponse } from "@/app/api/taskBoards/route";
+import { TaskBoardModel } from "@/schema/taskBoard";
 import {
     faAdd,
     faBars,
@@ -19,7 +19,7 @@ import { useState } from "react";
 import SidebarItem from "./SidebarItem";
 
 interface SidebarProps {
-    taskBoards: TaskBoardsGetResponse;
+    taskBoards: TaskBoardModel[];
 }
 
 export default function Sidebar({ taskBoards }: SidebarProps) {

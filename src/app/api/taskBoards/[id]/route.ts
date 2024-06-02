@@ -12,10 +12,10 @@ interface Segment {
     };
 }
 
-export type TaskBoardGetResponse = TaskBoardModel | null;
+export type TaskBoardGetResponse = { taskBoards: TaskBoardModel | null };
 export type TaskBoardPatchBody = TaskBoardUpdate;
-export type TaskBoardPatchResponse = TaskBoardModel;
-export type TaskBoardDeleteResponse = TaskBoardModel;
+export type TaskBoardPatchResponse = { taskBoard: TaskBoardModel };
+export type TaskBoardDeleteResponse = { taskBoard: TaskBoardModel };
 
 export async function GET(request: NextRequest, { params }: Segment) {
     const { id } = params;
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest, { params }: Segment) {
         where: { id },
     });
 
-    return NextResponse.json(taskBoard);
+    return NextResponse.json({ taskBoard });
 }
 
 export async function PATCH(request: NextRequest, { params }: Segment) {
@@ -36,7 +36,7 @@ export async function PATCH(request: NextRequest, { params }: Segment) {
         data,
     });
 
-    return NextResponse.json(taskBoard);
+    return NextResponse.json({ taskBoard });
 }
 
 export async function DELETE(request: NextRequest, { params }: Segment) {
@@ -48,5 +48,5 @@ export async function DELETE(request: NextRequest, { params }: Segment) {
         where: { id },
     });
 
-    return NextResponse.json(taskBoard);
+    return NextResponse.json({ taskBoard });
 }

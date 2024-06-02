@@ -2,13 +2,16 @@
 
 import { TaskListPatchBody } from "@/app/api/taskLists/[id]/route";
 import { TaskListsReorderPostBody } from "@/app/api/taskLists/reorder/route";
-import { TaskListsPostBody } from "@/app/api/taskLists/route";
+import {
+    TaskListsGetResponse,
+    TaskListsPostBody,
+} from "@/app/api/taskLists/route";
 import { TaskPatchBody } from "@/app/api/tasks/[id]/route";
 import { TasksReorderPostBody } from "@/app/api/tasks/reorder/route";
-import { TasksPostBody } from "@/app/api/tasks/route";
-import { TaskModel } from "@/schema/task";
-import { TaskListModel } from "@/schema/taskList";
-import reorderArray, { removeFromAndInsertTo } from "@/app/board/[uniqueName]/providers/TaskQueryProvider/utils/reorderArray";
+import { TasksGetResponse, TasksPostBody } from "@/app/api/tasks/route";
+import reorderArray, {
+    removeFromAndInsertTo,
+} from "@/app/board/[uniqueName]/providers/TaskQueryProvider/utils/reorderArray";
 import { usePrevious } from "@mantine/hooks";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
@@ -59,14 +62,18 @@ export default function TaskQueryProvider({
     const taskListsQuery = useQuery({
         queryKey: ["taskLists", boardId],
         queryFn: async ({ signal }) => {
-            const { data: taskLists } = await axios.get<TaskListModel[]>(
+            const {
+                data: { taskLists },
+            } = await axios.get<TaskListsGetResponse>(
                 `/api/taskLists?boardId=${boardId}`,
                 { signal }
             );
 
             return Promise.all(
                 taskLists.map(async (taskList) => {
-                    const { data: tasks } = await axios.get<TaskModel[]>(
+                    const {
+                        data: { tasks },
+                    } = await axios.get<TasksGetResponse>(
                         `/api/tasks?listId=${taskList.id}`,
                         { signal }
                     );
@@ -134,7 +141,7 @@ export default function TaskQueryProvider({
                     ...options,
                 };
 
-                // await axios.post("/api/taskLists/reorder", body);
+                await axios.post("/api/taskLists/reorder", body);
             },
         });
 
@@ -147,7 +154,7 @@ export default function TaskQueryProvider({
                     ...options,
                 };
 
-                // await axios.post("/api/tasks/reorder", body);
+                await axios.post("/api/tasks/reorder", body);
             },
         });
 
@@ -160,7 +167,7 @@ export default function TaskQueryProvider({
                     ...options,
                 };
 
-                // await axios.post<TaskListsPostResponse>("/api/taskLists", body);
+                await axios.post("/api/taskLists", body);
             },
             onSettled: () =>
                 queryClient.invalidateQueries({
@@ -173,7 +180,7 @@ export default function TaskQueryProvider({
             mutationKey: ["renameTaskList"],
             mutationFn: async ({ id, title }) => {
                 const body: TaskListPatchBody = { title };
-                // await axios.patch(`/api/taskLists/${id}`, body);
+                await axios.patch(`/api/taskLists/${id}`, body);
             },
         });
 
@@ -188,7 +195,7 @@ export default function TaskQueryProvider({
             mutationKey: ["addTask"],
             mutationFn: async (options) => {
                 const body: TasksPostBody = options;
-                // await axios.post("/api/tasks", body);
+                await axios.post("/api/tasks", body);
             },
             onSettled: () =>
                 queryClient.invalidateQueries({
@@ -201,7 +208,7 @@ export default function TaskQueryProvider({
             mutationKey: ["editTask"],
             mutationFn: async ({ id, ...options }) => {
                 const body: TaskPatchBody = options;
-                // await axios.patch(`/api/tasks/${id}`, body);
+                await axios.patch(`/api/tasks/${id}`, body);
             },
         });
 

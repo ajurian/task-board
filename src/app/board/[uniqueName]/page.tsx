@@ -16,7 +16,9 @@ interface Segment {
 
 export default async function BoardPage({ params }: Segment) {
     const { uniqueName } = params;
-    const { data: taskBoards } = await axios.get<TaskBoardsGetResponse>(
+    const {
+        data: { taskBoards },
+    } = await axios.get<TaskBoardsGetResponse>(
         "http://localhost:3000/api/taskBoards"
     );
 

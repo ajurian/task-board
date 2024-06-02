@@ -7,9 +7,9 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-export type TaskListsGetResponse = TaskListModel[];
+export type TaskListsGetResponse = { taskLists: TaskListModel[] };
 export type TaskListsPostBody = TaskListCreate;
-export type TaskListsPostResponse = TaskListModel;
+export type TaskListsPostResponse = { taskList: TaskListModel };
 
 export async function GET(request: NextRequest) {
     const { nextUrl } = request;
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
         orderBy: { order: "asc" },
     });
 
-    return NextResponse.json(taskLists);
+    return NextResponse.json({ taskLists });
 }
 
 export async function POST(request: NextRequest) {
@@ -35,5 +35,5 @@ export async function POST(request: NextRequest) {
         },
     });
 
-    return NextResponse.json(taskList);
+    return NextResponse.json({ taskList });
 }

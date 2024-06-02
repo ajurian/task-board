@@ -8,16 +8,16 @@ interface Segment {
     };
 }
 
-export type TaskGetResponse = TaskModel | null;
+export type TaskGetResponse = { task: TaskModel | null };
 export type TaskPatchBody = TaskUpdate;
-export type TaskPatchResponse = TaskModel;
-export type TaskDeleteResponse = TaskModel;
+export type TaskPatchResponse = { task: TaskModel };
+export type TaskDeleteResponse = { task: TaskModel };
 
 export async function GET(request: NextRequest, { params }: Segment) {
     const { id } = params;
     const task = await prisma.task.findUnique({ where: { id } });
 
-    return NextResponse.json(task);
+    return NextResponse.json({ task });
 }
 
 export async function PATCH(request: NextRequest, { params }: Segment) {
@@ -30,7 +30,7 @@ export async function PATCH(request: NextRequest, { params }: Segment) {
         data,
     });
 
-    return NextResponse.json(task);
+    return NextResponse.json({ task });
 }
 
 export async function DELETE(request: NextRequest, { params }: Segment) {
@@ -45,5 +45,5 @@ export async function DELETE(request: NextRequest, { params }: Segment) {
         data: { order: { decrement: 1 } },
     });
 
-    return NextResponse.json(task);
+    return NextResponse.json({ task });
 }

@@ -6,13 +6,13 @@ import {
 } from "@/schema/taskBoard";
 import { NextRequest, NextResponse } from "next/server";
 
-export type TaskBoardsGetResponse = TaskBoardModel[];
+export type TaskBoardsGetResponse = { taskBoards: TaskBoardModel[] };
 export type TaskBoardsPostBody = TaskBoardCreate;
-export type TaskBoardsPostResponse = TaskBoardModel;
+export type TaskBoardsPostResponse = { taskBoard: TaskBoardModel };
 
 export async function GET(request: NextRequest) {
     const taskBoards = await prisma.taskBoard.findMany();
-    return NextResponse.json(taskBoards);
+    return NextResponse.json({ taskBoards });
 }
 
 export async function POST(request: NextRequest) {
@@ -20,5 +20,5 @@ export async function POST(request: NextRequest) {
     const data = TaskBoardCreateSchema.parse(rawBody);
     const taskBoard = await prisma.taskBoard.create({ data });
 
-    return NextResponse.json(taskBoard);
+    return NextResponse.json({ taskBoard });
 }

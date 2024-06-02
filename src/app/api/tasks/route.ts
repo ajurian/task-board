@@ -3,9 +3,9 @@ import { TaskCreate, TaskCreateSchema, TaskModel } from "@/schema/task";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-export type TasksGetResponse = TaskModel[];
+export type TasksGetResponse = { tasks: TaskModel[] };
 export type TasksPostBody = TaskCreate;
-export type TasksPostResponse = TaskModel;
+export type TasksPostResponse = { task: TaskModel };
 
 export async function GET(request: NextRequest) {
     const { nextUrl } = request;
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
         orderBy: { order: "asc" },
     });
 
-    return NextResponse.json(tasks);
+    return NextResponse.json({ tasks });
 }
 
 export async function POST(request: NextRequest) {
@@ -29,5 +29,5 @@ export async function POST(request: NextRequest) {
 
     const task = await prisma.task.create({ data });
 
-    return NextResponse.json(task);
+    return NextResponse.json({ task });
 }

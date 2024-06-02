@@ -1,4 +1,4 @@
-import { TaskBoardsGetResponse } from "@/app/api/taskBoards/route";
+import { TaskBoardModel } from "@/schema/taskBoard";
 import { Box, NoSsr, Typography } from "@mui/material";
 import HeaderContainer from "./HeaderContainer";
 import SearchInput from "./SearchInput";
@@ -8,7 +8,7 @@ import SyncIndicator from "./SyncIndicator";
 import User from "./User";
 
 interface HeaderProps {
-    taskBoards: TaskBoardsGetResponse;
+    taskBoards: TaskBoardModel[];
 }
 
 export default async function Header({ taskBoards }: HeaderProps) {
