@@ -2,32 +2,18 @@
 
 import { TaskListPatchBody } from "@/app/api/taskLists/[id]/route";
 import { TaskListsReorderPostBody } from "@/app/api/taskLists/reorder/route";
-import {
-    TaskListsPostBody,
-    TaskListsPostResponse,
-} from "@/app/api/taskLists/route";
+import { TaskListsPostBody } from "@/app/api/taskLists/route";
 import { TaskPatchBody } from "@/app/api/tasks/[id]/route";
 import { TasksReorderPostBody } from "@/app/api/tasks/reorder/route";
 import { TasksPostBody } from "@/app/api/tasks/route";
-import { TaskCreate, TaskModel, TaskUpdate } from "@/schema/task";
-import {
-    TaskListCreate,
-    TaskListModel,
-    TaskListUpdate,
-} from "@/schema/taskList";
-import reorderArray, { removeFromAndInsertTo } from "@/utils/reorderArray";
-import {
-    useMutation,
-    UseMutationResult,
-    useQuery,
-    useQueryClient,
-    UseQueryResult,
-} from "@tanstack/react-query";
+import { TaskModel } from "@/schema/task";
+import { TaskListModel } from "@/schema/taskList";
+import reorderArray, { removeFromAndInsertTo } from "@/app/board/[uniqueName]/providers/TaskQueryProvider/utils/reorderArray";
+import { usePrevious } from "@mantine/hooks";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import _ from "lodash";
 import {
     createContext,
-    PropsWithChildren,
     useCallback,
     useContext,
     useEffect,
@@ -35,86 +21,20 @@ import {
     useMemo,
     useState,
 } from "react";
-import { TaskListProps } from "../../components/TaskBoard/TaskList";
-import { TaskItemProps } from "../../components/TaskBoard/TaskList/TaskItem";
-
-interface MoveTaskListOptions {
-    fromIndex: number;
-    toIndex: number;
-}
-
-interface MoveTaskOptions {
-    fromListIndex: number;
-    toListIndex: number;
-    fromIndex: number;
-    toIndex: number;
-}
-
-interface AddTaskListOptions extends Omit<TaskListCreate, "taskBoardId"> {}
-
-interface RenameTaskListOptions extends TaskListUpdate {
-    id: string;
-}
-
-interface DeleteTaskListOptions {
-    id: string;
-}
-
-interface AddTaskOptions extends TaskCreate {}
-
-interface EditTaskOptions extends TaskUpdate {
-    id: string;
-}
-
-interface DeleteTaskOptions {
-    id: string;
-}
-
-type MutationDispatch =
-    | { type: "moveTaskList"; options: MoveTaskListOptions }
-    | { type: "moveTask"; options: MoveTaskOptions }
-    | { type: "addTaskList"; options: AddTaskListOptions }
-    | { type: "deleteTaskList"; options: DeleteTaskListOptions }
-    | { type: "addTask"; options: AddTaskOptions }
-    | { type: "deleteTask"; options: DeleteTaskOptions };
-
-interface TaskListsQueryData extends TaskListProps {
-    tasks: TaskItemProps[];
-}
-
-interface TaskQueryContextValue {
-    taskListsQuery: UseQueryResult<TaskListsQueryData[]>;
-    taskLists: TaskListsQueryData[];
-    moveTaskListMutation: UseMutationResult<void, Error, MoveTaskListOptions>;
-    moveTaskMutation: UseMutationResult<void, Error, MoveTaskOptions>;
-    addTaskListMutation: UseMutationResult<void, Error, AddTaskListOptions>;
-    renameTaskListMutation: UseMutationResult<
-        void,
-        Error,
-        RenameTaskListOptions
-    >;
-    deleteTaskListMutation: UseMutationResult<
-        void,
-        Error,
-        DeleteTaskListOptions
-    >;
-    addTaskMutation: UseMutationResult<void, Error, AddTaskOptions>;
-    editTaskMutation: UseMutationResult<void, Error, EditTaskOptions>;
-    deleteTaskMutation: UseMutationResult<void, Error, DeleteTaskOptions>;
-    moveTaskList: (options: MoveTaskListOptions) => void;
-    moveTask: (options: MoveTaskOptions) => void;
-    addTaskList: (options: AddTaskListOptions) => void;
-    renameTaskList: (options: RenameTaskListOptions) => void;
-    deleteTaskList: (options: DeleteTaskListOptions) => void;
-    addTask: (options: AddTaskOptions) => void;
-    editTask: (options: EditTaskOptions) => void;
-    deleteTask: (options: DeleteTaskOptions) => void;
-    isMutationPending: boolean;
-}
-
-interface TaskQueryProviderProps extends PropsWithChildren {
-    boardId: string;
-}
+import useOptimisticUpdate from "./hooks/useOptimisticUpdate";
+import useUpdate from "./hooks/useUpdate";
+import {
+    AddTaskListOptions,
+    AddTaskOptions,
+    DeleteTaskListOptions,
+    EditTaskOptions,
+    MoveTaskListOptions,
+    MoveTaskOptions,
+    RenameTaskListOptions,
+    TaskListsQueryData,
+    TaskQueryContextValue,
+    TaskQueryProviderProps,
+} from "./TaskQueryProviderTypes";
 
 const TaskQueryContext = createContext<TaskQueryContextValue | null>(null);
 
@@ -161,12 +81,49 @@ export default function TaskQueryProvider({
     const [taskLists, setTaskLists] = useState<TaskListsQueryData[]>(
         taskListsQuery.data
     );
-    const [mutationQueue, setMutationQueue] = useState<MutationDispatch[]>([]);
+    const [mutationQueue, setMutationQueue] = useState<(() => Promise<void>)[]>(
+        []
+    );
+    const [asyncMutationList, setAsyncMutationList] = useState<(() => void)[]>(
+        []
+    );
+    const previousMutationQueueSize = usePrevious(mutationQueue.length);
+    const [isMutationOngoing, setIsMutationOngoing] = useState(false);
 
-    const popMutationQueue = useCallback(
+    const enqueueMutation = useCallback(
+        (mutation: () => Promise<void>) =>
+            setMutationQueue((mutationQueue) => [...mutationQueue, mutation]),
+        []
+    );
+
+    const dequeueMutation = useCallback(
         () => setMutationQueue((mutationQueue) => mutationQueue.slice(1)),
         []
     );
+
+    const addAsyncMutation = useCallback(
+        (asyncMutation: () => void) =>
+            setAsyncMutationList((asyncMutationList) => [
+                ...asyncMutationList,
+                asyncMutation,
+            ]),
+        []
+    );
+
+    const dispatchMutation = useCallback(() => {
+        if (mutationQueue.length > 0) {
+            const mutate = mutationQueue[0];
+            mutate().then(dequeueMutation);
+        }
+
+        if (asyncMutationList.length > 0) {
+            for (const asyncMutation of asyncMutationList) {
+                asyncMutation();
+            }
+
+            setAsyncMutationList([]);
+        }
+    }, [mutationQueue, asyncMutationList, dequeueMutation]);
 
     const moveTaskListMutation: TaskQueryContextValue["moveTaskListMutation"] =
         useMutation({
@@ -177,7 +134,7 @@ export default function TaskQueryProvider({
                     ...options,
                 };
 
-                await axios.post("/api/taskLists/reorder", body);
+                // await axios.post("/api/taskLists/reorder", body);
             },
         });
 
@@ -190,7 +147,7 @@ export default function TaskQueryProvider({
                     ...options,
                 };
 
-                await axios.post("/api/tasks/reorder", body);
+                // await axios.post("/api/tasks/reorder", body);
             },
         });
 
@@ -203,7 +160,7 @@ export default function TaskQueryProvider({
                     ...options,
                 };
 
-                await axios.post<TaskListsPostResponse>("/api/taskLists", body);
+                // await axios.post<TaskListsPostResponse>("/api/taskLists", body);
             },
             onSettled: () =>
                 queryClient.invalidateQueries({
@@ -216,7 +173,7 @@ export default function TaskQueryProvider({
             mutationKey: ["renameTaskList"],
             mutationFn: async ({ id, title }) => {
                 const body: TaskListPatchBody = { title };
-                await axios.patch(`/api/taskLists/${id}`, body);
+                // await axios.patch(`/api/taskLists/${id}`, body);
             },
         });
 
@@ -231,7 +188,7 @@ export default function TaskQueryProvider({
             mutationKey: ["addTask"],
             mutationFn: async (options) => {
                 const body: TasksPostBody = options;
-                await axios.post("/api/tasks", body);
+                // await axios.post("/api/tasks", body);
             },
             onSettled: () =>
                 queryClient.invalidateQueries({
@@ -244,7 +201,7 @@ export default function TaskQueryProvider({
             mutationKey: ["editTask"],
             mutationFn: async ({ id, ...options }) => {
                 const body: TaskPatchBody = options;
-                await axios.patch(`/api/tasks/${id}`, body);
+                // await axios.patch(`/api/tasks/${id}`, body);
             },
         });
 
@@ -255,317 +212,253 @@ export default function TaskQueryProvider({
         });
 
     const isMutationPending = useMemo(
-        () =>
-            mutationQueue.length > 0 ||
-            moveTaskListMutation.isPending ||
-            moveTaskMutation.isPending ||
-            addTaskListMutation.isPending ||
-            renameTaskListMutation.isPending ||
-            deleteTaskListMutation.isPending ||
-            addTaskMutation.isPending ||
-            editTaskMutation.isPending ||
-            deleteTaskMutation.isPending,
-        [
-            mutationQueue,
-            moveTaskListMutation,
-            moveTaskMutation,
-            addTaskListMutation,
-            renameTaskListMutation,
-            deleteTaskListMutation,
-            addTaskMutation,
-            editTaskMutation,
-            deleteTaskMutation,
-        ]
+        () => mutationQueue.length > 0 && isMutationOngoing,
+        [mutationQueue, isMutationOngoing]
     );
 
-    const moveTaskListOptimistic = useCallback(
-        (options: MoveTaskListOptions) =>
-            setTaskLists((taskLists) =>
+    const moveTaskListOptimistic = useOptimisticUpdate<MoveTaskListOptions>({
+        setTaskLists,
+        onTaskListsChange: (taskLists, options) =>
+            reorderArray({
+                array: taskLists,
+                ...options,
+            }),
+    });
+
+    const moveTaskOptimistic = useOptimisticUpdate<MoveTaskOptions>({
+        setTaskLists,
+        onTaskListsChange: (
+            taskLists,
+            { fromListIndex, toListIndex, fromIndex, toIndex }
+        ) => {
+            const isIntoNewList = fromListIndex !== toListIndex;
+
+            if (taskLists[fromListIndex].tasks[fromIndex] === undefined) {
+                return taskLists;
+            }
+
+            if (isIntoNewList) {
+                const { tasks: fromTasks } = taskLists[fromListIndex];
+                const { id: toListId, tasks: toTasks } = taskLists[toListIndex];
+
+                removeFromAndInsertTo({
+                    fromArray: fromTasks,
+                    toArray: toTasks,
+                    fromIndex,
+                    toIndex,
+                });
+
+                toTasks[toIndex].taskListId = toListId;
+
+                for (let i = fromIndex; i < fromTasks.length; i++) {
+                    fromTasks[i].order = i;
+                }
+
+                for (let i = toIndex; i < toTasks.length; i++) {
+                    toTasks[i].order = i;
+                }
+            } else {
+                const { tasks } = taskLists[fromListIndex];
+
                 reorderArray({
-                    array: taskLists,
-                    ...options,
-                })
-            ),
-        []
-    );
-
-    const moveTaskOptimistic = useCallback(
-        ({ fromListIndex, toListIndex, fromIndex, toIndex }: MoveTaskOptions) =>
-            setTaskLists((taskLists) => {
-                const newTaskLists = _.cloneDeep(taskLists);
-                const isIntoNewList = fromListIndex !== toListIndex;
-
-                if (
-                    newTaskLists[fromListIndex].tasks[fromIndex] === undefined
-                ) {
-                    return newTaskLists;
-                }
-
-                if (isIntoNewList) {
-                    const { tasks: fromTasks } = newTaskLists[fromListIndex];
-                    const { id: toListId, tasks: toTasks } =
-                        newTaskLists[toListIndex];
-
-                    removeFromAndInsertTo({
-                        fromArray: fromTasks,
-                        toArray: toTasks,
-                        fromIndex,
-                        toIndex,
-                    });
-
-                    toTasks[toIndex].taskListId = toListId;
-
-                    for (let i = fromIndex; i < fromTasks.length; i++) {
-                        fromTasks[i].order = i;
-                    }
-
-                    for (let i = toIndex; i < toTasks.length; i++) {
-                        toTasks[i].order = i;
-                    }
-                } else {
-                    const { tasks } = newTaskLists[fromListIndex];
-
-                    reorderArray({
-                        array: tasks,
-                        fromIndex,
-                        toIndex,
-                        clone: false,
-                    });
-                }
-
-                return newTaskLists;
-            }),
-        []
-    );
-
-    const addTaskListOptimistic = useCallback(
-        ({ title }: AddTaskListOptions) =>
-            setTaskLists((taskLists) => {
-                const newTaskLists = _.cloneDeep(taskLists);
-                const now = new Date();
-
-                newTaskLists.push({
-                    id: now.getTime().toString(),
-                    taskBoardId: boardId,
-                    order: taskLists.length,
-                    title,
-                    createdAt: now,
-                    tasks: [],
-                    isMutationPlaceholder: true,
+                    array: tasks,
+                    fromIndex,
+                    toIndex,
                 });
+            }
 
-                return newTaskLists;
-            }),
-        [boardId]
-    );
+            return taskLists;
+        },
+    });
 
-    const renameTaskListOptimistic = useCallback(
-        ({ id, title }: RenameTaskListOptions) =>
-            setTaskLists((taskLists) => {
-                const newTaskLists = _.cloneDeep(taskLists);
-                const index = newTaskLists.findIndex(
+    const addTaskListOptimistic = useOptimisticUpdate<AddTaskListOptions>({
+        setTaskLists,
+        onTaskListsChange: (taskLists, { title }) => {
+            const now = new Date();
+
+            taskLists.push({
+                id: now.getTime().toString(),
+                taskBoardId: boardId,
+                order: taskLists.length,
+                title,
+                createdAt: now,
+                tasks: [],
+                isMutationPlaceholder: true,
+            });
+
+            return taskLists;
+        },
+    });
+
+    const renameTaskListOptimistic = useOptimisticUpdate<RenameTaskListOptions>(
+        {
+            setTaskLists,
+            onTaskListsChange: (taskLists, { id, title }) => {
+                const index = taskLists.findIndex(
                     (taskList) => taskList.id === id
                 );
 
-                newTaskLists[index].title = title;
+                taskLists[index].title = title;
 
-                return newTaskLists;
-            }),
-        []
+                return taskLists;
+            },
+        }
     );
 
-    const deleteTaskListOptimistic = useCallback(
-        ({ id }: DeleteTaskListOptions) =>
-            setTaskLists((taskLists) => {
-                const newTaskLists = _.cloneDeep(taskLists);
-                const index = newTaskLists.findIndex(
+    const deleteTaskListOptimistic = useOptimisticUpdate<DeleteTaskListOptions>(
+        {
+            setTaskLists,
+            onTaskListsChange: (taskLists, { id }) => {
+                const index = taskLists.findIndex(
                     (taskList) => taskList.id === id
                 );
 
-                newTaskLists.splice(index, 1);
+                taskLists.splice(index, 1);
 
-                for (let i = index; i < newTaskLists.length; i++) {
-                    newTaskLists[i].order = i;
+                for (let i = index; i < taskLists.length; i++) {
+                    taskLists[i].order = i;
                 }
 
-                return newTaskLists;
-            }),
-        []
+                return taskLists;
+            },
+        }
     );
 
-    const addTaskOptimistic = useCallback(
-        ({ taskListId, title, details, dueAt }: AddTaskOptions) =>
-            setTaskLists((taskLists) => {
-                const newTaskLists = _.cloneDeep(taskLists);
-                const taskList = newTaskLists.find(
-                    (taskList) => taskList.id === taskListId
-                );
+    const addTaskOptimistic = useOptimisticUpdate<AddTaskOptions>({
+        setTaskLists,
+        onTaskListsChange: (
+            taskLists,
+            { taskListId, title, details, dueAt }
+        ) => {
+            const taskList = taskLists.find(
+                (taskList) => taskList.id === taskListId
+            );
 
-                if (taskList === undefined) {
-                    return newTaskLists;
-                }
+            if (taskList === undefined) {
+                return taskLists;
+            }
 
+            const { tasks } = taskList;
+
+            for (const task of tasks) {
+                task.order++;
+            }
+
+            const now = new Date();
+
+            tasks.unshift({
+                id: now.getTime().toString(),
+                taskListId: taskList.id,
+                order: 0,
+                title,
+                details,
+                status: "pending",
+                createdAt: now,
+                dueAt,
+                isMutationPlaceholder: true,
+            });
+
+            return taskLists;
+        },
+    });
+
+    const editTaskOptimistic = useOptimisticUpdate<EditTaskOptions>({
+        setTaskLists,
+        onTaskListsChange: (
+            taskLists,
+            { id, title, details, status, dueAt }
+        ) => {
+            for (const taskList of taskLists) {
                 const { tasks } = taskList;
+                const task = tasks.find((task) => task.id === id);
 
-                for (const task of tasks) {
-                    task.order++;
+                if (task === undefined) {
+                    continue;
                 }
 
-                const now = new Date();
+                if (title !== undefined) task.title = title;
+                if (details !== undefined) task.details = details;
+                if (status !== undefined) task.status = status;
+                if (dueAt !== undefined) task.dueAt = dueAt;
 
-                tasks.unshift({
-                    id: now.getTime().toString(),
-                    taskListId: taskList.id,
-                    order: 0,
-                    title,
-                    details,
-                    status: "pending",
-                    createdAt: now,
-                    dueAt,
-                    isMutationPlaceholder: true,
-                });
+                break;
+            }
 
-                return newTaskLists;
-            }),
-        []
-    );
+            return taskLists;
+        },
+    });
 
-    const editTaskOptimistic = useCallback(
-        ({ id, title, details, status, dueAt }: EditTaskOptions) =>
-            setTaskLists((taskLists) => {
-                const newTaskLists = _.cloneDeep(taskLists);
+    const deleteTaskOptimistic = useOptimisticUpdate<DeleteTaskListOptions>({
+        setTaskLists,
+        onTaskListsChange: (taskLists, { id }) => {
+            for (const taskList of taskLists) {
+                const { tasks } = taskList;
+                const index = tasks.findIndex((taskList) => taskList.id === id);
 
-                for (const taskList of newTaskLists) {
-                    const { tasks } = taskList;
-                    const task = tasks.find((task) => task.id === id);
-
-                    if (task === undefined) {
-                        continue;
-                    }
-
-                    if (title !== undefined) task.title = title;
-                    if (details !== undefined) task.details = details;
-                    if (status !== undefined) task.status = status;
-                    if (dueAt !== undefined) task.dueAt = dueAt;
-
-                    break;
+                if (index === -1) {
+                    continue;
                 }
 
-                return newTaskLists;
-            }),
-        []
-    );
+                tasks.splice(index, 1);
 
-    const deleteTaskOptimistic = useCallback(
-        ({ id }: DeleteTaskOptions) =>
-            setTaskLists((taskLists) => {
-                const newTaskLists = _.cloneDeep(taskLists);
-
-                for (const taskList of newTaskLists) {
-                    const { tasks } = taskList;
-                    const index = tasks.findIndex(
-                        (taskList) => taskList.id === id
-                    );
-
-                    if (index === -1) {
-                        continue;
-                    }
-
-                    tasks.splice(index, 1);
-
-                    for (let i = index; i < tasks.length; i++) {
-                        tasks[i].order = i;
-                    }
-
-                    break;
+                for (let i = index; i < tasks.length; i++) {
+                    tasks[i].order = i;
                 }
 
-                return newTaskLists;
-            }),
-        []
-    );
+                break;
+            }
 
-    const moveTaskList = useCallback<TaskQueryContextValue["moveTaskList"]>(
-        (options) => {
-            moveTaskListOptimistic(options);
-            setMutationQueue((mutationQueue) => [
-                ...mutationQueue,
-                { type: "moveTaskList", options },
-            ]);
+            return taskLists;
         },
-        [moveTaskListOptimistic]
-    );
+    });
 
-    const moveTask = useCallback<TaskQueryContextValue["moveTask"]>(
-        (options) => {
-            moveTaskOptimistic(options);
-            setMutationQueue((mutationQueue) => [
-                ...mutationQueue,
-                { type: "moveTask", options },
-            ]);
-        },
-        [moveTaskOptimistic]
-    );
+    const moveTaskList = useUpdate({
+        mutation: moveTaskListMutation,
+        onOptimisticUpdate: moveTaskListOptimistic,
+        onMutationStateUpdate: enqueueMutation,
+    });
 
-    const addTaskList = useCallback<TaskQueryContextValue["addTaskList"]>(
-        (options) => {
-            addTaskListOptimistic(options);
-            setMutationQueue((mutationQueue) => [
-                ...mutationQueue,
-                { type: "addTaskList", options },
-            ]);
-        },
-        [addTaskListOptimistic]
-    );
+    const moveTask = useUpdate({
+        mutation: moveTaskMutation,
+        onOptimisticUpdate: moveTaskOptimistic,
+        onMutationStateUpdate: enqueueMutation,
+    });
 
-    const renameTaskList = useCallback<TaskQueryContextValue["renameTaskList"]>(
-        (options) => {
-            renameTaskListOptimistic(options);
-            renameTaskListMutation.mutate(options);
-        },
-        [renameTaskListOptimistic, renameTaskListMutation]
-    );
+    const addTaskList = useUpdate({
+        mutation: addTaskListMutation,
+        onOptimisticUpdate: addTaskListOptimistic,
+        onMutationStateUpdate: enqueueMutation,
+    });
 
-    const deleteTaskList = useCallback<TaskQueryContextValue["deleteTaskList"]>(
-        (options) => {
-            deleteTaskListOptimistic(options);
-            setMutationQueue((mutationQueue) => [
-                ...mutationQueue,
-                { type: "deleteTaskList", options },
-            ]);
-        },
-        [deleteTaskListOptimistic]
-    );
+    const renameTaskList = useUpdate({
+        mutation: renameTaskListMutation,
+        onOptimisticUpdate: renameTaskListOptimistic,
+        onMutationStateUpdate: addAsyncMutation,
+    });
 
-    const addTask = useCallback<TaskQueryContextValue["addTask"]>(
-        (options) => {
-            addTaskOptimistic(options);
-            setMutationQueue((mutationQueue) => [
-                ...mutationQueue,
-                { type: "addTask", options },
-            ]);
-        },
-        [addTaskOptimistic]
-    );
+    const deleteTaskList = useUpdate({
+        mutation: deleteTaskListMutation,
+        onOptimisticUpdate: deleteTaskListOptimistic,
+        onMutationStateUpdate: enqueueMutation,
+    });
 
-    const editTask = useCallback<TaskQueryContextValue["editTask"]>(
-        (options) => {
-            editTaskOptimistic(options);
-            editTaskMutation.mutate(options);
-        },
-        [editTaskOptimistic, editTaskMutation]
-    );
+    const addTask = useUpdate({
+        mutation: addTaskMutation,
+        onOptimisticUpdate: addTaskOptimistic,
+        onMutationStateUpdate: enqueueMutation,
+    });
 
-    const deleteTask = useCallback<TaskQueryContextValue["deleteTask"]>(
-        (options) => {
-            deleteTaskOptimistic(options);
-            setMutationQueue((mutationQueue) => [
-                ...mutationQueue,
-                { type: "deleteTask", options },
-            ]);
-        },
-        [deleteTaskOptimistic]
-    );
+    const editTask = useUpdate({
+        mutation: editTaskMutation,
+        onOptimisticUpdate: editTaskOptimistic,
+        onMutationStateUpdate: addAsyncMutation,
+    });
+
+    const deleteTask = useUpdate({
+        mutation: deleteTaskMutation,
+        onOptimisticUpdate: deleteTaskOptimistic,
+        onMutationStateUpdate: enqueueMutation,
+    });
 
     useLayoutEffect(
         () => setTaskLists(taskListsQuery.data),
@@ -573,58 +466,54 @@ export default function TaskQueryProvider({
     );
 
     useEffect(() => {
-        if (
-            mutationQueue.length === 0 ||
-            moveTaskListMutation.isPending ||
-            moveTaskMutation.isPending ||
-            addTaskListMutation.isPending ||
-            deleteTaskListMutation.isPending ||
-            addTaskMutation.isPending ||
+        if (mutationQueue.length === 0 && asyncMutationList.length === 0) {
+            setIsMutationOngoing(false);
+            return;
+        }
+
+        if (previousMutationQueueSize === undefined) {
+            return;
+        }
+
+        console.assert(
+            mutationQueue.length !== previousMutationQueueSize &&
+                !moveTaskListMutation.isPending &&
+                !moveTaskMutation.isPending &&
+                !addTaskListMutation.isPending &&
+                !deleteTaskListMutation.isPending &&
+                !addTaskMutation.isPending &&
+                !deleteTaskMutation.isPending,
+            mutationQueue.length !== previousMutationQueueSize,
+            moveTaskListMutation.isPending,
+            moveTaskMutation.isPending,
+            addTaskListMutation.isPending,
+            deleteTaskListMutation.isPending,
+            addTaskMutation.isPending,
             deleteTaskMutation.isPending
-        ) {
+        );
+
+        if (mutationQueue.length < previousMutationQueueSize) {
+            dispatchMutation();
             return;
         }
 
-        const { type, options } = mutationQueue[0];
+        const timeout = setTimeout(() => {
+            setIsMutationOngoing(true);
+            dispatchMutation();
+        }, 3000);
 
-        if (type === "moveTaskList") {
-            moveTaskListMutation.mutateAsync(options).then(popMutationQueue);
-            return;
-        }
-
-        if (type === "moveTask") {
-            moveTaskMutation.mutateAsync(options).then(popMutationQueue);
-            return;
-        }
-
-        if (type === "addTaskList") {
-            addTaskListMutation.mutateAsync(options).then(popMutationQueue);
-            return;
-        }
-
-        if (type === "deleteTaskList") {
-            deleteTaskListMutation.mutateAsync(options).then(popMutationQueue);
-            return;
-        }
-
-        if (type === "addTask") {
-            addTaskMutation.mutateAsync(options).then(popMutationQueue);
-            return;
-        }
-
-        if (type === "deleteTask") {
-            deleteTaskMutation.mutateAsync(options).then(popMutationQueue);
-            return;
-        }
+        return () => clearTimeout(timeout);
     }, [
         mutationQueue,
-        popMutationQueue,
+        asyncMutationList,
+        previousMutationQueueSize,
         moveTaskListMutation,
         moveTaskMutation,
         addTaskListMutation,
         deleteTaskListMutation,
         addTaskMutation,
         deleteTaskMutation,
+        dispatchMutation,
     ]);
 
     return (

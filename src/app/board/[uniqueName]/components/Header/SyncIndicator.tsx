@@ -18,6 +18,10 @@ export default function SyncIndicator() {
     );
 
     useEffect(() => {
+        console.log("PENDING:", isMutationPending);
+    }, [isMutationPending]);
+
+    useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.ctrlKey && e.key === "R") {
                 e.preventDefault();

@@ -8,7 +8,6 @@ interface ReorderArrayOptions<T extends Orderable> {
     array: T[];
     fromIndex: number;
     toIndex: number;
-    clone?: boolean;
 }
 
 interface RemoveFromAndInsertToOptions<T extends Orderable> {
@@ -32,14 +31,9 @@ export default function reorderArray<T extends Orderable>({
     array,
     fromIndex,
     toIndex,
-    clone = true,
 }: ReorderArrayOptions<T>) {
     if (array.length === 0) {
-        return clone ? [] : array;
-    }
-
-    if (clone) {
-        array = _.cloneDeep(array);
+        return array;
     }
 
     removeFromAndInsertTo({
