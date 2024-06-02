@@ -5,7 +5,6 @@ import React, {
     KeyboardEventHandler,
     MouseEventHandler,
     useCallback,
-    useEffect,
     useLayoutEffect,
     useMemo,
     useState,
@@ -62,6 +61,7 @@ export default function useContentEditable<T extends HTMLElement>({
             if (e.key === "Enter") {
                 if (focusedElement === null) {
                     e.preventDefault();
+                    onStateReset?.();
                     setFocusedElement(e.currentTarget);
                     return;
                 }
