@@ -4,6 +4,7 @@ import { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
 import { PropsWithChildren } from "react";
 import { TaskListProps } from "../../components/TaskBoard/TaskList";
 import { TaskItemProps } from "../../components/TaskBoard/TaskList/TaskItem";
+import { TaskItemCompletedProps } from "../../components/TaskBoard/TaskList/TaskItem/TaskItemCompleted";
 
 interface MoveTaskListOptions {
     fromIndex: number;
@@ -48,7 +49,7 @@ type UpdateOptions =
 type InsertOptions = AddTaskListOptions | AddTaskOptions;
 
 interface TaskListsQueryData extends TaskListProps {
-    tasks: TaskItemProps[];
+    tasks: (TaskItemProps | TaskItemCompletedProps)[];
 }
 
 interface TaskQueryContextValue {
@@ -78,7 +79,8 @@ interface TaskQueryContextValue {
     addTask: (options: Omit<AddTaskOptions, "id">) => void;
     editTask: (options: EditTaskOptions) => void;
     deleteTask: (options: DeleteTaskOptions) => void;
-    isMutationPending: boolean;
+    isMutationOngoing: boolean;
+    isChangesSaved: boolean;
 }
 
 interface TaskQueryProviderProps extends PropsWithChildren {

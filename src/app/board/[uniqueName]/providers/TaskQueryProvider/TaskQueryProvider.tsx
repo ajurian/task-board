@@ -77,6 +77,12 @@ export default function TaskQueryProvider({
                         { signal }
                     );
 
+                    console.log(
+                        Object.groupBy(tasks, ({ isDone }) =>
+                            isDone ? "completed" : "pending"
+                        )
+                    );
+
                     return { ...taskList, tasks };
                 })
             );
@@ -94,7 +100,13 @@ export default function TaskQueryProvider({
         []
     );
     const previousMutationQueueSize = usePrevious(mutationQueue.length);
+
     const [isMutationOngoing, setIsMutationOngoing] = useState(false);
+
+    const isChangesSaved = useMemo(
+        () => mutationQueue.length === 0,
+        [mutationQueue]
+    );
 
     const enqueueMutation = useCallback(
         (mutation: () => Promise<void>) =>
@@ -199,7 +211,7 @@ export default function TaskQueryProvider({
             mutationKey: ["editTask"],
             mutationFn: async ({ id, ...options }) => {
                 const body: TaskPatchBody = options;
-                await axios.patch(`/api/tasks/${id}`, body);
+                // await axios.patch(`/api/tasks/${id}`, body);
             },
         });
 
@@ -208,11 +220,6 @@ export default function TaskQueryProvider({
             mutationKey: ["deleteTask"],
             mutationFn: ({ id }) => axios.delete(`/api/tasks/${id}`),
         });
-
-    const isMutationPending = useMemo(
-        () => mutationQueue.length > 0 && isMutationOngoing,
-        [mutationQueue, isMutationOngoing]
-    );
 
     const moveTaskListOptimistic = useOptimisticUpdate<MoveTaskListOptions>({
         setTaskLists,
@@ -345,7 +352,7 @@ export default function TaskQueryProvider({
                 order: 0,
                 title,
                 details,
-                status: "pending",
+                isDone: false,
                 createdAt: new Date(),
                 dueAt,
             });
@@ -358,7 +365,7 @@ export default function TaskQueryProvider({
         setTaskLists,
         onTaskListsChange: (
             taskLists,
-            { id, title, details, status, dueAt }
+            { id, title, details, isDone, dueAt }
         ) => {
             for (const taskList of taskLists) {
                 const { tasks } = taskList;
@@ -370,7 +377,7 @@ export default function TaskQueryProvider({
 
                 if (title !== undefined) task.title = title;
                 if (details !== undefined) task.details = details;
-                if (status !== undefined) task.status = status;
+                if (isDone !== undefined) task.isDone = isDone;
                 if (dueAt !== undefined) task.dueAt = dueAt;
 
                 break;
@@ -530,7 +537,8 @@ export default function TaskQueryProvider({
                 addTask,
                 editTask,
                 deleteTask,
-                isMutationPending,
+                isMutationOngoing,
+                isChangesSaved,
             }}
         >
             {children}
