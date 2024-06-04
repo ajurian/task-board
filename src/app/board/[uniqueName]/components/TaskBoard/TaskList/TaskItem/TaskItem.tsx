@@ -1,17 +1,11 @@
 import { useTaskQuery } from "@/app/board/[uniqueName]/providers/TaskQueryProvider";
 import { TaskModel } from "@/schema/task";
-import {
-    faCheck,
-    faClock,
-    faUndo,
-    IconDefinition,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Draggable } from "@hello-pangea/dnd";
 import { useInputState } from "@mantine/hooks";
-import { IconButton, Typography } from "@mui/material";
-import { TaskStatus } from "@prisma/client";
-import { useMemo, useRef } from "react";
+import { Fade, IconButton, Typography, useTheme } from "@mui/material";
+import { useMemo, useRef, useState } from "react";
 import useContentEditable from "../../hooks/useContentEditable";
 import TaskItemMenu from "./TaskItemMenu";
 import {
@@ -23,27 +17,11 @@ import {
     TaskItemTitleText,
 } from "./ui";
 
-const STATUS_ICON: Record<TaskStatus, IconDefinition> = {
-    pending: faClock,
-    ongoing: faCheck,
-    completed: faUndo,
-};
+export interface TaskItemProps extends Omit<TaskModel, "isDone"> {
+    isDone: false;
+}
 
-const NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
-    pending: "ongoing",
-    ongoing: "completed",
-    completed: "pending",
-};
-
-export interface TaskItemProps extends TaskModel {}
-
-export default function TaskItem({
-    id,
-    order,
-    title,
-    details,
-    status,
-}: TaskItemProps) {
+export default function TaskItem({ id, order, title, details }: TaskItemProps) {
     const initialTitle = useMemo(() => title.replace(/\\n/g, "\n"), [title]);
     const initialDetails = useMemo(
         () => details.replace(/\\n/g, "\n"),
@@ -99,75 +77,91 @@ export default function TaskItem({
         },
     });
 
+    const [fadeIn, setFadeIn] = useState(true);
+    const theme = useTheme();
+
     return (
         <Draggable draggableId={id} index={order} isDragDisabled={isFocused}>
             {(
                 { draggableProps, dragHandleProps, innerRef },
                 { isDragging }
             ) => (
-                <TaskItemContainer
-                    {...draggableProps}
-                    {...dragHandleProps}
-                    {...contentEditableProps}
-                    ref={(node: HTMLElement | null) => {
-                        innerRef(node);
-                        ref.current = node;
+                <Fade
+                    in={fadeIn}
+                    timeout={{
+                        enter: 0,
+                        exit: theme.transitions.duration.leavingScreen,
                     }}
-                    isDragging={isDragging}
-                    isFocused={isFocused}
+                    onTransitionEnd={() => {
+                        if (!fadeIn) {
+                            editTask({ id, isDone: true });
+                        }
+                    }}
                 >
-                    <TaskItemTitleContainer>
-                        <IconButton
-                            size="small"
-                            color="primary"
-                            tabIndex={isFocused ? 0 : -1}
-                            onClick={() =>
-                                editTask({ id, status: NEXT_STATUS[status] })
-                            }
-                        >
-                            <FontAwesomeIcon icon={STATUS_ICON[status]} />
-                        </IconButton>
-                        <Typography variant="subtitle1">({order})</Typography>
-                        <TaskItemTitleInput
-                            inputRef={titleInputRef}
+                    <TaskItemContainer
+                        {...draggableProps}
+                        {...dragHandleProps}
+                        {...contentEditableProps}
+                        ref={(node: HTMLElement | null) => {
+                            innerRef(node);
+                            ref.current = node;
+                        }}
+                        isDragging={isDragging}
+                        isFocused={isFocused}
+                    >
+                        <TaskItemTitleContainer>
+                            <IconButton
+                                size="small"
+                                color="primary"
+                                tabIndex={isFocused ? 0 : -1}
+                                onClick={() => setFadeIn(false)}
+                            >
+                                <FontAwesomeIcon icon={faCheck} />
+                            </IconButton>
+                            <Typography variant="subtitle1">
+                                ({order})
+                            </Typography>
+                            <TaskItemTitleInput
+                                inputRef={titleInputRef}
+                                isContainerFocused={isFocused}
+                                value={titleInput}
+                                onChange={setTitleInput}
+                                onFocus={(e) => e.currentTarget.select()}
+                                size="small"
+                                multiline
+                                fullWidth
+                            />
+                            <TaskItemTitleText
+                                ref={titleRef}
+                                isContainerFocused={isFocused}
+                                variant="subtitle1"
+                            >
+                                {initialTitle}
+                            </TaskItemTitleText>
+                            <TaskItemMenu
+                                taskId={id}
+                                onEditTask={() => ref.current?.click()}
+                            />
+                        </TaskItemTitleContainer>
+                        <TaskItemDetailsInput
+                            inputRef={detailsInputRef}
                             isContainerFocused={isFocused}
-                            value={titleInput}
-                            onChange={setTitleInput}
+                            value={detailsInput}
+                            onChange={setDetailsInput}
                             onFocus={(e) => e.currentTarget.select()}
                             size="small"
                             multiline
                             fullWidth
                         />
-                        <TaskItemTitleText
-                            ref={titleRef}
+                        <TaskItemDetailsText
+                            ref={detailsRef}
                             isContainerFocused={isFocused}
-                            variant="subtitle1"
+                            variant="body2"
                         >
-                            {initialTitle}
-                        </TaskItemTitleText>
-                        <TaskItemMenu
-                            taskId={id}
-                            onEditTask={() => ref.current?.click()}
-                        />
-                    </TaskItemTitleContainer>
-                    <TaskItemDetailsInput
-                        inputRef={detailsInputRef}
-                        isContainerFocused={isFocused}
-                        value={detailsInput}
-                        onChange={setDetailsInput}
-                        onFocus={(e) => e.currentTarget.select()}
-                        size="small"
-                        multiline
-                        fullWidth
-                    />
-                    <TaskItemDetailsText
-                        ref={detailsRef}
-                        isContainerFocused={isFocused}
-                        variant="body2"
-                    >
-                        {initialDetails}
-                    </TaskItemDetailsText>
-                </TaskItemContainer>
+                            {initialDetails}
+                        </TaskItemDetailsText>
+                    </TaskItemContainer>
+                </Fade>
             )}
         </Draggable>
     );

@@ -31,6 +31,7 @@
         "next": "14.2.3",
         "react": "^18",
         "react-dom": "^18",
+        "react-transition-group": "^4.4.5",
         "zod": "^3.23.8"
     },
     "devDependencies": {
@@ -38,6 +39,7 @@
         "@types/node": "^20",
         "@types/react": "^18",
         "@types/react-dom": "^18",
+        "@types/react-transition-group": "^4",
         "eslint": "^8",
         "eslint-config-next": "14.2.3",
         "prisma": "^5.14.0",

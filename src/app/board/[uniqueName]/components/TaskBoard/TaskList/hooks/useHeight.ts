@@ -9,7 +9,14 @@ export default function useHeight<T extends HTMLElement>() {
             return;
         }
 
+        const resizeObserver = new ResizeObserver(() => {
+            setHeight(ref.current?.clientHeight || 0);
+        });
+
         setHeight(ref.current.clientHeight);
+        resizeObserver.observe(ref.current);
+
+        return () => resizeObserver.disconnect();
     }, []);
 
     return { ref, height };

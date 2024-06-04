@@ -1,11 +1,10 @@
 import { TaskListModel } from "@/schema/taskList";
 import { Draggable } from "@hello-pangea/dnd";
-import { TaskStatus } from "@prisma/client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useDirection } from "../../../providers/DirectionProvider";
 import { useTaskQuery } from "../../../providers/TaskQueryProvider";
 import TaskItemPlaceholder from "./TaskItem/TaskItemPlaceholder";
-import TaskListCollapsibleItems from "./TaskListCollapsibleItems";
+import TaskListCompletedItems from "./TaskListCompletedItems";
 import TaskListHeader from "./TaskListHeader";
 import TaskListItemsWrapper from "./TaskListItemsWrapper";
 import { TaskListContainer } from "./ui";
@@ -17,10 +16,15 @@ export default function TaskList({ id, order, title }: TaskListProps) {
     const { direction } = useDirection();
     const { tasks } = taskLists[order];
 
-    const [openedStatus, setOpenedStatus] = useState<Exclude<
-        TaskStatus,
-        "pending"
-    > | null>(null);
+    const groupedTasks = useMemo(
+        () =>
+            Object.groupBy(tasks, ({ isDone }) =>
+                isDone ? "completed" : "pending"
+            ),
+        [tasks]
+    );
+
+    const [isCompletedItemsOpen, setIsCompletedItemsOpen] = useState(false);
 
     return (
         <Draggable draggableId={id} index={order}>
@@ -35,24 +39,17 @@ export default function TaskList({ id, order, title }: TaskListProps) {
                     <TaskListHeader listId={id} title={title} />
                     <TaskItemPlaceholder listId={id} />
                     <TaskListItemsWrapper
-                        status="pending"
                         order={order}
-                        tasks={tasks}
+                        tasks={groupedTasks.pending || []}
                     />
-                    <TaskListCollapsibleItems
-                        tasks={tasks}
-                        status="ongoing"
-                        order={order}
-                        isOpen={openedStatus === "ongoing"}
-                        onOpen={setOpenedStatus}
-                    />
-                    <TaskListCollapsibleItems
-                        tasks={tasks}
-                        status="completed"
-                        order={order}
-                        isOpen={openedStatus === "completed"}
-                        onOpen={setOpenedStatus}
-                    />
+                    {groupedTasks.completed && (
+                        <TaskListCompletedItems
+                            tasks={groupedTasks.completed}
+                            order={order}
+                            isOpen={isCompletedItemsOpen}
+                            onOpen={setIsCompletedItemsOpen}
+                        />
+                    )}
                 </TaskListContainer>
             )}
         </Draggable>

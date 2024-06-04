@@ -6,14 +6,14 @@ export const TaskModelSchema = z.object({
     order: z.number().int(),
     title: z.string(),
     details: z.string(),
-    status: z.enum(["pending", "ongoing", "completed"]),
+    isDone: z.boolean(),
     createdAt: z.date(),
     dueAt: z.date().nullable(),
 });
 
 export const TaskCreateSchema = TaskModelSchema.omit({
     order: true,
-    status: true,
+    isDone: true,
     createdAt: true,
 });
 
@@ -25,10 +25,10 @@ export const TaskUpdateSchema = TaskModelSchema.omit({
 })
     .partial()
     .refine(
-        ({ title, details, status, dueAt }) =>
+        ({ title, details, isDone, dueAt }) =>
             title !== undefined ||
             details !== undefined ||
-            status !== undefined ||
+            isDone !== undefined ||
             dueAt !== undefined
     );
 

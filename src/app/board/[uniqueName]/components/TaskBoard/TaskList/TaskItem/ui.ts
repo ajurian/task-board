@@ -39,6 +39,12 @@ export const TaskItemContainer = styled(Box, {
     })
 );
 
+export const TaskItemCompletedContainer = styled(Box)(({ theme }) => ({
+    paddingInline: theme.spacing(2.75),
+    paddingBlock: theme.spacing(1.5),
+    backgroundColor: theme.palette.background.paper,
+}));
+
 export const TaskItemTitleContainer = styled(Box)(({ theme }) => ({
     display: "flex",
     alignItems: "start",

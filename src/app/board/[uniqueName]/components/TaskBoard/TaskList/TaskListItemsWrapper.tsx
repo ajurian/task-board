@@ -1,20 +1,21 @@
-import { TaskModel } from "@/schema/task";
 import { Droppable } from "@hello-pangea/dnd";
 import { forwardRef } from "react";
 import TaskItem, { TaskItemProps } from "./TaskItem";
+import TaskItemCompleted, {
+    TaskItemCompletedProps,
+} from "./TaskItem/TaskItemCompleted";
 import { TaskListItemsContainer } from "./ui";
 
 interface TaskListItemsWrapperProps {
-    status: TaskModel["status"];
     order: number;
-    tasks: TaskItemProps[];
+    tasks: (TaskItemProps | TaskItemCompletedProps)[];
 }
 
 const TaskListItemsWrapper = forwardRef<HTMLElement, TaskListItemsWrapperProps>(
-    ({ status, order, tasks }, ref) => {
+    ({ order, tasks }, ref) => {
         return (
             <Droppable
-                droppableId={`${status}-${order}`}
+                droppableId={`${order}`}
                 type="task"
                 direction="vertical"
             >
@@ -31,11 +32,12 @@ const TaskListItemsWrapper = forwardRef<HTMLElement, TaskListItemsWrapperProps>(
                             }
                         }}
                     >
-                        {tasks.map(
-                            (task) =>
-                                task.status === status && (
-                                    <TaskItem key={task.id} {...task} />
-                                )
+                        {tasks.map((task) =>
+                            task.isDone ? (
+                                <TaskItemCompleted key={task.id} {...task} />
+                            ) : (
+                                <TaskItem key={task.id} {...task} />
+                            )
                         )}
                         {placeholder}
                     </TaskListItemsContainer>

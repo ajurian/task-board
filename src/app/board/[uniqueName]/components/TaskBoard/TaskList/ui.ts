@@ -39,6 +39,7 @@ export const TaskListHeaderContainer = styled(Box)(({ theme }) => ({
     justifyContent: "space-between",
     alignItems: "center",
     overflowX: "hidden",
+    flexShrink: 0,
     gap: theme.spacing(2),
     paddingInline: theme.spacing(4),
     paddingBlock: theme.spacing(3),
@@ -156,12 +157,13 @@ export const TaskListPlaceholderTextContainer = styled(Box, {
     }),
 }));
 
-export const TaskListCollapsibleItemsContainer = styled(Box)(({ theme }) => ({
+export const TaskListCompletedItemsContainer = styled(Box)(({ theme }) => ({
     overflow: "hidden",
+    flexShrink: 0,
     marginBottom: theme.spacing(2),
 }));
 
-export const TaskListCollapsibleItemsTrigger = styled(Button)(({ theme }) => ({
+export const TaskListCompletedItemsTrigger = styled(Button)(({ theme }) => ({
     borderRadius: 0,
     display: "flex",
     justifyContent: "space-between",
@@ -174,19 +176,19 @@ export const TaskListCollapsibleItemsTrigger = styled(Button)(({ theme }) => ({
     gap: theme.spacing(2),
 }));
 
-export const TaskListCollapsibleItemsTriggerText = styled(Typography)(() => ({
+export const TaskListCompletedItemsTriggerText = styled(Typography)(() => ({
     fontWeight: 500,
     textTransform: "capitalize",
 }));
 
-export const TaskListCollapsibleItemsTriggerIcon = styled(Box, {
+export const TaskListCompletedItemsTriggerIcon = styled(Box, {
     shouldForwardProp: (propName) => propName !== "isOpen",
 })<{ isOpen: boolean }>(({ theme, isOpen }) => ({
-    rotate: isOpen ? "-90deg" : "0deg",
+    rotate: isOpen ? "90deg" : "-90deg",
     transition: theme.transitions.create("rotate"),
 }));
 
-export const TaskListCollapsibleItemsWrapper = styled(Box, {
+export const TaskListCompletedItemsWrapper = styled(Box, {
     shouldForwardProp: (propName) =>
         propName !== "height" && propName !== "isOpen",
 })<{ height: number; isOpen: boolean }>(({ theme, height, isOpen }) => ({

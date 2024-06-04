@@ -43,21 +43,15 @@ model TaskList {
 }
 
 model Task {
-    id         String     @id @default(auto()) @map("_id") @db.ObjectId
-    taskListId String     @db.ObjectId
-    taskList   TaskList   @relation(fields: [taskListId], references: [id])
-    order      Int        @default(0)
+    id         String    @id @default(auto()) @map("_id") @db.ObjectId
+    taskListId String    @db.ObjectId
+    taskList   TaskList  @relation(fields: [taskListId], references: [id])
+    order      Int       @default(0)
     title      String
     details    String
-    status     TaskStatus @default(pending)
-    createdAt  DateTime   @default(now())
+    isDone     Boolean   @default(false)
+    createdAt  DateTime  @default(now())
     dueAt      DateTime?
 
     @@map("tasks")
-}
-
-enum TaskStatus {
-    pending
-    ongoing
-    completed
 }
