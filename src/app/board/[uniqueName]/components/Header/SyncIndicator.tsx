@@ -1,6 +1,6 @@
 "use client";
 
-import { faArrowRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import { faRefresh } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, CircularProgress, IconButton } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
@@ -9,17 +9,14 @@ import { useTaskQuery } from "../../providers/TaskQueryProvider";
 
 export default function SyncIndicator() {
     const queryClient = useQueryClient();
-    const { taskListsQuery, isMutationPending } = useTaskQuery();
-    const isLoading = taskListsQuery.isRefetching || isMutationPending;
+    const { taskListsQuery, isMutationOngoing, isChangesSaved } =
+        useTaskQuery();
+    const isLoading = taskListsQuery.isRefetching || isMutationOngoing;
 
     const refetchData = useCallback(
         () => queryClient.invalidateQueries({ queryKey: ["taskLists"] }),
         [queryClient]
     );
-
-    /* useEffect(() => {
-        console.log("PENDING:", isMutationPending);
-    }, [isMutationPending]); */
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -30,7 +27,7 @@ export default function SyncIndicator() {
         };
 
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            if (!isMutationPending) {
+            if (isChangesSaved) {
                 return false;
             }
 
@@ -46,7 +43,7 @@ export default function SyncIndicator() {
             window.removeEventListener("keydown", handleKeyDown);
             window.removeEventListener("beforeunload", handleBeforeUnload);
         };
-    }, [isMutationPending, refetchData]);
+    }, [isChangesSaved, refetchData]);
 
     return isLoading ? (
         <Box color="text.secondary" maxHeight={20} mr={2}>
@@ -54,7 +51,7 @@ export default function SyncIndicator() {
         </Box>
     ) : (
         <IconButton tabIndex={-1} size="small" onClick={refetchData}>
-            <FontAwesomeIcon icon={faArrowRotateLeft} />
+            <FontAwesomeIcon icon={faRefresh} />
         </IconButton>
     );
 }
