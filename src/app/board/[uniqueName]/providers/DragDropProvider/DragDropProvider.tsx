@@ -28,7 +28,7 @@ export default function DragDropProvider({ children }: PropsWithChildren) {
             return;
         }
 
-        if (type === "pendingTask") {
+        if (type === "task") {
             const fromListIndex = Number(source.droppableId.split("-")[1]);
             const toListIndex = Number(destination.droppableId.split("-")[1]);
 
