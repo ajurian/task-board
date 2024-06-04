@@ -6,7 +6,7 @@ export const TaskModelSchema = z.object({
     order: z.number().int(),
     title: z.string(),
     details: z.string(),
-    status: z.enum(["pending", "ongoing", "done"]),
+    status: z.enum(["pending", "ongoing", "completed"]),
     createdAt: z.date(),
     dueAt: z.date().nullable(),
 });

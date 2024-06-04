@@ -1,10 +1,16 @@
 import { useTaskQuery } from "@/app/board/[uniqueName]/providers/TaskQueryProvider";
 import { TaskModel } from "@/schema/task";
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import {
+    faCheck,
+    faClock,
+    faUndo,
+    IconDefinition,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Draggable } from "@hello-pangea/dnd";
 import { useInputState } from "@mantine/hooks";
 import { IconButton, Typography } from "@mui/material";
+import { TaskStatus } from "@prisma/client";
 import { useMemo, useRef } from "react";
 import useContentEditable from "../../hooks/useContentEditable";
 import TaskItemMenu from "./TaskItemMenu";
@@ -17,9 +23,27 @@ import {
     TaskItemTitleText,
 } from "./ui";
 
+const STATUS_ICON: Record<TaskStatus, IconDefinition> = {
+    pending: faClock,
+    ongoing: faCheck,
+    completed: faUndo,
+};
+
+const NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
+    pending: "ongoing",
+    ongoing: "completed",
+    completed: "pending",
+};
+
 export interface TaskItemProps extends TaskModel {}
 
-export default function TaskItem({ id, order, title, details }: TaskItemProps) {
+export default function TaskItem({
+    id,
+    order,
+    title,
+    details,
+    status,
+}: TaskItemProps) {
     const initialTitle = useMemo(() => title.replace(/\\n/g, "\n"), [title]);
     const initialDetails = useMemo(
         () => details.replace(/\\n/g, "\n"),
@@ -85,7 +109,7 @@ export default function TaskItem({ id, order, title, details }: TaskItemProps) {
                     {...draggableProps}
                     {...dragHandleProps}
                     {...contentEditableProps}
-                    ref={(node: HTMLElement) => {
+                    ref={(node: HTMLElement | null) => {
                         innerRef(node);
                         ref.current = node;
                     }}
@@ -95,10 +119,13 @@ export default function TaskItem({ id, order, title, details }: TaskItemProps) {
                     <TaskItemTitleContainer>
                         <IconButton
                             size="small"
-                            color="success"
+                            color="primary"
                             tabIndex={isFocused ? 0 : -1}
+                            onClick={() =>
+                                editTask({ id, status: NEXT_STATUS[status] })
+                            }
                         >
-                            <FontAwesomeIcon icon={faCheck} />
+                            <FontAwesomeIcon icon={STATUS_ICON[status]} />
                         </IconButton>
                         <Typography variant="subtitle1">({order})</Typography>
                         <TaskItemTitleInput

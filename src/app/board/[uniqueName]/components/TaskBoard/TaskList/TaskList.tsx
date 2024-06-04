@@ -1,11 +1,14 @@
 import { TaskListModel } from "@/schema/taskList";
-import { Draggable, Droppable } from "@hello-pangea/dnd";
+import { Draggable } from "@hello-pangea/dnd";
+import { TaskStatus } from "@prisma/client";
+import { useState } from "react";
 import { useDirection } from "../../../providers/DirectionProvider";
 import { useTaskQuery } from "../../../providers/TaskQueryProvider";
-import TaskItem from "./TaskItem";
 import TaskItemPlaceholder from "./TaskItem/TaskItemPlaceholder";
+import TaskListCollapsibleItems from "./TaskListCollapsibleItems";
 import TaskListHeader from "./TaskListHeader";
-import { TaskItemsWrapper, TaskListContainer } from "./ui";
+import TaskListItemsWrapper from "./TaskListItemsWrapper";
+import { TaskListContainer } from "./ui";
 
 export interface TaskListProps extends TaskListModel {}
 
@@ -13,6 +16,11 @@ export default function TaskList({ id, order, title }: TaskListProps) {
     const { taskLists } = useTaskQuery();
     const { direction } = useDirection();
     const { tasks } = taskLists[order];
+
+    const [openedStatus, setOpenedStatus] = useState<Exclude<
+        TaskStatus,
+        "pending"
+    > | null>(null);
 
     return (
         <Draggable draggableId={id} index={order}>
@@ -26,27 +34,25 @@ export default function TaskList({ id, order, title }: TaskListProps) {
                 >
                     <TaskListHeader listId={id} title={title} />
                     <TaskItemPlaceholder listId={id} />
-                    <Droppable
-                        droppableId={order.toString()}
-                        type="task"
-                        direction="vertical"
-                    >
-                        {({
-                            innerRef: droppableRef,
-                            placeholder,
-                            droppableProps,
-                        }) => (
-                            <TaskItemsWrapper
-                                {...droppableProps}
-                                ref={droppableRef}
-                            >
-                                {tasks.map((task) => (
-                                    <TaskItem key={task.id} {...task} />
-                                ))}
-                                {placeholder}
-                            </TaskItemsWrapper>
-                        )}
-                    </Droppable>
+                    <TaskListItemsWrapper
+                        status="pending"
+                        order={order}
+                        tasks={tasks}
+                    />
+                    <TaskListCollapsibleItems
+                        tasks={tasks}
+                        status="ongoing"
+                        order={order}
+                        isOpen={openedStatus === "ongoing"}
+                        onOpen={setOpenedStatus}
+                    />
+                    <TaskListCollapsibleItems
+                        tasks={tasks}
+                        status="completed"
+                        order={order}
+                        isOpen={openedStatus === "completed"}
+                        onOpen={setOpenedStatus}
+                    />
                 </TaskListContainer>
             )}
         </Draggable>

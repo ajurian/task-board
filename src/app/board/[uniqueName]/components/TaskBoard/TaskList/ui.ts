@@ -92,13 +92,6 @@ export const AddTaskButton = styled(Button)(({ theme }) => ({
     paddingBlock: theme.spacing(1.5),
 }));
 
-export const TaskItemsWrapper = styled(Box)(({ theme }) => ({
-    display: "flex",
-    flexDirection: "column",
-    overflowY: "auto",
-    paddingBlock: theme.spacing(1.5),
-}));
-
 export const TaskListPlaceholderContainer = styled(Box, {
     shouldForwardProp: (propName) =>
         propName !== "direction" && propName !== "isFocused",
@@ -161,4 +154,51 @@ export const TaskListPlaceholderTextContainer = styled(Box, {
         visibility: "hidden",
         pointerEvents: "none",
     }),
+}));
+
+export const TaskListCollapsibleItemsContainer = styled(Box)(({ theme }) => ({
+    overflow: "hidden",
+    marginBottom: theme.spacing(2),
+}));
+
+export const TaskListCollapsibleItemsTrigger = styled(Button)(({ theme }) => ({
+    borderRadius: 0,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    fontSize: "0.875rem",
+    width: "100%",
+    color: theme.palette.text.secondary,
+    paddingInline: theme.spacing(4),
+    paddingBlock: theme.spacing(2),
+    gap: theme.spacing(2),
+}));
+
+export const TaskListCollapsibleItemsTriggerText = styled(Typography)(() => ({
+    fontWeight: 500,
+    textTransform: "capitalize",
+}));
+
+export const TaskListCollapsibleItemsTriggerIcon = styled(Box, {
+    shouldForwardProp: (propName) => propName !== "isOpen",
+})<{ isOpen: boolean }>(({ theme, isOpen }) => ({
+    rotate: isOpen ? "-90deg" : "0deg",
+    transition: theme.transitions.create("rotate"),
+}));
+
+export const TaskListCollapsibleItemsWrapper = styled(Box, {
+    shouldForwardProp: (propName) =>
+        propName !== "height" && propName !== "isOpen",
+})<{ height: number; isOpen: boolean }>(({ theme, height, isOpen }) => ({
+    height,
+    transition: theme.transitions.create("max-height"),
+    maxHeight: isOpen ? Math.min(height, 200) : 0,
+    overflowY: "auto",
+}));
+
+export const TaskListItemsContainer = styled(Box)(({ theme }) => ({
+    display: "flex",
+    flexDirection: "column",
+    overflowY: "auto",
+    paddingBlock: theme.spacing(1.5),
 }));

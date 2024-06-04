@@ -26,6 +26,13 @@ const theme = createTheme({
                 LinkComponent: LinkBehavior,
             },
         },
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    textTransform: "none",
+                },
+            },
+        },
     },
 });
 

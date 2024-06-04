@@ -28,10 +28,12 @@ export default function DragDropProvider({ children }: PropsWithChildren) {
             return;
         }
 
-        const fromListIndex = Number(source.droppableId);
-        const toListIndex = Number(destination.droppableId);
+        if (type === "pendingTask") {
+            const fromListIndex = Number(source.droppableId.split("-")[1]);
+            const toListIndex = Number(destination.droppableId.split("-")[1]);
 
-        moveTask({ fromListIndex, toListIndex, fromIndex, toIndex });
+            moveTask({ fromListIndex, toListIndex, fromIndex, toIndex });
+        }
     };
 
     return (

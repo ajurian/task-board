@@ -153,7 +153,7 @@ export default function TaskQueryProvider({
                     ...options,
                 };
 
-                await axios.post("/api/tasks/reorder", body);
+                // await axios.post("/api/tasks/reorder", body);
             },
         });
 
@@ -443,7 +443,7 @@ export default function TaskQueryProvider({
     const editTask = useUpdate({
         mutation: editTaskMutation,
         onOptimisticUpdate: editTaskOptimistic,
-        onMutationStateChange: addAsyncMutation,
+        onMutationStateChange: enqueueMutation,
     });
 
     const deleteTask = useUpdate({
