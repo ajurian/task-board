@@ -1,19 +1,17 @@
 "use client";
 
+import { TaskBoardGetResponse } from "@/app/api/taskBoards/[id]/route";
 import { TaskListPatchBody } from "@/app/api/taskLists/[id]/route";
 import { TaskListsReorderPostBody } from "@/app/api/taskLists/reorder/route";
-import {
-    TaskListsGetResponse,
-    TaskListsPostBody,
-} from "@/app/api/taskLists/route";
+import { TaskListsPostBody } from "@/app/api/taskLists/route";
 import { TaskPatchBody } from "@/app/api/tasks/[id]/route";
 import { TasksReorderPostBody } from "@/app/api/tasks/reorder/route";
-import { TasksGetResponse, TasksPostBody } from "@/app/api/tasks/route";
-import reorderArray, {
-    removeFromAndInsertTo,
-} from "@/app/board/[uniqueName]/providers/TaskQueryProvider/utils/reorderArray";
+import { TasksPostBody } from "@/app/api/tasks/route";
+import reorderArray from "@/app/board/[uniqueName]/providers/TaskQueryProvider/utils/reorderArray";
+import { AggregatedTaskBoardModelSchema } from "@/schema/taskBoard";
+import { AggregatedTaskListModel } from "@/schema/taskList";
 import { usePrevious } from "@mantine/hooks";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import {
     createContext,
@@ -35,7 +33,6 @@ import {
     MoveTaskListOptions,
     MoveTaskOptions,
     RenameTaskListOptions,
-    TaskListsQueryData,
     TaskQueryContextValue,
     TaskQueryProviderProps,
 } from "./TaskQueryProviderTypes";
@@ -55,44 +52,11 @@ export const useTaskQuery = () => {
 };
 
 export default function TaskQueryProvider({
-    boardId,
+    selectedTaskBoard,
     children,
 }: TaskQueryProviderProps) {
-    const taskListsQuery = useQuery({
-        queryKey: ["taskLists", boardId],
-        queryFn: async ({ signal }) => {
-            const {
-                data: { taskLists },
-            } = await axios.get<TaskListsGetResponse>(
-                `/api/taskLists?boardId=${boardId}`,
-                { signal }
-            );
+    const queryClient = useQueryClient();
 
-            return Promise.all(
-                taskLists.map(async (taskList) => {
-                    const {
-                        data: { tasks },
-                    } = await axios.get<TasksGetResponse>(
-                        `/api/tasks?listId=${taskList.id}`,
-                        { signal }
-                    );
-
-                    console.log(
-                        Object.groupBy(tasks, ({ isDone }) =>
-                            isDone ? "completed" : "pending"
-                        )
-                    );
-
-                    return { ...taskList, tasks };
-                })
-            );
-        },
-        initialData: [],
-    });
-
-    const [taskLists, setTaskLists] = useState<TaskListsQueryData[]>(
-        taskListsQuery.data
-    );
     const [mutationQueue, setMutationQueue] = useState<(() => Promise<void>)[]>(
         []
     );
@@ -101,11 +65,37 @@ export default function TaskQueryProvider({
     );
     const previousMutationQueueSize = usePrevious(mutationQueue.length);
 
+    const [searchQuery, setSearchQuery] = useState("");
+
     const [isMutationOngoing, setIsMutationOngoing] = useState(false);
 
     const isChangesSaved = useMemo(
         () => mutationQueue.length === 0,
         [mutationQueue]
+    );
+
+    const taskBoardQuery = useQuery({
+        queryKey: ["taskBoard", selectedTaskBoard.ownerId, searchQuery],
+        queryFn: async ({ signal }) => {
+            const {
+                data: { taskBoard: taskBoardRaw },
+            } = await axios.get<TaskBoardGetResponse>(
+                `/api/taskBoards/${selectedTaskBoard.id}`,
+                {
+                    params: { searchQuery },
+                    signal,
+                }
+            );
+            const taskBoard =
+                AggregatedTaskBoardModelSchema.parse(taskBoardRaw);
+
+            return taskBoard;
+        },
+        initialData: selectedTaskBoard,
+    });
+
+    const [taskLists, setTaskLists] = useState<AggregatedTaskListModel[]>(
+        taskBoardQuery.data.taskLists
     );
 
     const enqueueMutation = useCallback(
@@ -145,10 +135,10 @@ export default function TaskQueryProvider({
 
     const moveTaskListMutation: TaskQueryContextValue["moveTaskListMutation"] =
         useMutation({
-            mutationKey: ["moveTaskList"],
+            mutationKey: ["moveTaskList", selectedTaskBoard.id],
             mutationFn: async (options) => {
                 const body: TaskListsReorderPostBody = {
-                    boardId,
+                    boardId: selectedTaskBoard.id,
                     ...options,
                 };
 
@@ -158,14 +148,14 @@ export default function TaskQueryProvider({
 
     const moveTaskMutation: TaskQueryContextValue["moveTaskMutation"] =
         useMutation({
-            mutationKey: ["moveTask"],
+            mutationKey: ["moveTask", selectedTaskBoard.id],
             mutationFn: async (options) => {
                 const body: TasksReorderPostBody = {
-                    boardId,
+                    boardId: selectedTaskBoard.id,
                     ...options,
                 };
 
-                // await axios.post("/api/tasks/reorder", body);
+                await axios.post("/api/tasks/reorder", body);
             },
         });
 
@@ -174,7 +164,7 @@ export default function TaskQueryProvider({
             mutationKey: ["addTaskList"],
             mutationFn: async (options) => {
                 const body: TaskListsPostBody = {
-                    taskBoardId: boardId,
+                    taskBoardId: selectedTaskBoard.id,
                     ...options,
                 };
 
@@ -211,7 +201,7 @@ export default function TaskQueryProvider({
             mutationKey: ["editTask"],
             mutationFn: async ({ id, ...options }) => {
                 const body: TaskPatchBody = options;
-                // await axios.patch(`/api/tasks/${id}`, body);
+                await axios.patch(`/api/tasks/${id}`, body);
             },
         });
 
@@ -223,11 +213,15 @@ export default function TaskQueryProvider({
 
     const moveTaskListOptimistic = useOptimisticUpdate<MoveTaskListOptions>({
         setTaskLists,
-        onTaskListsChange: (taskLists, options) =>
+        onTaskListsChange: (taskLists, options) => {
             reorderArray({
-                array: taskLists,
+                source: taskLists,
+                destination: taskLists,
                 ...options,
-            }),
+            });
+
+            return taskLists;
+        },
     });
 
     const moveTaskOptimistic = useOptimisticUpdate<MoveTaskOptions>({
@@ -246,27 +240,20 @@ export default function TaskQueryProvider({
                 const { tasks: fromTasks } = taskLists[fromListIndex];
                 const { id: toListId, tasks: toTasks } = taskLists[toListIndex];
 
-                removeFromAndInsertTo({
-                    fromArray: fromTasks,
-                    toArray: toTasks,
+                reorderArray({
+                    source: fromTasks,
+                    destination: toTasks,
                     fromIndex,
                     toIndex,
                 });
 
                 toTasks[toIndex].taskListId = toListId;
-
-                for (let i = fromIndex; i < fromTasks.length; i++) {
-                    fromTasks[i].order = i;
-                }
-
-                for (let i = toIndex; i < toTasks.length; i++) {
-                    toTasks[i].order = i;
-                }
             } else {
                 const { tasks } = taskLists[fromListIndex];
 
                 reorderArray({
-                    array: tasks,
+                    source: tasks,
+                    destination: tasks,
                     fromIndex,
                     toIndex,
                 });
@@ -281,7 +268,7 @@ export default function TaskQueryProvider({
         onTaskListsChange: (taskLists, { id, title }) => {
             taskLists.push({
                 id,
-                taskBoardId: boardId,
+                taskBoardId: selectedTaskBoard.id,
                 order: taskLists.length,
                 title,
                 createdAt: new Date(),
@@ -355,6 +342,7 @@ export default function TaskQueryProvider({
                 isDone: false,
                 createdAt: new Date(),
                 dueAt,
+                highlights: [],
             });
 
             return taskLists;
@@ -459,10 +447,18 @@ export default function TaskQueryProvider({
         onMutationStateChange: enqueueMutation,
     });
 
-    useLayoutEffect(
-        () => setTaskLists(taskListsQuery.data),
-        [taskListsQuery.data]
+    const refreshData = useCallback(
+        () => queryClient.invalidateQueries({ queryKey: ["taskBoard"] }),
+        [queryClient]
     );
+
+    useLayoutEffect(() => {
+        if (taskBoardQuery.isRefetching) {
+            return;
+        }
+
+        setTaskLists(taskBoardQuery.data.taskLists);
+    }, [taskBoardQuery.isRefetching, taskBoardQuery.data]);
 
     useEffect(() => {
         if (mutationQueue.length === 0 && asyncMutationList.length === 0) {
@@ -519,7 +515,8 @@ export default function TaskQueryProvider({
     return (
         <TaskQueryContext.Provider
             value={{
-                taskListsQuery,
+                selectedTaskBoard,
+                taskBoardQuery,
                 taskLists,
                 moveTaskListMutation,
                 moveTaskMutation,
@@ -537,6 +534,9 @@ export default function TaskQueryProvider({
                 addTask,
                 editTask,
                 deleteTask,
+                refreshData,
+                setSearchQuery,
+                searchQuery,
                 isMutationOngoing,
                 isChangesSaved,
             }}

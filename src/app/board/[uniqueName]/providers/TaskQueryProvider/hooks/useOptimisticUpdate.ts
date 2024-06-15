@@ -1,13 +1,14 @@
+import { AggregatedTaskListModel } from "@/schema/taskList";
 import _ from "lodash";
 import { Dispatch, SetStateAction, useCallback } from "react";
-import { TaskListsQueryData, UpdateOptions } from "../TaskQueryProviderTypes";
+import { UpdateOptions } from "../TaskQueryProviderTypes";
 
 interface UseOptimisticUpdateOptions<T extends UpdateOptions> {
-    setTaskLists: Dispatch<SetStateAction<TaskListsQueryData[]>>;
+    setTaskLists: Dispatch<SetStateAction<AggregatedTaskListModel[]>>;
     onTaskListsChange: (
-        taskLists: TaskListsQueryData[],
+        taskLists: AggregatedTaskListModel[],
         options: T
-    ) => TaskListsQueryData[];
+    ) => AggregatedTaskListModel[];
 }
 
 export default function useOptimisticUpdate<T extends UpdateOptions>({

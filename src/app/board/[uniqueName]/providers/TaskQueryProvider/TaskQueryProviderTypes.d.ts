@@ -1,10 +1,15 @@
 import { TaskCreate, TaskUpdate } from "@/schema/task";
-import { TaskListCreate, TaskListUpdate } from "@/schema/taskList";
-import { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
-import { PropsWithChildren } from "react";
-import { TaskListProps } from "../../components/TaskBoard/TaskList";
-import { TaskItemProps } from "../../components/TaskBoard/TaskList/TaskItem";
-import { TaskItemCompletedProps } from "../../components/TaskBoard/TaskList/TaskItem/TaskItemCompleted";
+import { AggregatedTaskBoardModel } from "@/schema/taskBoard";
+import {
+    AggregatedTaskListModel,
+    TaskListCreate,
+    TaskListUpdate,
+} from "@/schema/taskList";
+import {
+    DefinedUseQueryResult,
+    UseMutationResult,
+} from "@tanstack/react-query";
+import { Dispatch, PropsWithChildren, SetStateAction } from "react";
 
 interface MoveTaskListOptions {
     fromIndex: number;
@@ -48,13 +53,10 @@ type UpdateOptions =
 
 type InsertOptions = AddTaskListOptions | AddTaskOptions;
 
-interface TaskListsQueryData extends TaskListProps {
-    tasks: (TaskItemProps | TaskItemCompletedProps)[];
-}
-
 interface TaskQueryContextValue {
-    taskListsQuery: UseQueryResult<TaskListsQueryData[]>;
-    taskLists: TaskListsQueryData[];
+    selectedTaskBoard: AggregatedTaskBoardModel;
+    taskBoardQuery: DefinedUseQueryResult<AggregatedTaskBoardModel | null>;
+    taskLists: AggregatedTaskListModel[];
     moveTaskListMutation: UseMutationResult<void, Error, MoveTaskListOptions>;
     moveTaskMutation: UseMutationResult<void, Error, MoveTaskOptions>;
     addTaskListMutation: UseMutationResult<void, Error, AddTaskListOptions>;
@@ -79,10 +81,13 @@ interface TaskQueryContextValue {
     addTask: (options: Omit<AddTaskOptions, "id">) => void;
     editTask: (options: EditTaskOptions) => void;
     deleteTask: (options: DeleteTaskOptions) => void;
+    refreshData: () => void;
+    setSearchQuery: Dispatch<SetStateAction<string>>;
+    searchQuery: string;
     isMutationOngoing: boolean;
     isChangesSaved: boolean;
 }
 
 interface TaskQueryProviderProps extends PropsWithChildren {
-    boardId: string;
+    selectedTaskBoard: AggregatedTaskBoardModel;
 }

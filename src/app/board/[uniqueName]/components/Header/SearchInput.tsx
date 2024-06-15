@@ -2,58 +2,101 @@
 
 import { faSearch, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useDebouncedCallback } from "@mantine/hooks";
 import { IconButton, InputAdornment, OutlinedInput } from "@mui/material";
-import { ChangeEventHandler, useEffect, useRef, useState } from "react";
+import {
+    ChangeEventHandler,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
+import { useTaskQuery } from "../../providers/TaskQueryProvider";
 
 export default function SearchInput() {
+    const { setSearchQuery, searchQuery } = useTaskQuery();
+    const [searchQueryInput, setSearchQueryInput] = useState(searchQuery);
     const inputRef = useRef<HTMLInputElement | null>(null);
-    const [searchQuery, setSearchQuery] = useState("");
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    const submitFormWithDelay = useDebouncedCallback(() => {}, 1500);
+    const updateSearchQuery = useCallback(
+        (value: string, debounce: boolean = true) => {
+            if (timeoutRef.current !== null) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+            }
 
-    const handleInput: ChangeEventHandler<HTMLInputElement> = (e) => {
-        setSearchQuery(e.currentTarget.value);
-        submitFormWithDelay();
-    };
+            setSearchQueryInput(value);
+
+            if (!debounce) {
+                setSearchQuery(value);
+                return;
+            }
+
+            timeoutRef.current = setTimeout(() => setSearchQuery(value), 1500);
+        },
+        [setSearchQuery]
+    );
+
+    const handleInputChange: ChangeEventHandler<HTMLInputElement> = (e) =>
+        updateSearchQuery(e.currentTarget.value);
 
     const clearInput = () => {
-        setSearchQuery("");
-        inputRef.current?.click();
+        updateSearchQuery("");
+        inputRef.current?.focus();
     };
 
     useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
+        const input = inputRef.current;
+
+        const handleKeyDownWindow = (e: KeyboardEvent) => {
             if (e.ctrlKey && e.key === "f") {
                 e.preventDefault();
-                inputRef.current?.click();
+                input?.focus();
+                input?.select();
             }
         };
 
-        window.addEventListener("keydown", handleKeyDown);
+        const handleKeyDownInput = (e: KeyboardEvent) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                updateSearchQuery(searchQueryInput, false);
+            }
+        };
 
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    }, []);
+        window.addEventListener("keydown", handleKeyDownWindow);
+        input?.addEventListener("keydown", handleKeyDownInput);
+
+        return () => {
+            window.removeEventListener("keydown", handleKeyDownWindow);
+            input?.removeEventListener("keydown", handleKeyDownInput);
+        };
+    }, [searchQueryInput, updateSearchQuery]);
 
     return (
         <OutlinedInput
-            ref={inputRef}
-            value={searchQuery}
+            inputRef={inputRef}
             placeholder="Search"
             type="search"
             name="search"
             size="small"
-            onChange={handleInput}
+            value={searchQueryInput}
+            onChange={handleInputChange}
             sx={(theme) => ({ width: theme.spacing(124) })}
             startAdornment={
                 <InputAdornment position="start" variant="outlined">
-                    <IconButton size="small" tabIndex={-1} onClick={() => {}}>
+                    <IconButton
+                        size="small"
+                        tabIndex={-1}
+                        onClick={() =>
+                            updateSearchQuery(searchQueryInput, false)
+                        }
+                    >
                         <FontAwesomeIcon icon={faSearch} />
                     </IconButton>
                 </InputAdornment>
             }
             endAdornment={
-                searchQuery.length > 0 && (
+                searchQueryInput.length > 0 && (
                     <InputAdornment position="end" variant="outlined">
                         <IconButton
                             size="small"

@@ -178,7 +178,6 @@ export const TaskListCompletedItemsTrigger = styled(Button)(({ theme }) => ({
 
 export const TaskListCompletedItemsTriggerText = styled(Typography)(() => ({
     fontWeight: 500,
-    textTransform: "capitalize",
 }));
 
 export const TaskListCompletedItemsTriggerIcon = styled(Box, {

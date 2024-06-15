@@ -9,12 +9,11 @@ import TaskList from "./TaskList";
 import TaskListPlaceholder from "./TaskList/TaskListPlaceholder";
 import { TaskBoardContainer, TaskBoardListContainer } from "./ui";
 
-interface TaskBoardProps extends TaskBoardModel {}
+export interface TaskBoardProps extends TaskBoardModel {}
 
 export default function TaskBoard({ uniqueName, displayName }: TaskBoardProps) {
-    const { taskListsQuery, taskLists } = useTaskQuery();
+    const { taskLists } = useTaskQuery();
     const { direction } = useDirection();
-    const { isFetchedAfterMount } = taskListsQuery;
 
     return (
         <TaskBoardContainer component="main">
@@ -30,15 +29,11 @@ export default function TaskBoard({ uniqueName, displayName }: TaskBoardProps) {
                         ref={innerRef}
                         direction={direction}
                     >
-                        {isFetchedAfterMount && (
-                            <>
-                                {taskLists.map((taskList) => (
-                                    <TaskList key={taskList.id} {...taskList} />
-                                ))}
-                                {placeholder}
-                                <TaskListPlaceholder />
-                            </>
-                        )}
+                        {taskLists.map((taskList, index) => (
+                            <TaskList key={index} index={index} {...taskList} />
+                        ))}
+                        {placeholder}
+                        <TaskListPlaceholder />
                     </TaskBoardListContainer>
                 )}
             </Droppable>

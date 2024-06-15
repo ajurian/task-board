@@ -1,4 +1,4 @@
-import { TaskListModel } from "@/schema/taskList";
+import { AggregatedTaskListModel } from "@/schema/taskList";
 import { Draggable } from "@hello-pangea/dnd";
 import { useMemo, useState } from "react";
 import { useDirection } from "../../../providers/DirectionProvider";
@@ -9,12 +9,20 @@ import TaskListHeader from "./TaskListHeader";
 import TaskListItemsWrapper from "./TaskListItemsWrapper";
 import { TaskListContainer } from "./ui";
 
-export interface TaskListProps extends TaskListModel {}
+export interface TaskListProps extends AggregatedTaskListModel {
+    index: number;
+}
 
-export default function TaskList({ id, order, title }: TaskListProps) {
-    const { taskLists } = useTaskQuery();
+export default function TaskList({
+    index,
+    id,
+    order,
+    title,
+    tasks,
+}: TaskListProps) {
+    const [isCompletedItemsOpen, setIsCompletedItemsOpen] = useState(false);
     const { direction } = useDirection();
-    const { tasks } = taskLists[order];
+    const { searchQuery } = useTaskQuery();
 
     const groupedTasks = useMemo(
         () =>
@@ -24,10 +32,13 @@ export default function TaskList({ id, order, title }: TaskListProps) {
         [tasks]
     );
 
-    const [isCompletedItemsOpen, setIsCompletedItemsOpen] = useState(false);
-
     return (
-        <Draggable draggableId={id} index={order}>
+        <Draggable
+            key={id}
+            draggableId={id}
+            index={index}
+            isDragDisabled={searchQuery.length > 0}
+        >
             {({ draggableProps, dragHandleProps, innerRef: draggableRef }) => (
                 <TaskListContainer
                     {...draggableProps}
@@ -45,7 +56,6 @@ export default function TaskList({ id, order, title }: TaskListProps) {
                     {groupedTasks.completed && (
                         <TaskListCompletedItems
                             tasks={groupedTasks.completed}
-                            order={order}
                             isOpen={isCompletedItemsOpen}
                             onOpen={setIsCompletedItemsOpen}
                         />

@@ -29,8 +29,8 @@ export default function DragDropProvider({ children }: PropsWithChildren) {
         }
 
         if (type === "task") {
-            const fromListIndex = Number(source.droppableId.split("-")[1]);
-            const toListIndex = Number(destination.droppableId.split("-")[1]);
+            const fromListIndex = Number(source.droppableId);
+            const toListIndex = Number(destination.droppableId);
 
             moveTask({ fromListIndex, toListIndex, fromIndex, toIndex });
         }

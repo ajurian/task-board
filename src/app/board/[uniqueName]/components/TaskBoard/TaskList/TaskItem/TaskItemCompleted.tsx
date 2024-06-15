@@ -11,9 +11,7 @@ import {
     TaskItemTitleText,
 } from "./ui";
 
-export interface TaskItemCompletedProps extends Omit<TaskModel, "isDone"> {
-    isDone: true;
-}
+export interface TaskItemCompletedProps extends Omit<TaskModel, "isDone"> {}
 
 export default function TaskItemCompleted({
     id,
@@ -22,22 +20,24 @@ export default function TaskItemCompleted({
 }: TaskItemCompletedProps) {
     const initialTitle = useMemo(() => title.replace(/\\n/g, "\n"), [title]);
 
-    const { editTask, deleteTask } = useTaskQuery();
-
     const theme = useTheme();
-    const [isVisible, setIsVisible] = useState(true);
+    const { editTask, deleteTask } = useTaskQuery();
+    const [actionAfterFade, setActionAfterFade] = useState<(() => void) | null>(
+        null
+    );
     const { ref, hovered: isDeleteIconVisible } = useHover();
 
     return (
         <Fade
-            in={isVisible}
+            in={actionAfterFade === null}
             timeout={{
                 enter: 0,
                 exit: theme.transitions.duration.shortest,
             }}
-            onTransitionEnd={() =>
-                !isVisible && editTask({ id, isDone: false })
-            }
+            onTransitionEnd={() => {
+                actionAfterFade?.();
+                setActionAfterFade(null);
+            }}
         >
             <TaskItemCompletedContainer ref={ref}>
                 <TaskItemTitleContainer>
@@ -45,7 +45,11 @@ export default function TaskItemCompleted({
                         size="small"
                         color="primary"
                         tabIndex={-1}
-                        onClick={() => setIsVisible(false)}
+                        onClick={() =>
+                            setActionAfterFade(
+                                () => () => editTask({ id, isDone: false })
+                            )
+                        }
                     >
                         <FontAwesomeIcon icon={faUndo} />
                     </IconButton>
@@ -66,7 +70,11 @@ export default function TaskItemCompleted({
                     >
                         <IconButton
                             size="small"
-                            onClick={() => deleteTask({ id })}
+                            onClick={() =>
+                                setActionAfterFade(
+                                    () => () => deleteTask({ id })
+                                )
+                            }
                         >
                             <FontAwesomeIcon icon={faTrash} />
                         </IconButton>

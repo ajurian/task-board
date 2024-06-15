@@ -5,6 +5,7 @@ export const TaskItemContainer = styled(Box, {
         propName !== "isDragging" && propName !== "isFocused",
 })<{ isDragging: boolean; isFocused: boolean }>(
     ({ theme, isDragging, isFocused }) => ({
+        position: "relative",
         paddingInline: theme.spacing(2.75),
         paddingBlock: theme.spacing(1.5),
         transition: theme.transitions.create(

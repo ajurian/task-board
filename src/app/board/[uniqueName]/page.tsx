@@ -1,4 +1,9 @@
+import { TaskBoardGetResponse } from "@/app/api/taskBoards/[id]/route";
 import { TaskBoardsGetResponse } from "@/app/api/taskBoards/route";
+import {
+    AggregatedTaskBoardModelSchema,
+    TaskBoardModelSchema,
+} from "@/schema/taskBoard";
 import { Box } from "@mui/material";
 import axios from "axios";
 import { notFound } from "next/navigation";
@@ -14,23 +19,33 @@ interface Segment {
     };
 }
 
+const OWNER_ID = "6659316caa5d86e144e64e3b";
+
 export default async function BoardPage({ params }: Segment) {
     const { uniqueName } = params;
+
     const {
-        data: { taskBoards },
+        data: { taskBoards: taskBoardsRaw },
     } = await axios.get<TaskBoardsGetResponse>(
-        "http://localhost:3000/api/taskBoards"
+        `http://localhost:3000/api/taskBoards?ownerId=${OWNER_ID}`
+    );
+    const taskBoards = TaskBoardModelSchema.array().parse(taskBoardsRaw);
+
+    const selectedTaskBoardIncomplete = taskBoards.find(
+        (taskBoards) => taskBoards.uniqueName === uniqueName
     );
 
-    const taskBoard = taskBoards.find(
-        (taskBoard) =>
-            taskBoard.ownerId === "6659316caa5d86e144e64e3b" &&
-            taskBoard.uniqueName === uniqueName
-    );
-
-    if (taskBoard === undefined) {
+    if (selectedTaskBoardIncomplete === undefined) {
         return notFound();
     }
+
+    const {
+        data: { taskBoard: selectedTaskBoardRaw },
+    } = await axios.get<TaskBoardGetResponse>(
+        `http://localhost:3000/api/taskBoards/${selectedTaskBoardIncomplete.id}`
+    );
+    const selectedTaskBoard =
+        AggregatedTaskBoardModelSchema.parse(selectedTaskBoardRaw);
 
     return (
         <Box
@@ -42,11 +57,11 @@ export default async function BoardPage({ params }: Segment) {
                 maxHeight: "100vh",
             }}
         >
-            <TaskQueryProvider boardId={taskBoard.id}>
+            <TaskQueryProvider selectedTaskBoard={selectedTaskBoard}>
                 <DragDropProvider>
                     <DirectionProvider>
                         <Header taskBoards={taskBoards} />
-                        <TaskBoard {...taskBoard} />
+                        <TaskBoard {...selectedTaskBoard} />
                     </DirectionProvider>
                 </DragDropProvider>
             </TaskQueryProvider>

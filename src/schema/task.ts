@@ -7,8 +7,20 @@ export const TaskModelSchema = z.object({
     title: z.string(),
     details: z.string(),
     isDone: z.boolean(),
-    createdAt: z.date(),
-    dueAt: z.date().nullable(),
+    createdAt: z.coerce.date(),
+    dueAt: z.coerce.date().nullable(),
+});
+
+export const AggregatedTaskModelSchema = TaskModelSchema.extend({
+    highlights: z.array(
+        z.object({
+            score: z.number(),
+            path: z.enum(["title", "details"]),
+            texts: z.array(
+                z.object({ value: z.string(), type: z.enum(["text", "hit"]) })
+            ),
+        })
+    ),
 });
 
 export const TaskCreateSchema = TaskModelSchema.omit({
@@ -33,5 +45,6 @@ export const TaskUpdateSchema = TaskModelSchema.omit({
     );
 
 export type TaskModel = z.infer<typeof TaskModelSchema>;
+export type AggregatedTaskModel = z.infer<typeof AggregatedTaskModelSchema>;
 export type TaskCreate = z.infer<typeof TaskCreateSchema>;
 export type TaskUpdate = z.infer<typeof TaskUpdateSchema>;

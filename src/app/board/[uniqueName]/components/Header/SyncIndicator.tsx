@@ -8,21 +8,15 @@ import { useCallback, useEffect } from "react";
 import { useTaskQuery } from "../../providers/TaskQueryProvider";
 
 export default function SyncIndicator() {
-    const queryClient = useQueryClient();
-    const { taskListsQuery, isMutationOngoing, isChangesSaved } =
+    const { taskBoardQuery, refreshData, isMutationOngoing, isChangesSaved } =
         useTaskQuery();
-    const isLoading = taskListsQuery.isRefetching || isMutationOngoing;
-
-    const refetchData = useCallback(
-        () => queryClient.invalidateQueries({ queryKey: ["taskLists"] }),
-        [queryClient]
-    );
+    const isLoading = taskBoardQuery.isRefetching || isMutationOngoing;
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.ctrlKey && e.key === "R") {
                 e.preventDefault();
-                refetchData();
+                refreshData();
             }
         };
 
@@ -43,14 +37,14 @@ export default function SyncIndicator() {
             window.removeEventListener("keydown", handleKeyDown);
             window.removeEventListener("beforeunload", handleBeforeUnload);
         };
-    }, [isChangesSaved, refetchData]);
+    }, [isChangesSaved, refreshData]);
 
     return isLoading ? (
         <Box color="text.secondary" maxHeight={20} mr={2}>
             <CircularProgress size={20} color="inherit" />
         </Box>
     ) : (
-        <IconButton tabIndex={-1} size="small" onClick={refetchData}>
+        <IconButton tabIndex={-1} size="small" onClick={refreshData}>
             <FontAwesomeIcon icon={faRefresh} />
         </IconButton>
     );

@@ -1,5 +1,5 @@
 import { useTaskQuery } from "@/app/board/[uniqueName]/providers/TaskQueryProvider";
-import { TaskModel } from "@/schema/task";
+import { AggregatedTaskModel } from "@/schema/task";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Draggable } from "@hello-pangea/dnd";
@@ -17,11 +17,18 @@ import {
     TaskItemTitleText,
 } from "./ui";
 
-export interface TaskItemProps extends Omit<TaskModel, "isDone"> {
-    isDone: false;
+export interface TaskItemProps extends Omit<AggregatedTaskModel, "isDone"> {
+    index: number;
 }
 
-export default function TaskItem({ id, order, title, details }: TaskItemProps) {
+export default function TaskItem({
+    index,
+    id,
+    order,
+    title,
+    details,
+    highlights,
+}: TaskItemProps) {
     const initialTitle = useMemo(() => title.replace(/\\n/g, "\n"), [title]);
     const initialDetails = useMemo(
         () => details.replace(/\\n/g, "\n"),
@@ -36,7 +43,11 @@ export default function TaskItem({ id, order, title, details }: TaskItemProps) {
     const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
     const detailsInputRef = useRef<HTMLTextAreaElement | null>(null);
 
-    const { editTask } = useTaskQuery();
+    const theme = useTheme();
+    const [actionAfterFade, setActionAfterFade] = useState<(() => void) | null>(
+        null
+    );
+    const { editTask, deleteTask, searchQuery } = useTaskQuery();
 
     const { ref, isFocused, contentEditableProps } = useContentEditable({
         onNodeIgnore: (node): boolean =>
@@ -77,90 +88,139 @@ export default function TaskItem({ id, order, title, details }: TaskItemProps) {
         },
     });
 
-    const [fadeIn, setFadeIn] = useState(true);
-    const theme = useTheme();
+    const titleHighlight = useMemo(
+        () =>
+            highlights.find((highlight) => highlight.path === "title") ?? null,
+        [highlights]
+    );
+
+    const highlightedTitleText = useMemo(
+        () =>
+            titleHighlight?.texts.map((text, index) =>
+                text.type === "text" ? (
+                    text.value
+                ) : (
+                    <mark key={index}>{text.value}</mark>
+                )
+            ),
+        [titleHighlight?.texts]
+    );
+
+    const detailsHighlight = useMemo(
+        () =>
+            highlights.find((highlight) => highlight.path === "details") ??
+            null,
+        [highlights]
+    );
+
+    const highlightedDetailsText = useMemo(
+        () =>
+            detailsHighlight?.texts.map((text, index) =>
+                text.type === "text" ? (
+                    text.value
+                ) : (
+                    <mark key={index}>{text.value}</mark>
+                )
+            ),
+        [detailsHighlight?.texts]
+    );
 
     return (
-        <Draggable draggableId={id} index={order} isDragDisabled={isFocused}>
+        <Draggable
+            key={id}
+            draggableId={id}
+            index={index}
+            isDragDisabled={isFocused || searchQuery.length > 0}
+        >
             {(
                 { draggableProps, dragHandleProps, innerRef },
                 { isDragging }
             ) => (
                 <Fade
-                    in={fadeIn}
+                    in={actionAfterFade === null}
                     timeout={{
                         enter: 0,
                         exit: theme.transitions.duration.leavingScreen,
                     }}
                     onTransitionEnd={() => {
-                        if (!fadeIn) {
-                            editTask({ id, isDone: true });
-                        }
+                        actionAfterFade?.();
+                        setActionAfterFade(null);
                     }}
                 >
-                    <TaskItemContainer
-                        {...draggableProps}
-                        {...dragHandleProps}
-                        {...contentEditableProps}
-                        ref={(node: HTMLElement | null) => {
-                            innerRef(node);
-                            ref.current = node;
-                        }}
-                        isDragging={isDragging}
-                        isFocused={isFocused}
-                    >
-                        <TaskItemTitleContainer>
-                            <IconButton
-                                size="small"
-                                color="primary"
-                                tabIndex={isFocused ? 0 : -1}
-                                onClick={() => setFadeIn(false)}
-                            >
-                                <FontAwesomeIcon icon={faCheck} />
-                            </IconButton>
-                            <Typography variant="subtitle1">
-                                ({order})
-                            </Typography>
-                            <TaskItemTitleInput
-                                inputRef={titleInputRef}
+                    <div>
+                        <TaskItemContainer
+                            {...draggableProps}
+                            {...dragHandleProps}
+                            {...contentEditableProps}
+                            ref={(node: HTMLElement | null) => {
+                                innerRef(node);
+                                ref.current = node;
+                            }}
+                            isDragging={isDragging}
+                            isFocused={isFocused}
+                        >
+                            <TaskItemTitleContainer>
+                                <IconButton
+                                    size="small"
+                                    color="primary"
+                                    tabIndex={isFocused ? 0 : -1}
+                                    onClick={() =>
+                                        setActionAfterFade(
+                                            () => () =>
+                                                editTask({ id, isDone: true })
+                                        )
+                                    }
+                                >
+                                    <FontAwesomeIcon icon={faCheck} />
+                                </IconButton>
+                                <Typography variant="subtitle1">
+                                    ({order})
+                                </Typography>
+                                <TaskItemTitleInput
+                                    inputRef={titleInputRef}
+                                    isContainerFocused={isFocused}
+                                    value={titleInput}
+                                    onChange={setTitleInput}
+                                    onFocus={(e) => e.currentTarget.select()}
+                                    size="small"
+                                    multiline
+                                    fullWidth
+                                />
+                                <TaskItemTitleText
+                                    ref={titleRef}
+                                    isContainerFocused={isFocused}
+                                    variant="subtitle1"
+                                >
+                                    {initialTitle}
+                                </TaskItemTitleText>
+                                <TaskItemMenu
+                                    onEdit={() => ref.current?.click()}
+                                    onDelete={() =>
+                                        setActionAfterFade(
+                                            () => () => deleteTask({ id })
+                                        )
+                                    }
+                                />
+                            </TaskItemTitleContainer>
+                            <TaskItemDetailsInput
+                                inputRef={detailsInputRef}
                                 isContainerFocused={isFocused}
-                                value={titleInput}
-                                onChange={setTitleInput}
+                                value={detailsInput}
+                                onChange={setDetailsInput}
                                 onFocus={(e) => e.currentTarget.select()}
                                 size="small"
                                 multiline
                                 fullWidth
                             />
-                            <TaskItemTitleText
-                                ref={titleRef}
+                            <TaskItemDetailsText
+                                ref={detailsRef}
                                 isContainerFocused={isFocused}
-                                variant="subtitle1"
+                                variant="body2"
                             >
-                                {initialTitle}
-                            </TaskItemTitleText>
-                            <TaskItemMenu
-                                taskId={id}
-                                onEditTask={() => ref.current?.click()}
-                            />
-                        </TaskItemTitleContainer>
-                        <TaskItemDetailsInput
-                            inputRef={detailsInputRef}
-                            isContainerFocused={isFocused}
-                            value={detailsInput}
-                            onChange={setDetailsInput}
-                            onFocus={(e) => e.currentTarget.select()}
-                            size="small"
-                            multiline
-                            fullWidth
-                        />
-                        <TaskItemDetailsText
-                            ref={detailsRef}
-                            isContainerFocused={isFocused}
-                            variant="body2"
-                        >
-                            {initialDetails}
-                        </TaskItemDetailsText>
-                    </TaskItemContainer>
+                                {initialDetails}
+                            </TaskItemDetailsText>
+                        </TaskItemContainer>
+                    </div>
                 </Fade>
             )}
         </Draggable>

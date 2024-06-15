@@ -54,9 +54,9 @@ export default function Sidebar({ taskBoards }: SidebarProps) {
                     </Box>
                     <Divider />
                     <List>
-                        {taskBoards.map(({ id, displayName }) => (
+                        {taskBoards.map(({ displayName }, index) => (
                             <SidebarItem
-                                key={id}
+                                key={index}
                                 icon={faTableColumns}
                                 text={displayName}
                             />

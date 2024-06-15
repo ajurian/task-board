@@ -1,4 +1,3 @@
-import { useTaskQuery } from "@/app/board/[uniqueName]/providers/TaskQueryProvider";
 import {
     faEllipsisVertical,
     faPen,
@@ -9,27 +8,22 @@ import { IconButton, ListItemIcon, Menu, MenuItem } from "@mui/material";
 import { useId, useRef, useState } from "react";
 
 interface TaskItemMenuProps {
-    taskId: string;
-    onEditTask: () => void;
+    onEdit: () => void;
+    onDelete: () => void;
 }
 
-export default function TaskItemMenu({
-    onEditTask,
-    taskId,
-}: TaskItemMenuProps) {
+export default function TaskItemMenu({ onEdit, onDelete }: TaskItemMenuProps) {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const shouldFocusOnTaskRef = useRef<boolean>(false);
     const buttonId = useId();
     const menuId = useId();
     const open = Boolean(anchorEl);
 
-    const { deleteTask } = useTaskQuery();
-
     const handleClose = () => setAnchorEl(null);
 
     const handleTransitionEnd = () => {
         if (!open && shouldFocusOnTaskRef.current) {
-            onEditTask();
+            onEdit();
             shouldFocusOnTaskRef.current = false;
         }
     };
@@ -40,7 +34,7 @@ export default function TaskItemMenu({
     };
 
     const handleDeleteListClick = () => {
-        deleteTask({ id: taskId });
+        onDelete();
         handleClose();
     };
 

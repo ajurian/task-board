@@ -1,29 +1,27 @@
+import { TaskModel } from "@/schema/task";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box } from "@mui/material";
 import { Dispatch, SetStateAction } from "react";
 import useHeight from "./hooks/useHeight";
-import { TaskItemProps } from "./TaskItem";
-import TaskListItemsWrapper from "./TaskListItemsWrapper";
+import TaskItemCompleted from "./TaskItem/TaskItemCompleted";
 import {
     TaskListCompletedItemsContainer,
     TaskListCompletedItemsTrigger,
     TaskListCompletedItemsTriggerIcon,
     TaskListCompletedItemsTriggerText,
     TaskListCompletedItemsWrapper,
+    TaskListItemsContainer,
 } from "./ui";
-import { TaskItemCompletedProps } from "./TaskItem/TaskItemCompleted";
 
 interface TaskListCompletedItemsProps {
-    tasks: (TaskItemProps | TaskItemCompletedProps)[];
-    order: number;
+    tasks: TaskModel[];
     isOpen: boolean;
     onOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function TaskListCompletedItems({
     tasks,
-    order,
     isOpen,
     onOpen,
 }: TaskListCompletedItemsProps) {
@@ -44,11 +42,11 @@ export default function TaskListCompletedItems({
                 </Box>
             </TaskListCompletedItemsTrigger>
             <TaskListCompletedItemsWrapper height={height} isOpen={isOpen}>
-                <TaskListItemsWrapper
-                    ref={itemsWrapperRef}
-                    order={order}
-                    tasks={tasks}
-                />
+                <TaskListItemsContainer ref={itemsWrapperRef}>
+                    {tasks.map((task, index) => (
+                        <TaskItemCompleted key={index} {...task} />
+                    ))}
+                </TaskListItemsContainer>
             </TaskListCompletedItemsWrapper>
         </TaskListCompletedItemsContainer>
     );
