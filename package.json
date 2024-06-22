@@ -21,17 +21,20 @@
         "@mantine/hooks": "^7.9.2",
         "@mui/material": "^5.15.18",
         "@mui/material-nextjs": "^5.15.11",
-        "@prisma/client": "^5.14.0",
+        "@prisma/client": "^5.15.1",
         "@tanstack/react-query": "^5.37.1",
         "axios": "^1.7.2",
         "bson-objectid": "^2.0.4",
+        "client-only": "^0.0.1",
         "clsx": "^2.1.1",
-        "firebase": "^10.12.1",
+        "firebase": "^10.12.2",
+        "firebase-admin": "^12.1.1",
         "lodash": "^4.17.21",
         "next": "14.2.3",
         "react": "^18",
         "react-dom": "^18",
         "react-transition-group": "^4.4.5",
+        "server-only": "^0.0.1",
         "zod": "^3.23.8"
     },
     "devDependencies": {
@@ -42,7 +45,8 @@
         "@types/react-transition-group": "^4",
         "eslint": "^8",
         "eslint-config-next": "14.2.3",
-        "prisma": "^5.14.0",
+        "prisma": "^5.15.1",
         "typescript": "^5"
-    }
+    },
+    "packageManager": "yarn@4.3.0+sha512.1606bef7c84bc7d83b8576063de2fd08f7d69f9939015bed800f9585a002390268ecc777e9feeba7e26e9556aef6beaad4806968db2182ab5dd3e955ab3b9a0b"
 }

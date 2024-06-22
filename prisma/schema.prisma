@@ -11,6 +11,7 @@ model User {
     id          String      @id @default(auto()) @map("_id") @db.ObjectId
     email       String      @unique
     displayName String
+    photoURL    String?
     createdAt   DateTime    @default(now())
     taskBoards  TaskBoard[]
 
@@ -23,6 +24,7 @@ model TaskBoard {
     owner       User       @relation(fields: [ownerId], references: [id])
     uniqueName  String
     displayName String
+    photoURL    String?
     createdAt   DateTime   @default(now())
     taskLists   TaskList[]
 
