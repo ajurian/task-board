@@ -2,8 +2,8 @@
 
 import { TaskBoardModel } from "@/_/schema/taskBoard";
 import { Droppable } from "@hello-pangea/dnd";
-import { useDirection } from "../../_providers/DirectionProvider";
-import { useTaskQuery } from "../../_providers/TaskQueryProvider";
+import { useDirection } from "../../providers/DirectionProvider";
+import { useTaskQuery } from "../../providers/TaskQueryProvider";
 import TaskBoardHeader from "./TaskBoardHeader";
 import TaskList from "./TaskList";
 import TaskListPlaceholder from "./TaskList/TaskListPlaceholder";

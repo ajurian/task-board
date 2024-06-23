@@ -10,7 +10,7 @@ import {
     useRef,
     useState,
 } from "react";
-import { useTaskQuery } from "../../_providers/TaskQueryProvider";
+import { useTaskQuery } from "../../providers/TaskQueryProvider";
 
 export default function SearchInput() {
     const { setSearchQuery, searchQuery } = useTaskQuery();

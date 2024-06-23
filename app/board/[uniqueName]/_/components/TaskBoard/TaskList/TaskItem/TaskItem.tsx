@@ -201,7 +201,7 @@ export default function TaskItem({
                                     onEdit={() => ref.current?.click()}
                                     onDelete={() =>
                                         setActionAfterFade(
-                                            () => () => console.count()
+                                            () => () => deleteTask({ id })
                                         )
                                     }
                                 />

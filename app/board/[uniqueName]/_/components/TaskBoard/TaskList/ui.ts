@@ -1,5 +1,5 @@
-import { Direction } from "@/board/[uniqueName]/_/providers/DirectionProvider";
 import { Box, Button, InputBase, styled, Typography } from "@mui/material";
+import { Direction } from "../../../providers/DirectionProvider";
 
 export const TaskListContainer = styled(Box, {
     shouldForwardProp: (propName) => propName !== "direction",

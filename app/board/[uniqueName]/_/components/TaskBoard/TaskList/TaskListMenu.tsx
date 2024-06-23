@@ -1,4 +1,3 @@
-import { useTaskQuery } from "@/board/[uniqueName]/_/providers/TaskQueryProvider";
 import {
     faEllipsisVertical,
     faPen,
@@ -7,6 +6,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconButton, ListItemIcon, Menu, MenuItem } from "@mui/material";
 import { useId, useRef, useState } from "react";
+import { useTaskQuery } from "../../../providers/TaskQueryProvider";
 
 interface TaskListMenuProps {
     listId: string;

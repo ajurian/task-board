@@ -1,8 +1,8 @@
 import { AggregatedTaskListModel } from "@/_/schema/taskList";
-import { useDirection } from "@/board/[uniqueName]/_/providers/DirectionProvider";
-import { useTaskQuery } from "@/board/[uniqueName]/_/providers/TaskQueryProvider";
 import { Draggable } from "@hello-pangea/dnd";
 import { useMemo, useState } from "react";
+import { useDirection } from "../../../providers/DirectionProvider";
+import { useTaskQuery } from "../../../providers/TaskQueryProvider";
 import TaskItemPlaceholder from "./TaskItem/TaskItemPlaceholder";
 import TaskListCompletedItems from "./TaskListCompletedItems";
 import TaskListHeader from "./TaskListHeader";

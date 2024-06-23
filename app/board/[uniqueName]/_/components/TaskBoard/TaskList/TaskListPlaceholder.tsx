@@ -1,10 +1,10 @@
-import { useDirection } from "@/board/[uniqueName]/_/providers/DirectionProvider";
-import { useTaskQuery } from "@/board/[uniqueName]/_/providers/TaskQueryProvider";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useInputState } from "@mantine/hooks";
 import { Typography } from "@mui/material";
 import { useRef } from "react";
+import { useDirection } from "../../../providers/DirectionProvider";
+import { useTaskQuery } from "../../../providers/TaskQueryProvider";
 import useContentEditable from "../hooks/useContentEditable";
 import {
     TaskListPlaceholderContainer,

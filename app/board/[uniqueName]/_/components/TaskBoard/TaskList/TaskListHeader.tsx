@@ -1,6 +1,6 @@
-import { useTaskQuery } from "@/board/[uniqueName]/_/providers/TaskQueryProvider";
 import { useInputState } from "@mantine/hooks";
 import { useRef } from "react";
+import { useTaskQuery } from "../../../providers/TaskQueryProvider";
 import useContentEditable from "../hooks/useContentEditable";
 import TaskListMenu from "./TaskListMenu";
 import {

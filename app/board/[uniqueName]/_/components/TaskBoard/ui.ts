@@ -1,5 +1,5 @@
 import { Box, styled } from "@mui/material";
-import { Direction } from "../../_providers/DirectionProvider";
+import { Direction } from "../../providers/DirectionProvider";
 
 export const TaskBoardContainer = styled(Box)(({ theme }) => ({
     flex: 1,
