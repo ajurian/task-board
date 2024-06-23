@@ -1,6 +1,6 @@
 import "client-only";
 
-import clientAPI from "@/_/services/clientAPI";
+import ClientAPI from "@/_/services/ClientAPI";
 import { AxiosRequestConfig } from "axios";
 import {
     TaskListDeleteResponse,
@@ -22,7 +22,7 @@ const API_URL = "/taskLists";
 
 const ClientTaskListAPI = {
     getAll: (config?: AxiosRequestConfig<{}>) =>
-        clientAPI.get<TaskListsGetResponse>(API_URL, {
+        ClientAPI.get<TaskListsGetResponse>(API_URL, {
             ...config,
             schema: TaskListsGetResponseSchema,
         }),
@@ -30,12 +30,12 @@ const ClientTaskListAPI = {
         data: TaskListsPostBody,
         config?: AxiosRequestConfig<TaskListsPostBody>
     ) =>
-        clientAPI.post<TaskListsPostResponse>(API_URL, data, {
+        ClientAPI.post<TaskListsPostResponse>(API_URL, data, {
             ...config,
             schema: TaskListsPostResponseSchema,
         }),
     get: (id: string, config?: AxiosRequestConfig<{}>) =>
-        clientAPI.get<TaskListGetResponse>(`${API_URL}/${id}`, {
+        ClientAPI.get<TaskListGetResponse>(`${API_URL}/${id}`, {
             ...config,
             schema: TaskListGetResponseSchema,
         }),
@@ -44,19 +44,19 @@ const ClientTaskListAPI = {
         data: TaskListPatchBody,
         config?: AxiosRequestConfig<TaskListPatchBody>
     ) =>
-        clientAPI.patch<TaskListPatchResponse>(`${API_URL}/${id}`, data, {
+        ClientAPI.patch<TaskListPatchResponse>(`${API_URL}/${id}`, data, {
             ...config,
             schema: TaskListPatchResponseSchema,
         }),
     delete: (id: string, config?: AxiosRequestConfig<{}>) =>
-        clientAPI.delete<TaskListDeleteResponse>(`${API_URL}/${id}`, {
+        ClientAPI.delete<TaskListDeleteResponse>(`${API_URL}/${id}`, {
             ...config,
             schema: TaskListDeleteResponseSchema,
         }),
     reorder: (
         data: TaskListsReorderPostBody,
         config?: AxiosRequestConfig<TaskListsReorderPostBody>
-    ) => clientAPI.post(`${API_URL}/reorder`, data, config),
+    ) => ClientAPI.post(`${API_URL}/reorder`, data, config),
 };
 
 export default ClientTaskListAPI;

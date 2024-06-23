@@ -10,12 +10,24 @@ import {
 interface SidebarItemProps {
     icon: IconDefinition;
     text: string;
+    id?: string;
+    active?: boolean;
 }
 
-export default function SidebarItem({ icon, text }: SidebarItemProps) {
+export default function SidebarItem({
+    icon,
+    text,
+    id,
+    active = false,
+}: SidebarItemProps) {
+    const shouldPutHref = !active && id !== undefined;
+
     return (
         <ListItem disablePadding>
-            <ListItemButton>
+            <ListItemButton
+                {...(shouldPutHref && { href: `/board/${id}` })}
+                disabled={active}
+            >
                 <ListItemIcon sx={{ minWidth: 0, mr: 4 }}>
                     <FontAwesomeIcon icon={icon} />
                 </ListItemIcon>

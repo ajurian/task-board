@@ -1,6 +1,6 @@
 import "client-only";
 
-import clientAPI from "@/_/services/clientAPI";
+import ClientAPI from "@/_/services/ClientAPI";
 import { AxiosRequestConfig } from "axios";
 import {
     UsersPostBody,
@@ -12,7 +12,7 @@ const API_URL = "/users";
 
 const ClientUserAPI = {
     post: (data: UsersPostBody, config?: AxiosRequestConfig<UsersPostBody>) =>
-        clientAPI.post<UsersPostResponse>(API_URL, data, {
+        ClientAPI.post<UsersPostResponse>(API_URL, data, {
             ...config,
             schema: UsersPostResponseSchema,
         }),

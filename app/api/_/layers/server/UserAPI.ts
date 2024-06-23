@@ -1,4 +1,4 @@
-import serverAPI from "@/_/services/serverAPI";
+import ServerAPI from "@/_/services/ServerAPI";
 import { AxiosRequestConfig } from "axios";
 import {
     UsersPostBody,
@@ -10,7 +10,7 @@ const API_URL = "/users";
 
 const ServerUserAPI = {
     post: (data: UsersPostBody, config?: AxiosRequestConfig<UsersPostBody>) =>
-        serverAPI.post<UsersPostResponse>(API_URL, data, {
+        ServerAPI.post<UsersPostResponse>(API_URL, data, {
             ...config,
             schema: UsersPostResponseSchema,
         }),

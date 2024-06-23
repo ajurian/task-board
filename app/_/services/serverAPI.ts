@@ -3,16 +3,16 @@ import "server-only";
 import axios from "axios";
 import { cookies } from "next/headers";
 
-const serverAPI = axios.create({
+const ServerAPI = axios.create({
     baseURL: `${process.env.NEXT_PUBLIC_SITE_URL}/api`,
 });
 
-serverAPI.interceptors.request.use(async (config) => {
+ServerAPI.interceptors.request.use(async (config) => {
     config.headers.cookie = cookies().toString();
     return config;
 });
 
-serverAPI.interceptors.response.use((response) => {
+ServerAPI.interceptors.response.use((response) => {
     const { config } = response;
 
     if (config.schema) {
@@ -22,4 +22,4 @@ serverAPI.interceptors.response.use((response) => {
     return response;
 });
 
-export default serverAPI;
+export default ServerAPI;

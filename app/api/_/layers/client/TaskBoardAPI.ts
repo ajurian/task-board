@@ -1,6 +1,6 @@
 import "client-only";
 
-import clientAPI from "@/_/services/clientAPI";
+import ClientAPI from "@/_/services/ClientAPI";
 import { AxiosRequestConfig } from "axios";
 import {
     TaskBoardDeleteResponse,
@@ -21,7 +21,7 @@ const API_URL = "/taskBoards";
 
 const ClientTaskBoardAPI = {
     getAll: (config?: AxiosRequestConfig<{}>) =>
-        clientAPI.get<TaskBoardsGetResponse>(API_URL, {
+        ClientAPI.get<TaskBoardsGetResponse>(API_URL, {
             ...config,
             schema: TaskBoardsGetResponseSchema,
         }),
@@ -29,12 +29,12 @@ const ClientTaskBoardAPI = {
         data: TaskBoardsPostBody,
         config?: AxiosRequestConfig<TaskBoardsPostBody>
     ) =>
-        clientAPI.post<TaskBoardsPostResponse>(API_URL, data, {
+        ClientAPI.post<TaskBoardsPostResponse>(API_URL, data, {
             ...config,
             schema: TaskBoardsPostResponseSchema,
         }),
     get: (id: string, config?: AxiosRequestConfig<{}>) =>
-        clientAPI.get<TaskBoardGetResponse>(`${API_URL}/${id}`, {
+        ClientAPI.get<TaskBoardGetResponse>(`${API_URL}/${id}`, {
             ...config,
             schema: TaskBoardGetResponseSchema,
         }),
@@ -43,12 +43,12 @@ const ClientTaskBoardAPI = {
         data: TaskBoardPatchBody,
         config?: AxiosRequestConfig<TaskBoardPatchBody>
     ) =>
-        clientAPI.patch<TaskBoardPatchResponse>(`${API_URL}/${id}`, data, {
+        ClientAPI.patch<TaskBoardPatchResponse>(`${API_URL}/${id}`, data, {
             ...config,
             schema: TaskBoardPatchResponseSchema,
         }),
     delete: (id: string, config?: AxiosRequestConfig<{}>) =>
-        clientAPI.delete<TaskBoardDeleteResponse>(`${API_URL}/${id}`, {
+        ClientAPI.delete<TaskBoardDeleteResponse>(`${API_URL}/${id}`, {
             ...config,
             schema: TaskBoardDeleteResponseSchema,
         }),

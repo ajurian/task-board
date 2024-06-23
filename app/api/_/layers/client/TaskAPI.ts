@@ -1,6 +1,6 @@
 import "client-only";
 
-import clientAPI from "@/_/services/clientAPI";
+import ClientAPI from "@/_/services/ClientAPI";
 import { AxiosRequestConfig } from "axios";
 import {
     TaskDeleteResponse,
@@ -22,17 +22,17 @@ const API_URL = "/tasks";
 
 const ClientTaskAPI = {
     getAll: (config?: AxiosRequestConfig<{}>) =>
-        clientAPI.get<TasksGetResponse>(API_URL, {
+        ClientAPI.get<TasksGetResponse>(API_URL, {
             ...config,
             schema: TasksGetResponseSchema,
         }),
     post: (data: TasksPostBody, config?: AxiosRequestConfig<TasksPostBody>) =>
-        clientAPI.post<TasksPostResponse>(API_URL, data, {
+        ClientAPI.post<TasksPostResponse>(API_URL, data, {
             ...config,
             schema: TasksPostResponseSchema,
         }),
     get: (id: string, config?: AxiosRequestConfig<{}>) =>
-        clientAPI.get<TaskGetResponse>(`${API_URL}/${id}`, {
+        ClientAPI.get<TaskGetResponse>(`${API_URL}/${id}`, {
             ...config,
             schema: TaskGetResponseSchema,
         }),
@@ -41,19 +41,19 @@ const ClientTaskAPI = {
         data: TaskPatchBody,
         config?: AxiosRequestConfig<TaskPatchBody>
     ) =>
-        clientAPI.patch<TaskPatchResponse>(`${API_URL}/${id}`, data, {
+        ClientAPI.patch<TaskPatchResponse>(`${API_URL}/${id}`, data, {
             ...config,
             schema: TaskPatchResponseSchema,
         }),
     delete: (id: string, config?: AxiosRequestConfig<{}>) =>
-        clientAPI.delete<TaskDeleteResponse>(`${API_URL}/${id}`, {
+        ClientAPI.delete<TaskDeleteResponse>(`${API_URL}/${id}`, {
             ...config,
             schema: TaskDeleteResponseSchema,
         }),
     reorder: (
         data: TasksReorderPostBody,
         config?: AxiosRequestConfig<TasksReorderPostBody>
-    ) => clientAPI.post(`${API_URL}/reorder`, data, config),
+    ) => ClientAPI.post(`${API_URL}/reorder`, data, config),
 };
 
 export default ClientTaskAPI;

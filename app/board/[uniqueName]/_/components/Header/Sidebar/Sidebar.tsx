@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import SidebarItem from "./SidebarItem";
+import { useParams } from "next/navigation";
 
 interface SidebarProps {
     taskBoards: TaskBoardModel[];
@@ -24,6 +25,9 @@ interface SidebarProps {
 
 export default function Sidebar({ taskBoards }: SidebarProps) {
     const [open, setOpen] = useState(false);
+    const { uniqueName: activeUniqueName } = useParams<{
+        uniqueName: string;
+    }>();
 
     return (
         <>
@@ -54,13 +58,17 @@ export default function Sidebar({ taskBoards }: SidebarProps) {
                     </Box>
                     <Divider />
                     <List>
-                        {taskBoards.map(({ displayName }, index) => (
-                            <SidebarItem
-                                key={index}
-                                icon={faTableColumns}
-                                text={displayName}
-                            />
-                        ))}
+                        {taskBoards.map(
+                            ({ uniqueName, displayName }, index) => (
+                                <SidebarItem
+                                    key={index}
+                                    icon={faTableColumns}
+                                    id={uniqueName}
+                                    text={displayName}
+                                    active={activeUniqueName === uniqueName}
+                                />
+                            )
+                        )}
                         <SidebarItem icon={faAdd} text="Add board" />
                     </List>
                 </Box>

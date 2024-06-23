@@ -1,10 +1,12 @@
+import "client-only";
+
 import axios from "axios";
 
-const clientAPI = axios.create({
+const ClientAPI = axios.create({
     baseURL: `${process.env.NEXT_PUBLIC_SITE_URL}/api`,
 });
 
-clientAPI.interceptors.response.use((response) => {
+ClientAPI.interceptors.response.use((response) => {
     const { config } = response;
 
     if (config.schema) {
@@ -14,4 +16,4 @@ clientAPI.interceptors.response.use((response) => {
     return response;
 });
 
-export default clientAPI;
+export default ClientAPI;

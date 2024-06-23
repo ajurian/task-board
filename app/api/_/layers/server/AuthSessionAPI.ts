@@ -1,6 +1,6 @@
 import "server-only";
 
-import serverAPI from "@/_/services/serverAPI";
+import ServerAPI from "@/_/services/ServerAPI";
 import { AxiosRequestConfig } from "axios";
 import {
     AuthSessionGetResponse,
@@ -11,13 +11,13 @@ const API_URL = "/auth/session";
 
 const ServerAuthSessionAPI = {
     get: (config?: AxiosRequestConfig<{}>) =>
-        serverAPI.get<AuthSessionGetResponse>(API_URL, config),
+        ServerAPI.get<AuthSessionGetResponse>(API_URL, config),
     post: (
         data: AuthSessionPostBody,
         config?: AxiosRequestConfig<AuthSessionPostBody>
-    ) => serverAPI.post(API_URL, data, config),
+    ) => ServerAPI.post(API_URL, data, config),
     delete: (config?: AxiosRequestConfig<{}>) =>
-        serverAPI.delete(API_URL, config),
+        ServerAPI.delete(API_URL, config),
 };
 
 export default ServerAuthSessionAPI;
