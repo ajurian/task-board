@@ -1,11 +1,11 @@
 import { TaskBoardModel } from "@/_/schema/taskBoard";
 import { Box, NoSsr, Typography } from "@mui/material";
 import HeaderContainer from "./HeaderContainer";
-import SearchInput from "./SearchInput";
+import HeaderDirectionButton from "./HeaderDirectionButton";
+import HeaderProfile from "./HeaderProfile";
+import HeaderSearchInput from "./HeaderSearchInput";
+import HeaderSyncIndicator from "./HeaderSyncIndicator";
 import Sidebar from "./Sidebar";
-import SwitchDirectionButton from "./SwitchDirectionButton";
-import SyncIndicator from "./SyncIndicator";
-import User from "./User";
 
 interface HeaderProps {
     taskBoards: TaskBoardModel[];
@@ -13,14 +13,14 @@ interface HeaderProps {
 
 export default async function Header({ taskBoards }: HeaderProps) {
     return (
-        <HeaderContainer>
+        <HeaderContainer component="header">
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <Sidebar taskBoards={taskBoards} />
                 <Typography variant="h6" color="text.secondary">
                     TaskManager
                 </Typography>
             </Box>
-            <SearchInput />
+            <HeaderSearchInput />
             <Box
                 sx={{
                     display: "flex",
@@ -30,10 +30,10 @@ export default async function Header({ taskBoards }: HeaderProps) {
                 }}
             >
                 <NoSsr>
-                    <SyncIndicator />
+                    <HeaderSyncIndicator />
                 </NoSsr>
-                <SwitchDirectionButton />
-                <User />
+                <HeaderDirectionButton />
+                <HeaderProfile />
             </Box>
         </HeaderContainer>
     );

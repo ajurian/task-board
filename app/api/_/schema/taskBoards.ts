@@ -1,5 +1,6 @@
 import {
     AggregatedTaskBoardModelSchema,
+    NestedTaskBoardCreateSchema,
     TaskBoardCreate,
     TaskBoardModelSchema,
     TaskBoardUpdate,
@@ -22,6 +23,8 @@ export const TaskBoardPatchResponseSchema = z.object({
 });
 export const TaskBoardDeleteResponseSchema = TaskBoardPatchResponseSchema;
 
+export const TaskBoardsSyncPostBodySchema = NestedTaskBoardCreateSchema;
+
 export type TaskBoardsGetResponse = z.infer<typeof TaskBoardsGetResponseSchema>;
 export type TaskBoardsPostBody = TaskBoardCreate;
 export type TaskBoardsPostResponse = z.infer<
@@ -35,4 +38,8 @@ export type TaskBoardPatchResponse = z.infer<
 >;
 export type TaskBoardDeleteResponse = z.infer<
     typeof TaskBoardDeleteResponseSchema
+>;
+
+export type TaskBoardsSyncPostBody = z.infer<
+    typeof TaskBoardsSyncPostBodySchema
 >;

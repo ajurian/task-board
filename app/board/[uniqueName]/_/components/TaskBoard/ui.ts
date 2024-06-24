@@ -1,4 +1,4 @@
-import { Box, styled } from "@mui/material";
+import { Box, InputBase, styled, Typography } from "@mui/material";
 import { Direction } from "../../providers/DirectionProvider";
 
 export const TaskBoardContainer = styled(Box)(({ theme }) => ({
@@ -9,41 +9,64 @@ export const TaskBoardContainer = styled(Box)(({ theme }) => ({
     paddingBlock: theme.spacing(4),
 }));
 
-export const TaskBoardHeaderWrapper = styled(Box, {
+export const TaskBoardHeaderContainer = styled(Box, {
     shouldForwardProp: (propName) => propName !== "direction",
 })<{ direction: Direction }>(({ theme, direction }) => ({
     display: "flex",
     justifyContent: "center",
-    maxWidth: "100vw",
+    marginInline: "auto",
     position: "sticky",
     left: 0,
     marginBottom: theme.spacing(2),
-    paddingInline: theme.spacing(6),
     ...(direction === "row" && {
+        paddingInline: theme.spacing(6),
         paddingRight: theme.spacing(4.75),
+        maxWidth: "100vw",
     }),
     ...(direction === "column" && {
         top: "calc(3.5625rem + 17px)",
         zIndex: theme.zIndex.appBar,
+        backgroundColor: theme.palette.background.paper,
+        borderRadius: theme.shape.borderRadius,
+        boxShadow: theme.shadows[1],
+        maxWidth: theme.spacing(180),
+        paddingBlock: theme.spacing(3),
+        paddingLeft: theme.spacing(4),
+        paddingRight: theme.spacing(2.75),
     }),
 }));
 
-export const TaskBoardHeaderContainer = styled(Box, {
-    shouldForwardProp: (propName) => propName !== "direction",
-})<{ direction: Direction }>(({ theme, direction }) => ({
+export const TaskBoardHeaderDisplayNameContainer = styled(Box)(({ theme }) => ({
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     width: "100%",
     gap: theme.spacing(2),
-    ...(direction === "column" && {
-        backgroundColor: theme.palette.background.paper,
-        borderRadius: theme.shape.borderRadius,
-        boxShadow: theme.shadows[1],
-        paddingBlock: theme.spacing(3),
-        paddingLeft: theme.spacing(4),
-        paddingRight: theme.spacing(2.75),
-        maxWidth: theme.spacing(180),
+}));
+
+export const TaskBoardHeaderDisplayNameText = styled(Typography, {
+    shouldForwardProp: (propName) => propName !== "isContainerFocused",
+})<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
+    color: theme.palette.text.secondary,
+    fontWeight: 400,
+    cursor: "text",
+    ...(isContainerFocused && {
+        display: "none",
+        visibility: "hidden",
+        pointerEvents: "none",
+    }),
+}));
+
+export const TaskBoardHeaderDisplayNameInput = styled(InputBase, {
+    shouldForwardProp: (propName) => propName !== "isContainerFocused",
+})<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
+    ...theme.typography.h6,
+    color: theme.palette.text.secondary,
+    fontWeight: 400,
+    ...(!isContainerFocused && {
+        display: "none",
+        visibility: "hidden",
+        pointerEvents: "none",
     }),
 }));
 

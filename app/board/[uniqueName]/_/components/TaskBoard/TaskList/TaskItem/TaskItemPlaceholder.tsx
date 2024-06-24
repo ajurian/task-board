@@ -1,4 +1,4 @@
-import { useTaskQuery } from "@/board/[uniqueName]/_/providers/TaskQueryProvider";
+import { useTaskBoard } from "@/board/[uniqueName]/_/providers/TaskBoardProvider";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useInputState } from "@mantine/hooks";
@@ -25,7 +25,7 @@ export default function TaskItemPlaceholder({
     const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
     const detailsInputRef = useRef<HTMLTextAreaElement | null>(null);
 
-    const { addTask } = useTaskQuery();
+    const { addTask } = useTaskBoard();
 
     const { ref, isFocused, contentEditableProps } = useContentEditable({
         onFocus: () => titleInputRef.current?.focus(),
@@ -79,6 +79,7 @@ export default function TaskItemPlaceholder({
                 <TaskItemTitleText
                     isContainerFocused={isFocused}
                     variant="subtitle1"
+                    sx={{ fontWeight: 500 }}
                 >
                     Add new task
                 </TaskItemTitleText>

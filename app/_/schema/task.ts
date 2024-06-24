@@ -12,15 +12,15 @@ export const TaskModelSchema = z.object({
 });
 
 export const AggregatedTaskModelSchema = TaskModelSchema.extend({
-    highlights: z.array(
-        z.object({
+    highlights: z
+        .object({
             score: z.number(),
             path: z.enum(["title", "details"]),
-            texts: z.array(
-                z.object({ value: z.string(), type: z.enum(["text", "hit"]) })
-            ),
+            texts: z
+                .object({ value: z.string(), type: z.enum(["text", "hit"]) })
+                .array(),
         })
-    ),
+        .array(),
 });
 
 export const TaskCreateSchema = TaskModelSchema.omit({

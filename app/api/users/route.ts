@@ -12,6 +12,14 @@ export async function POST(request: NextRequest) {
 
     if (user === null) {
         user = await prisma.user.create({ data });
+
+        await prisma.taskBoard.create({
+            data: {
+                ownerId: user.id,
+                uniqueName: "main",
+                displayName: "Main board",
+            },
+        });
     } else {
         await prisma.user.update({ where: { id: user.id }, data });
     }

@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { AggregatedTaskModelSchema } from "./task";
+import {
+    AggregatedTaskModelSchema,
+    TaskModelSchema
+} from "./task";
 
 export const TaskListModelSchema = z.object({
     id: z.string(),
@@ -10,12 +13,16 @@ export const TaskListModelSchema = z.object({
 });
 
 export const AggregatedTaskListModelSchema = TaskListModelSchema.extend({
-    tasks: z.array(AggregatedTaskModelSchema),
+    tasks: AggregatedTaskModelSchema.array(),
 });
 
 export const TaskListCreateSchema = TaskListModelSchema.omit({
     order: true,
     createdAt: true,
+});
+
+export const NestedTaskListCreateSchema = TaskListModelSchema.extend({
+    tasks: TaskModelSchema.array(),
 });
 
 export const TaskListUpdateSchema = TaskListCreateSchema.omit({
@@ -28,4 +35,5 @@ export type AggregatedTaskListModel = z.infer<
     typeof AggregatedTaskListModelSchema
 >;
 export type TaskListCreate = z.infer<typeof TaskListCreateSchema>;
+export type NestedTaskListCreate = z.infer<typeof NestedTaskListCreateSchema>;
 export type TaskListUpdate = z.infer<typeof TaskListUpdateSchema>;

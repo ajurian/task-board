@@ -11,6 +11,7 @@ import React, {
 } from "react";
 
 interface UseContentEditableOptions<T extends HTMLElement> {
+    isEditDisabled?: boolean;
     onNodeIgnore?: (node: HTMLElement) => boolean;
     onFocus?: (node: HTMLElement) => void;
     onStateReset?: () => void;
@@ -18,6 +19,7 @@ interface UseContentEditableOptions<T extends HTMLElement> {
 }
 
 export default function useContentEditable<T extends HTMLElement>({
+    isEditDisabled = false,
     onNodeIgnore,
     onFocus,
     onStateReset,
@@ -66,9 +68,9 @@ export default function useContentEditable<T extends HTMLElement>({
                     return;
                 }
 
-                const shouldContinue = onEdit?.(e) ?? true;
+                const shouldBlur = onEdit?.(e) ?? true;
 
-                if (!shouldContinue) {
+                if (!shouldBlur) {
                     return;
                 }
 
@@ -104,14 +106,17 @@ export default function useContentEditable<T extends HTMLElement>({
     );
 
     const contentEditableProps = useMemo<HTMLAttributes<T>>(
-        () => ({
-            role: "button",
-            tabIndex: focusedElement === null ? 0 : -1,
-            onClick,
-            onKeyDown,
-            onBlur,
-        }),
-        [onClick, onKeyDown, onBlur, focusedElement]
+        () =>
+            isEditDisabled
+                ? {}
+                : {
+                      role: "button",
+                      tabIndex: focusedElement === null ? 0 : -1,
+                      onClick,
+                      onKeyDown,
+                      onBlur,
+                  },
+        [isEditDisabled, onClick, onKeyDown, onBlur, focusedElement]
     );
 
     useLayoutEffect(() => {

@@ -1,5 +1,6 @@
 "use client";
 
+import { NestedTaskBoardCreate } from "@/_/schema/taskBoard";
 import { AggregatedTaskListModel } from "@/_/schema/taskList";
 import ClientTaskAPI from "@/api/_/layers/client/TaskAPI";
 import ClientTaskBoardAPI from "@/api/_/layers/client/TaskBoardAPI";
@@ -25,30 +26,31 @@ import {
     EditTaskOptions,
     MoveTaskListOptions,
     MoveTaskOptions,
+    RenameTaskBoardOptions,
     RenameTaskListOptions,
-    TaskQueryContextValue,
-    TaskQueryProviderProps,
-} from "./TaskQueryProviderTypes";
+    TaskBoardContextValue,
+    TaskBoardProviderProps,
+} from "./TaskBoardProviderTypes";
 import reorderArray from "./utils/reorderArray";
 
-const TaskQueryContext = createContext<TaskQueryContextValue | null>(null);
+const TaskBoardContext = createContext<TaskBoardContextValue | null>(null);
 
-export const useTaskQuery = () => {
-    const value = useContext(TaskQueryContext);
+export const useTaskBoard = () => {
+    const value = useContext(TaskBoardContext);
 
     if (value === null) {
         throw new Error(
-            "`useTaskQuery` hook must be used inside of 'TaskQueryProvider'."
+            "`useTaskBoard` hook must be used inside of 'TaskBoardProvider'."
         );
     }
 
     return value;
 };
 
-export default function TaskQueryProvider({
+export default function TaskBoardProvider({
     selectedTaskBoard,
     children,
-}: TaskQueryProviderProps) {
+}: TaskBoardProviderProps) {
     const queryClient = useQueryClient();
 
     const [mutationQueue, setMutationQueue] = useState<(() => Promise<void>)[]>(
@@ -89,6 +91,15 @@ export default function TaskQueryProvider({
         initialData: selectedTaskBoard,
     });
 
+    const uniqueName = useMemo(
+        () => taskBoardQuery.data.uniqueName,
+        [taskBoardQuery.data.uniqueName]
+    );
+
+    const [displayName, setDisplayName] = useState(
+        taskBoardQuery.data.displayName
+    );
+
     const [taskLists, setTaskLists] = useState<AggregatedTaskListModel[]>(
         taskBoardQuery.data.taskLists
     );
@@ -128,7 +139,30 @@ export default function TaskQueryProvider({
         }
     }, [mutationQueue, asyncMutationList, dequeueMutation]);
 
-    const moveTaskListMutation: TaskQueryContextValue["moveTaskListMutation"] =
+    const syncTaskBoardMutation = useMutation({
+        mutationKey: ["syncTaskBoard", selectedTaskBoard.id],
+        mutationFn: async () => {
+            const taskBoard: NestedTaskBoardCreate = {
+                id: selectedTaskBoard.id,
+                ownerId: selectedTaskBoard.ownerId,
+                uniqueName,
+                displayName,
+                createdAt: selectedTaskBoard.createdAt,
+                taskLists: [],
+            };
+            // await ClientTaskBoardAPI.sync(options);
+        },
+    });
+
+    const renameTaskBoardMutation: TaskBoardContextValue["renameTaskBoardMutation"] =
+        useMutation({
+            mutationKey: ["renameTaskBoard", selectedTaskBoard.id],
+            mutationFn: async (options) => {
+                await ClientTaskBoardAPI.patch(selectedTaskBoard.id, options);
+            },
+        });
+
+    const moveTaskListMutation: TaskBoardContextValue["moveTaskListMutation"] =
         useMutation({
             mutationKey: ["moveTaskList", selectedTaskBoard.id],
             mutationFn: async (options) => {
@@ -139,7 +173,7 @@ export default function TaskQueryProvider({
             },
         });
 
-    const moveTaskMutation: TaskQueryContextValue["moveTaskMutation"] =
+    const moveTaskMutation: TaskBoardContextValue["moveTaskMutation"] =
         useMutation({
             mutationKey: ["moveTask", selectedTaskBoard.id],
             mutationFn: async (options) => {
@@ -150,9 +184,9 @@ export default function TaskQueryProvider({
             },
         });
 
-    const addTaskListMutation: TaskQueryContextValue["addTaskListMutation"] =
+    const addTaskListMutation: TaskBoardContextValue["addTaskListMutation"] =
         useMutation({
-            mutationKey: ["addTaskList"],
+            mutationKey: ["addTaskList", selectedTaskBoard.id],
             mutationFn: async (options) => {
                 await ClientTaskListAPI.post({
                     ...options,
@@ -161,7 +195,7 @@ export default function TaskQueryProvider({
             },
         });
 
-    const renameTaskListMutation: TaskQueryContextValue["renameTaskListMutation"] =
+    const renameTaskListMutation: TaskBoardContextValue["renameTaskListMutation"] =
         useMutation({
             mutationKey: ["renameTaskList"],
             mutationFn: async ({ id, title }) => {
@@ -169,7 +203,7 @@ export default function TaskQueryProvider({
             },
         });
 
-    const deleteTaskListMutation: TaskQueryContextValue["deleteTaskListMutation"] =
+    const deleteTaskListMutation: TaskBoardContextValue["deleteTaskListMutation"] =
         useMutation({
             mutationKey: ["deleteTaskList"],
             mutationFn: async ({ id }) => {
@@ -177,7 +211,7 @@ export default function TaskQueryProvider({
             },
         });
 
-    const addTaskMutation: TaskQueryContextValue["addTaskMutation"] =
+    const addTaskMutation: TaskBoardContextValue["addTaskMutation"] =
         useMutation({
             mutationKey: ["addTask"],
             mutationFn: async (options) => {
@@ -185,7 +219,7 @@ export default function TaskQueryProvider({
             },
         });
 
-    const editTaskMutation: TaskQueryContextValue["editTaskMutation"] =
+    const editTaskMutation: TaskBoardContextValue["editTaskMutation"] =
         useMutation({
             mutationKey: ["editTask"],
             mutationFn: async ({ id, ...options }) => {
@@ -193,12 +227,18 @@ export default function TaskQueryProvider({
             },
         });
 
-    const deleteTaskMutation: TaskQueryContextValue["deleteTaskMutation"] =
+    const deleteTaskMutation: TaskBoardContextValue["deleteTaskMutation"] =
         useMutation({
             mutationFn: async ({ id }) => {
                 await ClientTaskAPI.delete(id);
             },
         });
+
+    const renameTaskBoardOptimistic = useCallback(
+        ({ displayName }: RenameTaskBoardOptions) =>
+            setDisplayName(displayName),
+        []
+    );
 
     const moveTaskListOptimistic = useOptimisticUpdate<MoveTaskListOptions>({
         setTaskLists,
@@ -388,6 +428,12 @@ export default function TaskQueryProvider({
         },
     });
 
+    const renameTaskBoard = useUpdate({
+        mutation: renameTaskBoardMutation,
+        onOptimisticUpdate: renameTaskBoardOptimistic,
+        onMutationStateChange: addAsyncMutation,
+    });
+
     const moveTaskList = useUpdate({
         mutation: moveTaskListMutation,
         onOptimisticUpdate: moveTaskListOptimistic,
@@ -427,7 +473,7 @@ export default function TaskQueryProvider({
     const editTask = useUpdate({
         mutation: editTaskMutation,
         onOptimisticUpdate: editTaskOptimistic,
-        onMutationStateChange: enqueueMutation,
+        onMutationStateChange: addAsyncMutation,
     });
 
     const deleteTask = useUpdate({
@@ -502,11 +548,14 @@ export default function TaskQueryProvider({
     ]);
 
     return (
-        <TaskQueryContext.Provider
+        <TaskBoardContext.Provider
             value={{
                 selectedTaskBoard,
                 taskBoardQuery,
+                uniqueName,
+                displayName,
                 taskLists,
+                renameTaskBoardMutation,
                 moveTaskListMutation,
                 moveTaskMutation,
                 addTaskListMutation,
@@ -515,6 +564,7 @@ export default function TaskQueryProvider({
                 addTaskMutation,
                 editTaskMutation,
                 deleteTaskMutation,
+                renameTaskBoard,
                 moveTaskList,
                 moveTask,
                 addTaskList,
@@ -531,6 +581,6 @@ export default function TaskQueryProvider({
             }}
         >
             {children}
-        </TaskQueryContext.Provider>
+        </TaskBoardContext.Provider>
     );
 }

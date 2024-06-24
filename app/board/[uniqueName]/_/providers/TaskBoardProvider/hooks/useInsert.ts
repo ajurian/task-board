@@ -1,7 +1,7 @@
 import { UseMutationResult } from "@tanstack/react-query";
 import ObjectID from "bson-objectid";
 import { useCallback } from "react";
-import { InsertOptions } from "../TaskQueryProviderTypes";
+import { InsertOptions } from "../TaskBoardProviderTypes";
 
 interface UseInsertOptions<T extends InsertOptions> {
     mutation: UseMutationResult<void, Error, T>;

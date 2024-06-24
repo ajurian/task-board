@@ -12,6 +12,7 @@ interface SidebarItemProps {
     text: string;
     id?: string;
     active?: boolean;
+    onClick?: () => void;
 }
 
 export default function SidebarItem({
@@ -19,6 +20,7 @@ export default function SidebarItem({
     text,
     id,
     active = false,
+    onClick,
 }: SidebarItemProps) {
     const shouldPutHref = !active && id !== undefined;
 
@@ -27,6 +29,7 @@ export default function SidebarItem({
             <ListItemButton
                 {...(shouldPutHref && { href: `/board/${id}` })}
                 disabled={active}
+                onClick={shouldPutHref ? undefined : onClick}
             >
                 <ListItemIcon sx={{ minWidth: 0, mr: 4 }}>
                     <FontAwesomeIcon icon={icon} />

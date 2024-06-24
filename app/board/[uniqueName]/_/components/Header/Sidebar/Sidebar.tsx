@@ -7,41 +7,68 @@ import {
     faTableColumns,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useDisclosure } from "@mantine/hooks";
 import {
     Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
     Divider,
     Drawer,
     IconButton,
     List,
+    TextField,
     Typography,
 } from "@mui/material";
-import { useState } from "react";
-import SidebarItem from "./SidebarItem";
 import { useParams } from "next/navigation";
+import { FormEventHandler, useCallback } from "react";
+import { z } from "zod";
+import SidebarItem from "./SidebarItem";
+import ClientTaskBoardAPI from "@/api/_/layers/client/TaskBoardAPI";
 
 interface SidebarProps {
     taskBoards: TaskBoardModel[];
 }
 
 export default function Sidebar({ taskBoards }: SidebarProps) {
-    const [open, setOpen] = useState(false);
     const { uniqueName: activeUniqueName } = useParams<{
         uniqueName: string;
     }>();
+    const [isDrawerOpen, { open: openDrawer, close: closeDrawer }] =
+        useDisclosure();
+    const [isDialogOpen, { open: openDialog, close: closeDialog }] =
+        useDisclosure();
+
+    const handleDialogSubmit: FormEventHandler<HTMLFormElement> = useCallback(
+        (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            const uniqueName = z
+                .string()
+                .toLowerCase()
+                .regex(/^[A-Za-z0-9\-_]*$/g)
+                .parse(formData.get("uniqueName"));
+            const displayName = z.string().parse(formData.get("displayName"));
+
+            ClientTaskBoardAPI.post({ uniqueName, displayName });
+        },
+        []
+    );
 
     return (
         <>
-            <IconButton size="small" onClick={() => setOpen(true)}>
+            <IconButton size="small" onClick={openDrawer}>
                 <FontAwesomeIcon icon={faBars} />
             </IconButton>
-            <Drawer open={open} onClose={() => setOpen(false)}>
+            <Drawer open={isDrawerOpen} onClose={closeDrawer}>
                 <Box
                     role="presentation"
                     sx={(theme) => ({
                         width: theme.spacing(64),
                         height: "100%",
                     })}
-                    onClick={() => setOpen(false)}
+                    onClick={closeDrawer}
                 >
                     <Box
                         sx={{
@@ -69,10 +96,47 @@ export default function Sidebar({ taskBoards }: SidebarProps) {
                                 />
                             )
                         )}
-                        <SidebarItem icon={faAdd} text="Add board" />
+                        <SidebarItem
+                            icon={faAdd}
+                            text="Add board"
+                            onClick={openDialog}
+                        />
                     </List>
                 </Box>
             </Drawer>
+            <Dialog
+                fullWidth
+                maxWidth="xs"
+                open={isDialogOpen}
+                onClose={closeDialog}
+            >
+                <form onSubmit={handleDialogSubmit}>
+                    <DialogContent
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 2,
+                        }}
+                    >
+                        <TextField
+                            label="Unique name"
+                            name="uniqueName"
+                            variant="standard"
+                            size="small"
+                        />
+                        <TextField
+                            label="Display name"
+                            name="displayName"
+                            variant="standard"
+                            size="small"
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={closeDialog}>Cancel</Button>
+                        <Button type="submit">Add board</Button>
+                    </DialogActions>
+                </form>
+            </Dialog>
         </>
     );
 }

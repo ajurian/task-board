@@ -24,11 +24,9 @@ model TaskBoard {
     owner       User       @relation(fields: [ownerId], references: [id])
     uniqueName  String
     displayName String
-    photoURL    String?
     createdAt   DateTime   @default(now())
     taskLists   TaskList[]
 
-    @@unique(name: "index", fields: [ownerId, uniqueName])
     @@map("taskBoards")
 }
 

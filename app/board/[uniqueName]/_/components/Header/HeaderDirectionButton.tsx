@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconButton } from "@mui/material";
 import { useDirection } from "../../providers/DirectionProvider";
 
-export default function SwitchDirectionButton() {
+export default function HeaderDirectionButton() {
     const { direction, toggleDirection } = useDirection();
 
     return (

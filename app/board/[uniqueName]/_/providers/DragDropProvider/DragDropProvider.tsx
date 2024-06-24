@@ -2,10 +2,10 @@
 
 import { DragDropContext, OnDragEndResponder } from "@hello-pangea/dnd";
 import { PropsWithChildren } from "react";
-import { useTaskQuery } from "../TaskQueryProvider";
+import { useTaskBoard } from "../TaskBoardProvider";
 
 export default function DragDropProvider({ children }: PropsWithChildren) {
-    const { moveTaskList, moveTask } = useTaskQuery();
+    const { moveTaskList, moveTask } = useTaskBoard();
 
     const handleDragEnd: OnDragEndResponder = ({
         source,

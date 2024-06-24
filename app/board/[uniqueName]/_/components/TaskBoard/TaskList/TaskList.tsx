@@ -2,7 +2,7 @@ import { AggregatedTaskListModel } from "@/_/schema/taskList";
 import { Draggable } from "@hello-pangea/dnd";
 import { useMemo, useState } from "react";
 import { useDirection } from "../../../providers/DirectionProvider";
-import { useTaskQuery } from "../../../providers/TaskQueryProvider";
+import { useTaskBoard } from "../../../providers/TaskBoardProvider";
 import TaskItemPlaceholder from "./TaskItem/TaskItemPlaceholder";
 import TaskListCompletedItems from "./TaskListCompletedItems";
 import TaskListHeader from "./TaskListHeader";
@@ -22,7 +22,7 @@ export default function TaskList({
 }: TaskListProps) {
     const [isCompletedItemsOpen, setIsCompletedItemsOpen] = useState(false);
     const { direction } = useDirection();
-    const { searchQuery } = useTaskQuery();
+    const { searchQuery } = useTaskBoard();
 
     const groupedTasks = useMemo(
         () =>

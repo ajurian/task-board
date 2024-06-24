@@ -50,8 +50,8 @@ export async function POST(request: NextRequest) {
     }
 
     const user = await prisma.user.findUnique({
-        where: { id: data.ownerId },
-        select: { email: true },
+        where: { email: payloadEmail },
+        select: { id: true },
     });
 
     if (user === null) {
@@ -60,13 +60,12 @@ export async function POST(request: NextRequest) {
         });
     }
 
-    if (user.email !== payloadEmail) {
-        return forbiddenErrorResponse<TaskBoardsPostResponse>({
-            taskBoard: null,
-        });
-    }
-
-    const taskBoard = await prisma.taskBoard.create({ data });
+    const taskBoard = await prisma.taskBoard.create({
+        data: {
+            ...data,
+            ownerId: user.id,
+        },
+    });
 
     return NextResponse.json({ taskBoard });
 }

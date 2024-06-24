@@ -15,6 +15,7 @@ import {
     TaskBoardsPostBody,
     TaskBoardsPostResponse,
     TaskBoardsPostResponseSchema,
+    TaskBoardsSyncPostBody,
 } from "../../schema/taskBoards";
 
 const API_URL = "/taskBoards";
@@ -52,6 +53,10 @@ const ClientTaskBoardAPI = {
             ...config,
             schema: TaskBoardDeleteResponseSchema,
         }),
+    sync: (
+        data: TaskBoardsSyncPostBody,
+        config?: AxiosRequestConfig<TaskBoardsSyncPostBody>
+    ) => ClientAPI.post(`${API_URL}/sync`, data, config),
 };
 
 export default ClientTaskBoardAPI;

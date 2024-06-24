@@ -1,7 +1,7 @@
 import { AggregatedTaskListModel } from "@/_/schema/taskList";
 import _ from "lodash";
 import { Dispatch, SetStateAction, useCallback } from "react";
-import { UpdateOptions } from "../TaskQueryProviderTypes";
+import { UpdateOptions } from "../TaskBoardProviderTypes";
 
 interface UseOptimisticUpdateOptions<T extends UpdateOptions> {
     setTaskLists: Dispatch<SetStateAction<AggregatedTaskListModel[]>>;

@@ -4,11 +4,11 @@ import { faRefresh } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, CircularProgress, IconButton } from "@mui/material";
 import { useEffect } from "react";
-import { useTaskQuery } from "../../providers/TaskQueryProvider";
+import { useTaskBoard } from "../../providers/TaskBoardProvider";
 
-export default function SyncIndicator() {
+export default function HeaderSyncIndicator() {
     const { taskBoardQuery, refreshData, isMutationOngoing, isChangesSaved } =
-        useTaskQuery();
+        useTaskBoard();
     const isLoading = taskBoardQuery.isRefetching || isMutationOngoing;
 
     useEffect(() => {

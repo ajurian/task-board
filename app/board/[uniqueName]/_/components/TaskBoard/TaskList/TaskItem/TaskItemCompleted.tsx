@@ -1,5 +1,5 @@
 import { TaskModel } from "@/_/schema/task";
-import { useTaskQuery } from "@/board/[uniqueName]/_/providers/TaskQueryProvider";
+import { useTaskBoard } from "@/board/[uniqueName]/_/providers/TaskBoardProvider";
 import { faTrash, faUndo } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useHover } from "@mantine/hooks";
@@ -21,7 +21,7 @@ export default function TaskItemCompleted({
     const initialTitle = useMemo(() => title.replace(/\\n/g, "\n"), [title]);
 
     const theme = useTheme();
-    const { editTask, deleteTask } = useTaskQuery();
+    const { editTask, deleteTask } = useTaskBoard();
     const [actionAfterFade, setActionAfterFade] = useState<(() => void) | null>(
         null
     );

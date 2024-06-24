@@ -1,6 +1,6 @@
 import { useInputState } from "@mantine/hooks";
 import { useRef } from "react";
-import { useTaskQuery } from "../../../providers/TaskQueryProvider";
+import { useTaskBoard } from "../../../providers/TaskBoardProvider";
 import useContentEditable from "../hooks/useContentEditable";
 import TaskListMenu from "./TaskListMenu";
 import {
@@ -19,7 +19,7 @@ export default function TaskListHeader({ listId, title }: TaskListHeaderProps) {
     const [titleInput, setTitleInput] = useInputState(title);
     const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
 
-    const { renameTaskList } = useTaskQuery();
+    const { renameTaskList } = useTaskBoard();
 
     const { ref, isFocused, contentEditableProps } = useContentEditable({
         onFocus: () => titleInputRef.current?.focus(),

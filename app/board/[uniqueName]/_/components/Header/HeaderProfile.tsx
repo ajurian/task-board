@@ -1,6 +1,7 @@
 "use client";
 
 import useAuth from "@/_/hooks/useAuth";
+import { useSession } from "@/_/providers/SessionProvider";
 import {
     faArrowRightFromBracket,
     faRepeat,
@@ -14,14 +15,17 @@ import {
     MenuItem,
 } from "@mui/material";
 import { purple } from "@mui/material/colors";
+import Image from "next/image";
 import { useId, useState } from "react";
 
-export default function User() {
+export default function HeaderProfile() {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const open = Boolean(anchorEl);
     const buttonId = useId();
     const menuId = useId();
+
     const { signOut } = useAuth();
+    const session = useSession<false>();
 
     return (
         <>
@@ -31,11 +35,12 @@ export default function User() {
                 aria-haspopup={true}
                 aria-controls={open ? menuId : undefined}
                 aria-expanded={open}
-                sx={{ bgcolor: purple[400] }}
                 onClick={(e) => setAnchorEl(e.currentTarget)}
                 tabIndex={-1}
             >
-                A
+                {session.picture && (
+                    <Image fill src={session.picture} alt="profile" />
+                )}
             </Avatar>
             <Menu
                 id={menuId}

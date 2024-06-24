@@ -1,5 +1,5 @@
 import { AggregatedTaskModel } from "@/_/schema/task";
-import { useTaskQuery } from "@/board/[uniqueName]/_/providers/TaskQueryProvider";
+import { useTaskBoard } from "@/board/[uniqueName]/_/providers/TaskBoardProvider";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Draggable } from "@hello-pangea/dnd";
@@ -47,7 +47,7 @@ export default function TaskItem({
     const [actionAfterFade, setActionAfterFade] = useState<(() => void) | null>(
         null
     );
-    const { editTask, deleteTask, searchQuery } = useTaskQuery();
+    const { editTask, deleteTask, searchQuery } = useTaskBoard();
 
     const { ref, isFocused, contentEditableProps } = useContentEditable({
         onNodeIgnore: (node): boolean =>

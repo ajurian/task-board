@@ -1,11 +1,12 @@
 import ServerTaskBoardAPI from "@/api/_/layers/server/TaskBoardAPI";
 import { Box } from "@mui/material";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Header from "./_/components/Header";
 import TaskBoard from "./_/components/TaskBoard";
 import DirectionProvider from "./_/providers/DirectionProvider";
 import DragDropProvider from "./_/providers/DragDropProvider";
-import TaskQueryProvider from "./_/providers/TaskQueryProvider";
+import TaskBoardProvider from "./_/providers/TaskBoardProvider";
+import ServerAuthSessionAPI from "@/api/_/layers/server/AuthSessionAPI";
 
 interface Segment {
     params: {
@@ -15,6 +16,14 @@ interface Segment {
 
 export default async function BoardPage({ params }: Segment) {
     const { uniqueName } = params;
+
+    const {
+        data: { session },
+    } = await ServerAuthSessionAPI.get();
+
+    if (session === null) {
+        return redirect("/");
+    }
 
     const {
         data: { taskBoards },
@@ -48,14 +57,14 @@ export default async function BoardPage({ params }: Segment) {
                 maxHeight: "100vh",
             }}
         >
-            <TaskQueryProvider selectedTaskBoard={selectedTaskBoard}>
+            <TaskBoardProvider selectedTaskBoard={selectedTaskBoard}>
                 <DragDropProvider>
                     <DirectionProvider>
                         <Header taskBoards={taskBoards} />
                         <TaskBoard {...selectedTaskBoard} />
                     </DirectionProvider>
                 </DragDropProvider>
-            </TaskQueryProvider>
+            </TaskBoardProvider>
         </Box>
     );
 }

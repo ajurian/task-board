@@ -6,7 +6,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconButton, ListItemIcon, Menu, MenuItem } from "@mui/material";
 import { useId, useRef, useState } from "react";
-import { useTaskQuery } from "../../../providers/TaskQueryProvider";
+import { useTaskBoard } from "../../../providers/TaskBoardProvider";
 
 interface TaskListMenuProps {
     listId: string;
@@ -23,7 +23,7 @@ export default function TaskListMenu({
     const menuId = useId();
     const open = Boolean(anchorEl);
 
-    const { deleteTaskList } = useTaskQuery();
+    const { deleteTaskList } = useTaskBoard();
 
     const handleClose = () => setAnchorEl(null);
 

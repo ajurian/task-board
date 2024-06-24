@@ -10,10 +10,10 @@ import {
     useRef,
     useState,
 } from "react";
-import { useTaskQuery } from "../../providers/TaskQueryProvider";
+import { useTaskBoard } from "../../providers/TaskBoardProvider";
 
-export default function SearchInput() {
-    const { setSearchQuery, searchQuery } = useTaskQuery();
+export default function HeaderSearchInput() {
+    const { setSearchQuery, searchQuery } = useTaskBoard();
     const [searchQueryInput, setSearchQueryInput] = useState(searchQuery);
     const inputRef = useRef<HTMLInputElement | null>(null);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);

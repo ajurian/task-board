@@ -11,6 +11,10 @@ import {
 } from "@tanstack/react-query";
 import { Dispatch, PropsWithChildren, SetStateAction } from "react";
 
+interface RenameTaskBoardOptions {
+    displayName: string;
+}
+
 interface MoveTaskListOptions {
     fromIndex: number;
     toIndex: number;
@@ -44,6 +48,7 @@ interface DeleteTaskOptions {
 }
 
 type UpdateOptions =
+    | RenameTaskBoardOptions
     | MoveTaskListOptions
     | MoveTaskOptions
     | RenameTaskListOptions
@@ -53,10 +58,17 @@ type UpdateOptions =
 
 type InsertOptions = AddTaskListOptions | AddTaskOptions;
 
-interface TaskQueryContextValue {
+interface TaskBoardContextValue {
     selectedTaskBoard: AggregatedTaskBoardModel;
     taskBoardQuery: DefinedUseQueryResult<AggregatedTaskBoardModel | null>;
+    uniqueName: string;
+    displayName: string;
     taskLists: AggregatedTaskListModel[];
+    renameTaskBoardMutation: UseMutationResult<
+        void,
+        Error,
+        RenameTaskBoardOptions
+    >;
     moveTaskListMutation: UseMutationResult<void, Error, MoveTaskListOptions>;
     moveTaskMutation: UseMutationResult<void, Error, MoveTaskOptions>;
     addTaskListMutation: UseMutationResult<void, Error, AddTaskListOptions>;
@@ -73,6 +85,7 @@ interface TaskQueryContextValue {
     addTaskMutation: UseMutationResult<void, Error, AddTaskOptions>;
     editTaskMutation: UseMutationResult<void, Error, EditTaskOptions>;
     deleteTaskMutation: UseMutationResult<void, Error, DeleteTaskOptions>;
+    renameTaskBoard: (options: RenameTaskBoardOptions) => void;
     moveTaskList: (options: MoveTaskListOptions) => void;
     moveTask: (options: MoveTaskOptions) => void;
     addTaskList: (options: Omit<AddTaskListOptions, "id">) => void;
@@ -88,6 +101,6 @@ interface TaskQueryContextValue {
     isChangesSaved: boolean;
 }
 
-interface TaskQueryProviderProps extends PropsWithChildren {
+interface TaskBoardProviderProps extends PropsWithChildren {
     selectedTaskBoard: AggregatedTaskBoardModel;
 }
