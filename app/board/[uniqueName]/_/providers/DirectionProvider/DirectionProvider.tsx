@@ -4,8 +4,8 @@ import {
     createContext,
     PropsWithChildren,
     useContext,
-    useEffect,
-    useState,
+    useLayoutEffect,
+    useState
 } from "react";
 
 export type Direction = "row" | "column";
@@ -43,7 +43,7 @@ export default function DirectionProvider({
             return newDirection;
         });
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (typeof window === "undefined") {
             setDirection("row");
             return;
