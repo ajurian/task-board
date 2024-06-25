@@ -14,7 +14,6 @@ export const TaskBoardHeaderContainer = styled(Box, {
 })<{ direction: Direction }>(({ theme, direction }) => ({
     display: "flex",
     justifyContent: "center",
-    marginInline: "auto",
     position: "sticky",
     left: 0,
     marginBottom: theme.spacing(2),
@@ -24,6 +23,7 @@ export const TaskBoardHeaderContainer = styled(Box, {
         maxWidth: "100vw",
     }),
     ...(direction === "column" && {
+        marginInline: "auto",
         top: "calc(3.5625rem + 17px)",
         zIndex: theme.zIndex.appBar,
         backgroundColor: theme.palette.background.paper,

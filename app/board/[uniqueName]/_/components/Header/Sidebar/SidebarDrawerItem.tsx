@@ -11,7 +11,7 @@ interface SidebarItemProps {
     icon: IconDefinition;
     text: string;
     id?: string;
-    active?: boolean;
+    isActive?: boolean;
     onClick?: () => void;
 }
 
@@ -19,16 +19,16 @@ export default function SidebarDrawerItem({
     icon,
     text,
     id,
-    active = false,
+    isActive = false,
     onClick,
 }: SidebarItemProps) {
-    const shouldPutHref = !active && id !== undefined;
+    const shouldPutHref = !isActive && id !== undefined;
 
     return (
         <ListItem disablePadding>
             <ListItemButton
                 {...(shouldPutHref && { href: `/board/${id}` })}
-                disabled={active}
+                disabled={isActive}
                 onClick={shouldPutHref ? undefined : onClick}
             >
                 <ListItemIcon sx={{ minWidth: 0, mr: 4 }}>

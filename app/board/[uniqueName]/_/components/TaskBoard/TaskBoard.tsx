@@ -1,6 +1,5 @@
 "use client";
 
-import { TaskBoardModel } from "@/_/schema/taskBoard";
 import { Droppable } from "@hello-pangea/dnd";
 import { useDirection } from "../../providers/DirectionProvider";
 import { useTaskBoard } from "../../providers/TaskBoardProvider";
@@ -9,10 +8,8 @@ import TaskList from "./TaskList";
 import TaskListPlaceholder from "./TaskList/TaskListPlaceholder";
 import { TaskBoardContainer, TaskBoardListContainer } from "./ui";
 
-export interface TaskBoardProps extends TaskBoardModel {}
-
-export default function TaskBoard({ uniqueName }: TaskBoardProps) {
-    const { taskLists } = useTaskBoard();
+export default function TaskBoard() {
+    const { uniqueName, taskLists } = useTaskBoard();
     const { direction } = useDirection();
 
     return (

@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, PropsWithChildren, useContext, useState } from "react";
+import {
+    createContext,
+    PropsWithChildren,
+    useContext,
+    useEffect,
+    useState,
+} from "react";
 
 export type Direction = "row" | "column";
 
@@ -31,7 +37,27 @@ export default function DirectionProvider({
     const [direction, setDirection] = useState<Direction>("row");
 
     const toggleDirection: DirectionContextValue["toggleDirection"] = () =>
-        setDirection((direction) => (direction === "row" ? "column" : "row"));
+        setDirection((direction) => {
+            const newDirection = direction === "row" ? "column" : "row";
+            localStorage.setItem("board-direction", newDirection);
+            return newDirection;
+        });
+
+    useEffect(() => {
+        if (typeof window === "undefined") {
+            setDirection("row");
+            return;
+        }
+
+        const boardDirection = localStorage.getItem("board-direction");
+
+        if (boardDirection !== "row" && boardDirection !== "column") {
+            setDirection("row");
+            return;
+        }
+
+        setDirection(boardDirection);
+    }, []);
 
     return (
         <DirectionContext.Provider value={{ direction, toggleDirection }}>

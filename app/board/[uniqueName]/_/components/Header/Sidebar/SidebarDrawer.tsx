@@ -49,7 +49,7 @@ export default function SidebarDrawer({
                             icon={faTableColumns}
                             id={uniqueName}
                             text={displayName}
-                            active={activeBoard === uniqueName}
+                            isActive={activeBoard === uniqueName}
                         />
                     ))}
                     <SidebarDrawerItem

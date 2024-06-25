@@ -1,3 +1,4 @@
+import ServerAuthSessionAPI from "@/api/_/layers/server/AuthSessionAPI";
 import ServerTaskBoardAPI from "@/api/_/layers/server/TaskBoardAPI";
 import { Box } from "@mui/material";
 import { notFound, redirect } from "next/navigation";
@@ -6,7 +7,6 @@ import TaskBoard from "./_/components/TaskBoard";
 import DirectionProvider from "./_/providers/DirectionProvider";
 import DragDropProvider from "./_/providers/DragDropProvider";
 import TaskBoardProvider from "./_/providers/TaskBoardProvider";
-import ServerAuthSessionAPI from "@/api/_/layers/server/AuthSessionAPI";
 
 interface Segment {
     params: {
@@ -61,7 +61,7 @@ export default async function BoardPage({ params }: Segment) {
                 <DragDropProvider>
                     <DirectionProvider>
                         <Header taskBoards={taskBoards} />
-                        <TaskBoard {...selectedTaskBoard} />
+                        <TaskBoard />
                     </DirectionProvider>
                 </DragDropProvider>
             </TaskBoardProvider>
