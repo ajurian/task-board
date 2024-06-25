@@ -22,7 +22,7 @@ declare module "axios" {
 config.autoAddCss = false;
 
 export const metadata: Metadata = {
-    title: "TaskManager",
+    title: "TaskBoard",
 };
 
 export default async function RootLayout({

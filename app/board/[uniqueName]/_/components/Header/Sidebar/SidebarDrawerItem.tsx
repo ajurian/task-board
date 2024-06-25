@@ -15,7 +15,7 @@ interface SidebarItemProps {
     onClick?: () => void;
 }
 
-export default function SidebarItem({
+export default function SidebarDrawerItem({
     icon,
     text,
     id,

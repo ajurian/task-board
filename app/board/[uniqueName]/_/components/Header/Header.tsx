@@ -17,7 +17,7 @@ export default async function Header({ taskBoards }: HeaderProps) {
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <Sidebar taskBoards={taskBoards} />
                 <Typography variant="h6" color="text.secondary">
-                    TaskManager
+                    TaskBoard
                 </Typography>
             </Box>
             <HeaderSearchInput />
