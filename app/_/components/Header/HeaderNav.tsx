@@ -1,16 +1,16 @@
 "use client";
 
-import React from "react";
-import { HeaderNavContainer } from "./ui";
+import { useAuth } from "@/_/providers/AuthProvider";
 import { Button } from "@mui/material";
-import useAuth from "@/_/hooks/useAuth";
+import { HeaderNavContainer } from "./ui";
 
 export default function HeaderNav() {
-    const { signIn } = useAuth();
+    const { signIn, signOut } = useAuth();
 
     return (
         <HeaderNavContainer component="nav">
             <Button onClick={signIn}>Sign in with Google</Button>
+            <Button onClick={signOut}>Sign out</Button>
         </HeaderNavContainer>
     );
 }

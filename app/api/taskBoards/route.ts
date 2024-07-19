@@ -1,32 +1,31 @@
-import prisma from "@/_/lib/prisma";
-import { TaskBoardCreateSchema } from "@/_/schema/taskBoard";
+import { PERMISSION_ROLE_OWNER } from "@/_/common/constants/permissions";
+import prisma from "@/_/common/lib/prisma";
+import { TaskBoardCreateSchema } from "@/_/common/schema/taskBoard";
 import { NextRequest, NextResponse } from "next/server";
 import {
     TaskBoardsGetResponse,
     TaskBoardsPostResponse,
-} from "../_/schema/taskBoards";
-import {
-    badRequestErrorResponse,
-    forbiddenErrorResponse,
-    unauthorizedErrorResponse,
-    unprocessableEntityErrorResponse,
-} from "../_/utils/errorResponse";
-import getPayloadEmail from "../_/utils/getPayloadEmail";
+} from "../_/common/schema/taskBoards";
+import { checkAuthority } from "../_/utils/checkAuthority";
+import { unprocessableEntityErrorResponse } from "../_/utils/errorResponse";
 
 export async function GET(request: NextRequest) {
-    const payloadEmail = await getPayloadEmail();
+    const authority = await checkAuthority();
 
-    if (payloadEmail === null) {
-        return unauthorizedErrorResponse<TaskBoardsGetResponse>({
+    if (!authority.success) {
+        return authority.errorResponse<TaskBoardsGetResponse>({
             taskBoards: [],
         });
     }
 
+    const { user } = authority;
     const taskBoards = await prisma.taskBoard.findMany({
-        where: { owner: { email: payloadEmail } },
+        where: {
+            users: { some: { userGoogleId: user.googleId } },
+        },
     });
 
-    return NextResponse.json<TaskBoardsGetResponse>({ taskBoards });
+    return NextResponse.json({ taskBoards });
 }
 
 export async function POST(request: NextRequest) {
@@ -41,29 +40,26 @@ export async function POST(request: NextRequest) {
         });
     }
 
-    const payloadEmail = await getPayloadEmail();
+    const authority = await checkAuthority();
 
-    if (payloadEmail === null) {
-        return unauthorizedErrorResponse<TaskBoardsPostResponse>({
+    if (!authority.success) {
+        return authority.errorResponse<TaskBoardsPostResponse>({
             taskBoard: null,
         });
     }
 
-    const user = await prisma.user.findUnique({
-        where: { email: payloadEmail },
-        select: { id: true },
-    });
-
-    if (user === null) {
-        return badRequestErrorResponse<TaskBoardsPostResponse>({
-            taskBoard: null,
-        });
-    }
-
+    const { user } = authority;
     const taskBoard = await prisma.taskBoard.create({
         data: {
             ...data,
-            ownerId: user.id,
+            thumbnailData: null,
+            users: {
+                create: {
+                    userGoogleId: user.googleId,
+                    permission: PERMISSION_ROLE_OWNER,
+                    isVisitor: false,
+                },
+            },
         },
     });
 

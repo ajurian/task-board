@@ -1,19 +1,21 @@
-import prisma from "@/_/lib/prisma";
-import { TaskUpdateSchema } from "@/_/schema/task";
+import {
+    PERMISSION_CONTENT_READ,
+    PERMISSION_TASK_CREATE_DELETE,
+    PERMISSION_TASK_UPDATE_DETAILS,
+    PERMISSION_TASK_UPDATE_DUE_AT,
+    PERMISSION_TASK_UPDATE_IS_DONE,
+    PERMISSION_TASK_UPDATE_TITLE,
+} from "@/_/common/constants/permissions";
+import prisma from "@/_/common/lib/prisma";
+import { TaskUpdateSchema } from "@/_/common/schema/task";
 import {
     TaskDeleteResponse,
     TaskGetResponse,
     TaskPatchResponse,
-} from "@/api/_/schema/tasks";
+} from "@/api/_/common/schema/tasks";
+import { checkAuthorityWithDocument } from "@/api/_/utils/checkAuthority";
 import { NextRequest, NextResponse } from "next/server";
-import {
-    badRequestErrorResponse,
-    forbiddenErrorResponse,
-    notFoundErrorResponse,
-    unauthorizedErrorResponse,
-    unprocessableEntityErrorResponse,
-} from "../../_/utils/errorResponse";
-import getPayloadEmail from "../../_/utils/getPayloadEmail";
+import { unprocessableEntityErrorResponse } from "../../_/utils/errorResponse";
 
 interface Segment {
     params: {
@@ -23,32 +25,17 @@ interface Segment {
 
 export async function GET(request: NextRequest, { params }: Segment) {
     const { id } = params;
-    const payloadEmail = await getPayloadEmail();
-
-    if (payloadEmail === null) {
-        return unauthorizedErrorResponse<TaskGetResponse>({ task: null });
-    }
-
-    const task = await prisma.task.findUnique({
-        where: { id },
-        select: {
-            taskList: {
-                select: {
-                    taskBoard: {
-                        select: { owner: { select: { email: true } } },
-                    },
-                },
-            },
-        },
+    const authority = await checkAuthorityWithDocument({
+        requiredPermission: PERMISSION_CONTENT_READ,
+        documentType: "task",
+        documentId: id,
     });
 
-    if (task === null) {
-        return notFoundErrorResponse<TaskGetResponse>({ task: null });
+    if (!authority.success) {
+        return authority.errorResponse<TaskGetResponse>({ task: null });
     }
 
-    if (task.taskList.taskBoard.owner.email !== payloadEmail) {
-        return forbiddenErrorResponse<TaskGetResponse>({ task: null });
-    }
+    const task = await prisma.task.findUnique({ where: { id } });
 
     return NextResponse.json({ task });
 }
@@ -66,35 +53,25 @@ export async function PATCH(request: NextRequest, { params }: Segment) {
         });
     }
 
-    const payloadEmail = await getPayloadEmail();
+    const { title, details, isDone, dueAt } = data;
+    let requiredPermission = 0;
 
-    if (payloadEmail === null) {
-        return unauthorizedErrorResponse<TaskGetResponse>({ task: null });
-    }
+    if (title !== undefined) requiredPermission |= PERMISSION_TASK_UPDATE_TITLE;
+    if (details !== undefined)
+        requiredPermission |= PERMISSION_TASK_UPDATE_DETAILS;
+    if (isDone !== undefined)
+        requiredPermission |= PERMISSION_TASK_UPDATE_IS_DONE;
+    if (dueAt !== undefined)
+        requiredPermission |= PERMISSION_TASK_UPDATE_DUE_AT;
 
-    const task = await prisma.task.findUnique({
-        where: { id },
-        select: {
-            taskList: {
-                select: {
-                    taskBoard: {
-                        select: { owner: { select: { email: true } } },
-                    },
-                },
-            },
-        },
+    const authority = await checkAuthorityWithDocument({
+        requiredPermission,
+        documentType: "task",
+        documentId: id,
     });
 
-    if (task === null) {
-        return badRequestErrorResponse<TaskPatchResponse>({
-            task: null,
-        });
-    }
-
-    if (task.taskList.taskBoard.owner.email !== payloadEmail) {
-        return forbiddenErrorResponse<TaskPatchResponse>({
-            task: null,
-        });
+    if (!authority.success) {
+        return authority.errorResponse<TaskPatchResponse>({ task: null });
     }
 
     const updatedTask = await prisma.task.update({
@@ -107,35 +84,14 @@ export async function PATCH(request: NextRequest, { params }: Segment) {
 
 export async function DELETE(request: NextRequest, { params }: Segment) {
     const { id } = params;
-    const payloadEmail = await getPayloadEmail();
-
-    if (payloadEmail === null) {
-        return unauthorizedErrorResponse<TaskDeleteResponse>({ task: null });
-    }
-
-    const task = await prisma.task.findUnique({
-        where: { id },
-        select: {
-            taskList: {
-                select: {
-                    taskBoard: {
-                        select: { owner: { select: { email: true } } },
-                    },
-                },
-            },
-        },
+    const authority = await checkAuthorityWithDocument({
+        requiredPermission: PERMISSION_TASK_CREATE_DELETE,
+        documentType: "task",
+        documentId: id,
     });
 
-    if (task === null) {
-        return badRequestErrorResponse<TaskDeleteResponse>({
-            task: null,
-        });
-    }
-
-    if (task.taskList.taskBoard.owner.email !== payloadEmail) {
-        return forbiddenErrorResponse<TaskDeleteResponse>({
-            task: null,
-        });
+    if (!authority.success) {
+        return authority.errorResponse<TaskDeleteResponse>({ task: null });
     }
 
     const deletedTask = await prisma.task.delete({ where: { id } });

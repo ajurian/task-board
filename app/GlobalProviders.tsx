@@ -18,12 +18,17 @@ export default function GlobalProviders({ children }: PropsWithChildren) {
             <ThemeProvider theme={theme}>
                 <GlobalStyles
                     styles={`
-                        .svg-inline--fa {
-                            aspect-ratio: 1 / 1;
-                        }
-                        
                         body {
                             overflow: hidden;
+                        }
+
+                        img {
+                            display: inline-block;
+                            vertical-align: middle;
+                        }
+
+                        .svg-inline--fa {
+                            aspect-ratio: 1 / 1;
                         }
                     `}
                 />

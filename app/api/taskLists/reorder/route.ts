@@ -1,13 +1,12 @@
-import prisma from "@/_/lib/prisma";
-import { TaskListsReorderPostBodySchema } from "@/api/_/schema/taskLists";
+import { PERMISSION_TASK_LIST_REORDER } from "@/_/common/constants/permissions";
+import prisma from "@/_/common/lib/prisma";
+import { TaskListsReorderPostBodySchema } from "@/api/_/common/schema/taskLists";
+import { checkAuthorityWithDocument } from "@/api/_/utils/checkAuthority";
 import { NextRequest, NextResponse } from "next/server";
 import {
     badRequestErrorResponse,
-    forbiddenErrorResponse,
-    unauthorizedErrorResponse,
     unprocessableEntityErrorResponse,
 } from "../../_/utils/errorResponse";
-import getPayloadEmail from "../../_/utils/getPayloadEmail";
 
 export async function POST(request: NextRequest) {
     let data;
@@ -19,23 +18,32 @@ export async function POST(request: NextRequest) {
         return unprocessableEntityErrorResponse({});
     }
 
-    const payloadEmail = await getPayloadEmail();
-
-    if (payloadEmail === null) {
-        return unauthorizedErrorResponse({});
-    }
-
     const { boardId, fromIndex, toIndex } = data;
 
     if (fromIndex === toIndex) {
-        return badRequestErrorResponse({});
+        return unprocessableEntityErrorResponse({});
+    }
+
+    const authority = await checkAuthorityWithDocument({
+        requiredPermission: PERMISSION_TASK_LIST_REORDER,
+        documentType: "taskBoard",
+        documentId: boardId,
+    });
+
+    if (!authority.success) {
+        return authority.errorResponse({});
     }
 
     const targetList = await prisma.taskList.findFirst({
         where: { taskBoardId: boardId, order: fromIndex },
         select: {
             id: true,
-            taskBoard: { select: { owner: { select: { email: true } } } },
+            taskBoard: {
+                select: {
+                    id: true,
+                    users: { select: { userGoogleId: true } },
+                },
+            },
         },
     });
 
@@ -43,27 +51,27 @@ export async function POST(request: NextRequest) {
         return badRequestErrorResponse({});
     }
 
-    if (targetList.taskBoard.owner.email !== payloadEmail) {
-        return forbiddenErrorResponse({});
-    }
-
     const { id } = targetList;
 
-    await prisma.taskList.update({
-        where: { id },
-        data: { order: toIndex },
-    });
-
-    if (toIndex > fromIndex) {
-        await prisma.taskList.updateMany({
-            where: {
-                id: { not: id },
-                taskBoardId: boardId,
-                order: { gt: fromIndex, lte: toIndex },
-            },
-            data: { order: { decrement: 1 } },
+    await prisma.$transaction(async (prisma) => {
+        await prisma.taskList.update({
+            where: { id },
+            data: { order: toIndex },
         });
-    } else {
+
+        if (toIndex > fromIndex) {
+            await prisma.taskList.updateMany({
+                where: {
+                    id: { not: id },
+                    taskBoardId: boardId,
+                    order: { gt: fromIndex, lte: toIndex },
+                },
+                data: { order: { decrement: 1 } },
+            });
+
+            return;
+        }
+
         await prisma.taskList.updateMany({
             where: {
                 id: { not: id },
@@ -72,7 +80,7 @@ export async function POST(request: NextRequest) {
             },
             data: { order: { increment: 1 } },
         });
-    }
+    });
 
     return NextResponse.json({});
 }

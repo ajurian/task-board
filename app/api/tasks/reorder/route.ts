@@ -1,13 +1,12 @@
-import prisma from "@/_/lib/prisma";
-import { TasksReorderPostBodySchema } from "@/api/_/schema/tasks";
+import { PERMISSION_TASK_REORDER } from "@/_/common/constants/permissions";
+import prisma from "@/_/common/lib/prisma";
+import { TasksReorderPostBodySchema } from "@/api/_/common/schema/tasks";
+import { checkAuthorityWithDocument } from "@/api/_/utils/checkAuthority";
 import { NextRequest, NextResponse } from "next/server";
 import {
     badRequestErrorResponse,
-    forbiddenErrorResponse,
-    unauthorizedErrorResponse,
     unprocessableEntityErrorResponse,
 } from "../../_/utils/errorResponse";
-import getPayloadEmail from "../../_/utils/getPayloadEmail";
 
 export async function POST(request: NextRequest) {
     let data;
@@ -19,16 +18,20 @@ export async function POST(request: NextRequest) {
         return unprocessableEntityErrorResponse({});
     }
 
-    const payloadEmail = await getPayloadEmail();
-
-    if (payloadEmail === null) {
-        return unauthorizedErrorResponse({});
-    }
-
     const { boardId, fromListIndex, toListIndex, fromIndex, toIndex } = data;
 
     if (fromListIndex === toListIndex && fromIndex === toIndex) {
-        return badRequestErrorResponse({});
+        return unprocessableEntityErrorResponse({});
+    }
+
+    const authority = await checkAuthorityWithDocument({
+        requiredPermission: PERMISSION_TASK_REORDER,
+        documentType: "taskBoard",
+        documentId: boardId,
+    });
+
+    if (!authority.success) {
+        return authority.errorResponse({});
     }
 
     const fromList = await prisma.taskList.findFirst({
@@ -38,16 +41,17 @@ export async function POST(request: NextRequest) {
         },
         select: {
             id: true,
-            taskBoard: { select: { owner: { select: { email: true } } } },
+            taskBoard: {
+                select: {
+                    id: true,
+                    users: { select: { userGoogleId: true } },
+                },
+            },
         },
     });
 
     if (fromList === null) {
         return badRequestErrorResponse({});
-    }
-
-    if (fromList.taskBoard.owner.email !== payloadEmail) {
-        return forbiddenErrorResponse({});
     }
 
     const toList = await prisma.taskList.findFirst({
@@ -75,46 +79,27 @@ export async function POST(request: NextRequest) {
     }
 
     const { id } = targetTask;
-    const isIntoNewList = fromListIndex !== toListIndex;
 
-    if (isIntoNewList) {
-        await prisma.task.update({
-            where: { id },
-            data: { taskListId: toList.id, order: toIndex },
-        });
-
-        await prisma.task.updateMany({
-            where: {
-                taskListId: fromList.id,
-                order: { gt: fromIndex },
-            },
-            data: { order: { decrement: 1 } },
-        });
-
-        await prisma.task.updateMany({
-            where: {
-                id: { not: id },
-                taskListId: toList.id,
-                order: { gte: toIndex },
-            },
-            data: { order: { increment: 1 } },
-        });
-    } else {
-        await prisma.task.update({
-            where: { id },
-            data: { order: toIndex },
-        });
-
-        if (toIndex > fromIndex) {
-            await prisma.task.updateMany({
-                where: {
-                    id: { not: id },
-                    taskListId: toList.id,
-                    order: { gt: fromIndex, lte: toIndex },
-                },
-                data: { order: { decrement: 1 } },
+    if (fromListIndex === toListIndex) {
+        await prisma.$transaction(async (prisma) => {
+            await prisma.task.update({
+                where: { id },
+                data: { order: toIndex },
             });
-        } else {
+
+            if (toIndex > fromIndex) {
+                await prisma.task.updateMany({
+                    where: {
+                        id: { not: id },
+                        taskListId: toList.id,
+                        order: { gt: fromIndex, lte: toIndex },
+                    },
+                    data: { order: { decrement: 1 } },
+                });
+
+                return;
+            }
+
             await prisma.task.updateMany({
                 where: {
                     id: { not: id },
@@ -123,8 +108,32 @@ export async function POST(request: NextRequest) {
                 },
                 data: { order: { increment: 1 } },
             });
-        }
+        });
+
+        return NextResponse.json({});
     }
+
+    await prisma.$transaction([
+        prisma.task.update({
+            where: { id },
+            data: { taskListId: toList.id, order: toIndex },
+        }),
+        prisma.task.updateMany({
+            where: {
+                taskListId: fromList.id,
+                order: { gt: fromIndex },
+            },
+            data: { order: { decrement: 1 } },
+        }),
+        prisma.task.updateMany({
+            where: {
+                id: { not: id },
+                taskListId: toList.id,
+                order: { gte: toIndex },
+            },
+            data: { order: { increment: 1 } },
+        }),
+    ]);
 
     return NextResponse.json({});
 }

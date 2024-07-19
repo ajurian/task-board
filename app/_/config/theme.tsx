@@ -1,5 +1,4 @@
 import { createTheme, responsiveFontSizes } from "@mui/material";
-import { grey } from "@mui/material/colors";
 import Link, { LinkProps } from "next/link";
 import { forwardRef } from "react";
 
@@ -10,11 +9,6 @@ LinkBehavior.displayName = "LinkBehavior";
 
 const theme = createTheme({
     spacing: (factor: number) => `${0.25 * factor}rem`,
-    palette: {
-        background: {
-            default: grey[50],
-        },
-    },
     components: {
         MuiLink: {
             defaultProps: {
@@ -31,6 +25,11 @@ const theme = createTheme({
                 root: {
                     textTransform: "none",
                 },
+            },
+        },
+        MuiMenu: {
+            styleOverrides: {
+                paper: ({ theme }) => ({ boxShadow: theme.shadows[1] }),
             },
         },
     },

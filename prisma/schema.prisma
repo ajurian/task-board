@@ -8,26 +8,43 @@ datasource db {
 }
 
 model User {
-    id          String      @id @default(auto()) @map("_id") @db.ObjectId
-    email       String      @unique
+    id          String          @id @default(auto()) @map("_id") @db.ObjectId
+    googleId    String          @unique
+    email       String          @unique
     displayName String
-    photoURL    String?
-    createdAt   DateTime    @default(now())
-    taskBoards  TaskBoard[]
+    photoURL    String
+    createdAt   DateTime        @default(now())
+    taskBoards  TaskBoardUser[]
 
     @@map("users")
 }
 
 model TaskBoard {
-    id          String     @id @default(auto()) @map("_id") @db.ObjectId
-    ownerId     String     @db.ObjectId
-    owner       User       @relation(fields: [ownerId], references: [id])
-    uniqueName  String
-    displayName String
-    createdAt   DateTime   @default(now())
-    taskLists   TaskList[]
+    id                String          @id @default(auto()) @map("_id") @db.ObjectId
+    displayName       String
+    flowDirection     FlowDirection   @default(row)
+    defaultPermission Int             @default(0)
+    thumbnailData     Bytes?
+    createdAt         DateTime        @default(now())
+    taskLists         TaskList[]
+    users             TaskBoardUser[]
 
     @@map("taskBoards")
+}
+
+model TaskBoardUser {
+    id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+    userGoogleId       String
+    user               User      @relation(fields: [userGoogleId], references: [googleId])
+    taskBoardId        String    @db.ObjectId
+    taskBoard          TaskBoard @relation(fields: [taskBoardId], references: [id])
+    permission         Int
+    isVisitor          Boolean
+    joinedAt           DateTime  @default(now())
+    recentlyAccessedAt DateTime  @default(now())
+
+    @@unique(fields: [userGoogleId, taskBoardId], name: "index")
+    @@map("taskBoardUsers")
 }
 
 model TaskList {
@@ -54,4 +71,9 @@ model Task {
     dueAt      DateTime?
 
     @@map("tasks")
+}
+
+enum FlowDirection {
+    row
+    column
 }

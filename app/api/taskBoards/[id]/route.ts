@@ -1,19 +1,22 @@
-import prisma from "@/_/lib/prisma";
-import { TaskBoardUpdateSchema } from "@/_/schema/taskBoard";
+import {
+    PERMISSION_CONTENT_READ,
+    PERMISSION_ROLE_NONE,
+    PERMISSION_TASK_BOARD_DELETE,
+    PERMISSION_TASK_BOARD_UPDATE_DEFAULT_PERMISSION,
+    PERMISSION_TASK_BOARD_UPDATE_DISPLAY_NAME,
+    PERMISSION_TASK_BOARD_UPDATE_FLOW_DIRECTION,
+    PERMISSION_TASK_BOARD_UPDATE_THUMBNAIL,
+} from "@/_/common/constants/permissions";
+import prisma from "@/_/common/lib/prisma";
+import { TaskBoardUpdateSchema } from "@/_/common/schema/taskBoard";
 import {
     TaskBoardDeleteResponse,
     TaskBoardGetResponse,
     TaskBoardPatchResponse,
-} from "@/api/_/schema/taskBoards";
+} from "@/api/_/common/schema/taskBoards";
+import { checkAuthorityWithDocument } from "@/api/_/utils/checkAuthority";
 import { NextRequest, NextResponse } from "next/server";
-import {
-    badRequestErrorResponse,
-    forbiddenErrorResponse,
-    notFoundErrorResponse,
-    unauthorizedErrorResponse,
-    unprocessableEntityErrorResponse,
-} from "../../_/utils/errorResponse";
-import getPayloadEmail from "../../_/utils/getPayloadEmail";
+import { unprocessableEntityErrorResponse } from "../../_/utils/errorResponse";
 
 interface Segment {
     params: {
@@ -22,29 +25,18 @@ interface Segment {
 }
 
 export async function GET(request: NextRequest, { params }: Segment) {
-    const { id } = params;
     const { searchParams } = request.nextUrl;
     const searchQuery = searchParams.get("searchQuery");
 
-    const payloadEmail = await getPayloadEmail();
-
-    if (payloadEmail === null) {
-        return unauthorizedErrorResponse<TaskBoardGetResponse>({
-            taskBoard: null,
-        });
-    }
-
-    const taskBoard = await prisma.taskBoard.findUnique({
-        where: { id },
-        select: { owner: { select: { email: true } } },
+    const { id } = params;
+    const authority = await checkAuthorityWithDocument({
+        requiredPermission: PERMISSION_CONTENT_READ,
+        documentType: "taskBoard",
+        documentId: id,
     });
 
-    if (taskBoard === null) {
-        return notFoundErrorResponse<TaskBoardGetResponse>({ taskBoard: null });
-    }
-
-    if (taskBoard.owner.email !== payloadEmail) {
-        return forbiddenErrorResponse<TaskBoardGetResponse>({
+    if (!authority.success) {
+        return authority.errorResponse<TaskBoardGetResponse>({
             taskBoard: null,
         });
     }
@@ -65,9 +57,6 @@ export async function GET(request: NextRequest, { params }: Segment) {
                     query: searchQuery,
                     path: ["title", "details"],
                 },
-                highlight: {
-                    path: ["title", "details"],
-                },
             },
         });
     }
@@ -84,7 +73,6 @@ export async function GET(request: NextRequest, { params }: Segment) {
                 },
                 dueAt: { $toString: "$dueAt" },
                 score: { $ifNull: [{ $meta: "searchScore" }, 0] },
-                highlights: { $ifNull: [{ $meta: "searchHighlights" }, []] },
             },
         },
         { $sort: sortByField },
@@ -120,16 +108,52 @@ export async function GET(request: NextRequest, { params }: Segment) {
                                 taskBoardId: { $toString: "$taskBoardId" },
                                 createdAt: { $toString: "$createdAt" },
                                 score: { $sum: "$tasks.score" },
-                                highlights: {
-                                    $ifNull: [
-                                        { $meta: "searchHighlights" },
-                                        [],
-                                    ],
-                                },
                             },
                         },
                         { $sort: sortByField },
                         { $unset: ["_id", "score", "tasks.score"] },
+                    ],
+                },
+            },
+            {
+                $lookup: {
+                    from: "taskBoardUsers",
+                    localField: "_id",
+                    foreignField: "taskBoardId",
+                    as: "users",
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: "users",
+                                localField: "userGoogleId",
+                                foreignField: "googleId",
+                                as: "user",
+                                pipeline: [
+                                    {
+                                        $addFields: {
+                                            id: { $toString: "$_id" },
+                                            createdAt: {
+                                                $toString: "$createdAt",
+                                            },
+                                        },
+                                    },
+                                    { $unset: "_id" },
+                                ],
+                            },
+                        },
+                        { $sort: { joinedAt: 1 } },
+                        {
+                            $addFields: {
+                                id: { $toString: "$_id" },
+                                taskBoardId: { $toString: "$taskBoardId" },
+                                joinedAt: { $toString: "$joinedAt" },
+                                recentlyAccessedAt: {
+                                    $toString: "$recentlyAccessedAt",
+                                },
+                                user: { $first: "$user" },
+                            },
+                        },
+                        { $unset: "_id" },
                     ],
                 },
             },
@@ -148,7 +172,6 @@ export async function GET(request: NextRequest, { params }: Segment) {
 }
 
 export async function PATCH(request: NextRequest, { params }: Segment) {
-    const { id } = params;
     let data;
 
     try {
@@ -160,34 +183,43 @@ export async function PATCH(request: NextRequest, { params }: Segment) {
         });
     }
 
-    const payloadEmail = await getPayloadEmail();
+    const { displayName, flowDirection, defaultPermission, thumbnailData } =
+        data;
+    let requiredPermission = 0;
 
-    if (payloadEmail === null) {
-        return unauthorizedErrorResponse<TaskBoardPatchResponse>({
-            taskBoard: null,
-        });
-    }
+    if (displayName !== undefined)
+        requiredPermission |= PERMISSION_TASK_BOARD_UPDATE_DISPLAY_NAME;
+    if (flowDirection !== undefined)
+        requiredPermission |= PERMISSION_TASK_BOARD_UPDATE_FLOW_DIRECTION;
+    if (defaultPermission !== undefined)
+        requiredPermission |= PERMISSION_TASK_BOARD_UPDATE_DEFAULT_PERMISSION;
+    if (thumbnailData !== undefined)
+        requiredPermission |= PERMISSION_TASK_BOARD_UPDATE_THUMBNAIL;
 
-    const taskBoard = await prisma.taskBoard.findUnique({
-        where: { id },
-        select: { owner: { select: { email: true } } },
+    const { id } = params;
+    const authority = await checkAuthorityWithDocument({
+        requiredPermission,
+        documentType: "taskBoard",
+        documentId: id,
     });
 
-    if (taskBoard === null) {
-        return badRequestErrorResponse<TaskBoardPatchResponse>({
+    if (!authority.success) {
+        return authority.errorResponse<TaskBoardPatchResponse>({
             taskBoard: null,
         });
     }
 
-    if (taskBoard.owner.email !== payloadEmail) {
-        return forbiddenErrorResponse<TaskBoardPatchResponse>({
-            taskBoard: null,
-        });
-    }
+    const updatedTaskBoard = await prisma.$transaction(async (prisma) => {
+        if (defaultPermission === PERMISSION_ROLE_NONE) {
+            await prisma.taskBoardUser.deleteMany({
+                where: { isVisitor: true },
+            });
+        }
 
-    const updatedTaskBoard = await prisma.taskBoard.update({
-        where: { id },
-        data,
+        return prisma.taskBoard.update({
+            where: { id },
+            data,
+        });
     });
 
     return NextResponse.json({ taskBoard: updatedTaskBoard });
@@ -195,36 +227,25 @@ export async function PATCH(request: NextRequest, { params }: Segment) {
 
 export async function DELETE(request: NextRequest, { params }: Segment) {
     const { id } = params;
-    const payloadEmail = await getPayloadEmail();
-
-    if (payloadEmail === null) {
-        return unauthorizedErrorResponse<TaskBoardDeleteResponse>({
-            taskBoard: null,
-        });
-    }
-
-    const taskBoard = await prisma.taskBoard.findUnique({
-        where: { id },
-        select: { owner: { select: { email: true } } },
+    const authority = await checkAuthorityWithDocument({
+        requiredPermission: PERMISSION_TASK_BOARD_DELETE,
+        documentType: "taskBoard",
+        documentId: id,
     });
 
-    if (taskBoard === null) {
-        return badRequestErrorResponse<TaskBoardDeleteResponse>({
+    if (!authority.success) {
+        return authority.errorResponse<TaskBoardDeleteResponse>({
             taskBoard: null,
         });
     }
 
-    if (taskBoard.owner.email !== payloadEmail) {
-        return forbiddenErrorResponse<TaskBoardDeleteResponse>({
-            taskBoard: null,
+    const deletedTaskBoard = await prisma.$transaction(async (prisma) => {
+        await prisma.task.deleteMany({
+            where: { taskList: { taskBoardId: id } },
         });
-    }
+        await prisma.taskList.deleteMany({ where: { taskBoardId: id } });
 
-    await prisma.task.deleteMany({ where: { taskList: { taskBoardId: id } } });
-    await prisma.taskList.deleteMany({ where: { taskBoardId: id } });
-
-    const deletedTaskBoard = await prisma.taskBoard.delete({
-        where: { id },
+        return prisma.taskBoard.delete({ where: { id } });
     });
 
     return NextResponse.json({ taskBoard: deletedTaskBoard });

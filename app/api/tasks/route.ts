@@ -1,19 +1,17 @@
-import prisma from "@/_/lib/prisma";
-import { TaskCreateSchema } from "@/_/schema/task";
+import {
+    PERMISSION_CONTENT_READ,
+    PERMISSION_TASK_CREATE_DELETE,
+} from "@/_/common/constants/permissions";
+import prisma from "@/_/common/lib/prisma";
+import { TaskCreateSchema } from "@/_/common/schema/task";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { TasksGetResponse, TasksPostResponse } from "../_/schema/tasks";
-import {
-    badRequestErrorResponse,
-    forbiddenErrorResponse,
-    unauthorizedErrorResponse,
-    unprocessableEntityErrorResponse,
-} from "../_/utils/errorResponse";
-import getPayloadEmail from "../_/utils/getPayloadEmail";
+import { TasksGetResponse, TasksPostResponse } from "../_/common/schema/tasks";
+import { checkAuthorityWithDocument } from "../_/utils/checkAuthority";
+import { unprocessableEntityErrorResponse } from "../_/utils/errorResponse";
 
 export async function GET(request: NextRequest) {
     const { nextUrl } = request;
-
     const { success, data: listId } = z
         .string()
         .safeParse(nextUrl.searchParams.get("listId"));
@@ -24,16 +22,26 @@ export async function GET(request: NextRequest) {
         });
     }
 
-    const payloadEmail = await getPayloadEmail();
+    const authority = await checkAuthorityWithDocument({
+        requiredPermission: PERMISSION_CONTENT_READ,
+        documentType: "taskList",
+        documentId: listId,
+    });
 
-    if (payloadEmail === null) {
-        return unauthorizedErrorResponse<TasksGetResponse>({
-            tasks: [],
-        });
+    if (!authority.success) {
+        return authority.errorResponse<TasksGetResponse>({ tasks: [] });
     }
 
+    const { user } = authority;
     const tasks = await prisma.task.findMany({
-        where: { taskListId: listId },
+        where: {
+            taskList: {
+                id: listId,
+                taskBoard: {
+                    users: { some: { userGoogleId: user.googleId } },
+                },
+            },
+        },
         orderBy: { order: "asc" },
     });
 
@@ -52,39 +60,24 @@ export async function POST(request: NextRequest) {
         });
     }
 
-    const payloadEmail = await getPayloadEmail();
-
-    if (payloadEmail === null) {
-        return unauthorizedErrorResponse<TasksPostResponse>({
-            task: null,
-        });
-    }
-
-    const taskList = await prisma.taskList.findUnique({
-        where: { id: data.taskListId },
-        select: {
-            taskBoard: { select: { owner: { select: { email: true } } } },
-        },
+    const authority = await checkAuthorityWithDocument({
+        requiredPermission: PERMISSION_TASK_CREATE_DELETE,
+        documentType: "taskList",
+        documentId: data.taskListId,
     });
 
-    if (taskList === null) {
-        return badRequestErrorResponse<TasksPostResponse>({
-            task: null,
-        });
+    if (!authority.success) {
+        return authority.errorResponse<TasksPostResponse>({ task: null });
     }
 
-    if (taskList.taskBoard.owner.email !== payloadEmail) {
-        return forbiddenErrorResponse<TasksPostResponse>({
-            task: null,
+    const task = await prisma.$transaction(async (prisma) => {
+        await prisma.task.updateMany({
+            where: { taskListId: data.taskListId },
+            data: { order: { increment: 1 } },
         });
-    }
 
-    await prisma.task.updateMany({
-        where: { taskListId: data.taskListId },
-        data: { order: { increment: 1 } },
+        return prisma.task.create({ data });
     });
-
-    const task = await prisma.task.create({ data });
 
     return NextResponse.json({ task });
 }
