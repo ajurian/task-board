@@ -3,16 +3,15 @@ import { NoSsr } from "@mui/material";
 import Header from "./_/components/Header";
 import Main from "./_/components/Main";
 import TaskBoardsProvider from "./_/providers/TaskBoardsProvider";
-import { cookies } from "next/headers";
 
 const BoardPage = () => {
     return (
-        <TaskBoardsProvider>
-            <Header />
-            <NoSsr>
+        <NoSsr>
+            <TaskBoardsProvider>
+                <Header />
                 <Main />
-            </NoSsr>
-        </TaskBoardsProvider>
+            </TaskBoardsProvider>
+        </NoSsr>
     );
 };
 

@@ -1,6 +1,6 @@
 import HeaderProfile from "@/board/_/components/common/HeaderProfile";
 import HeaderTitle from "@/board/_/components/common/HeaderTitle";
-import { Box, NoSsr } from "@mui/material";
+import { Box } from "@mui/material";
 import HeaderContainer from "./HeaderContainer";
 import HeaderDirectionButton from "./HeaderDirectionButton";
 import HeaderSearchInput from "./HeaderSearchInput";
@@ -19,9 +19,7 @@ export default async function Header() {
                     gap: 2,
                 }}
             >
-                <NoSsr>
-                    <HeaderSyncIndicator />
-                </NoSsr>
+                <HeaderSyncIndicator />
                 <HeaderDirectionButton />
                 <HeaderProfile />
             </Box>

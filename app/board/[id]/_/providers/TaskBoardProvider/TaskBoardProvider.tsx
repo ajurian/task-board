@@ -105,7 +105,6 @@ export default function TaskBoardProvider({
                     "`selectedTaskBoard.id` is existent and yet we reached this code. (taskBoard === null)"
                 );
             }
-            console.log(taskBoard.taskLists[0].tasks);
 
             return taskBoard;
         },
@@ -653,14 +652,18 @@ export default function TaskBoardProvider({
     }, [selectedTaskBoard.id, canUserUpdateThumbnail]);
 
     useLayoutEffect(() => {
-        if (taskBoardQuery.isRefetching) {
+        if (taskBoardQuery.isRefetching || taskBoardUserQuery.isRefetching) {
             return;
         }
 
         setDisplayName(taskBoardQuery.data.displayName);
         setFlowDirection(taskBoardQuery.data.flowDirection);
         setTaskLists(taskBoardQuery.data.taskLists);
-    }, [taskBoardQuery.isRefetching, taskBoardQuery.data]);
+    }, [
+        taskBoardQuery.isRefetching,
+        taskBoardUserQuery.isRefetching,
+        taskBoardQuery.data,
+    ]);
 
     useEffect(() => {
         if (

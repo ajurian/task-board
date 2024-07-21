@@ -214,6 +214,11 @@ export async function PATCH(request: NextRequest, { params }: Segment) {
             await prisma.taskBoardUser.deleteMany({
                 where: { isVisitor: true },
             });
+        } else {
+            await prisma.taskBoardUser.updateMany({
+                where: { isVisitor: true },
+                data: { permission: defaultPermission },
+            });
         }
 
         return prisma.taskBoard.update({
