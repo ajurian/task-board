@@ -5,12 +5,9 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import React from "react";
 import { z } from "zod";
-import { UserInfo } from "../schema/userInfo";
 
 export default function withProtectedRoute<P = {}>(Page: React.FC<P>) {
-    return async function WithProtectedRoute(
-        props: P & { userInfo: UserInfo }
-    ) {
+    return async function WithProtectedRoute(props: P) {
         const {
             data: { userInfo },
         } = await ServerAuthTokenAPI.get();
