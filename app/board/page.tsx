@@ -6,8 +6,6 @@ import TaskBoardsProvider from "./_/providers/TaskBoardsProvider";
 import { cookies } from "next/headers";
 
 const BoardPage = () => {
-    console.log(cookies().getAll());
-
     return (
         <TaskBoardsProvider>
             <Header />
