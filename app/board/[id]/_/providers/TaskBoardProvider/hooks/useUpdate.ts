@@ -1,4 +1,4 @@
-import { UseMutationResult } from "@tanstack/react-query";
+import { UseMutationResult, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { UpdateOptions } from "../TaskBoardProviderTypes";
 
@@ -13,11 +13,17 @@ export default function useUpdate<T extends UpdateOptions>({
     onOptimisticUpdate,
     onMutationStateChange,
 }: UseUpdateOptions<T>) {
+    const queryClient = useQueryClient();
+
     return useCallback(
         (options: T) => {
+            queryClient.cancelQueries({
+                queryKey: ["taskBoard", "taskBoardUser"],
+            });
+
             onOptimisticUpdate(options);
             onMutationStateChange(() => mutation.mutateAsync(options));
         },
-        [onOptimisticUpdate, onMutationStateChange, mutation]
+        [onOptimisticUpdate, onMutationStateChange, mutation, queryClient]
     );
 }

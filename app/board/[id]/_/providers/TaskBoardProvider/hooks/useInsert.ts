@@ -1,4 +1,4 @@
-import { UseMutationResult } from "@tanstack/react-query";
+import { UseMutationResult, useQueryClient } from "@tanstack/react-query";
 import ObjectID from "bson-objectid";
 import { useCallback } from "react";
 import { InsertOptions } from "../TaskBoardProviderTypes";
@@ -14,14 +14,20 @@ export default function useInsert<T extends InsertOptions>({
     onOptimisticUpdate,
     onMutationStateChange,
 }: UseInsertOptions<T>) {
+    const queryClient = useQueryClient();
+
     return useCallback(
         (options: Omit<T, "id">) => {
             const id = ObjectID().toHexString();
             const optionsWithId = { id, ...options } as T;
 
+            queryClient.cancelQueries({
+                queryKey: ["taskBoard", "taskBoardUser"],
+            });
+
             onOptimisticUpdate(optionsWithId);
             onMutationStateChange(() => mutation.mutateAsync(optionsWithId));
         },
-        [onOptimisticUpdate, onMutationStateChange, mutation]
+        [onOptimisticUpdate, onMutationStateChange, mutation, queryClient]
     );
 }
