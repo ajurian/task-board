@@ -81,7 +81,22 @@ export default function HeaderSearchInput() {
             size="small"
             value={searchQueryInput}
             onChange={handleInputChange}
-            sx={(theme) => ({ width: theme.spacing(124) })}
+            sx={(theme) => ({
+                display: "none",
+                [theme.breakpoints.up("sm")]: {
+                    display: "inline-flex",
+                    width: theme.spacing(72),
+                },
+                [theme.breakpoints.up("md")]: {
+                    width: theme.spacing(96),
+                },
+                [theme.breakpoints.up("lg")]: {
+                    width: theme.spacing(112),
+                },
+                [theme.breakpoints.up("xl")]: {
+                    width: theme.spacing(128),
+                },
+            })}
             startAdornment={
                 <InputAdornment position="start" variant="outlined">
                     <IconButton

@@ -5,8 +5,8 @@ import { Box, styled } from "@mui/material";
 const HeaderContainer = styled(Box)(({ theme }) => ({
     display: "grid",
     gridTemplateRows: "1fr",
-    gridTemplateColumns: "1fr auto 1fr",
     position: "sticky",
+    gridTemplateColumns: "1fr 1fr",
     left: 0,
     top: 0,
     borderBottomStyle: "solid",
@@ -17,6 +17,9 @@ const HeaderContainer = styled(Box)(({ theme }) => ({
     paddingBlock: theme.spacing(2.25),
     gap: theme.spacing(2),
     zIndex: theme.zIndex.appBar,
+    [theme.breakpoints.up("sm")]: {
+        gridTemplateColumns: "1fr auto 1fr",
+    },
 }));
 
 export default HeaderContainer;

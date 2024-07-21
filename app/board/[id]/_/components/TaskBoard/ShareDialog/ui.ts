@@ -1,12 +1,27 @@
-import { Box, DialogContent, Select, styled, Typography } from "@mui/material";
+import { Box, Select, styled, Typography } from "@mui/material";
 
-export const ShareDialogContent = styled(DialogContent)(({ theme }) => ({
+export const ShareDialogHeader = styled(Box)(({ theme }) => ({
+    display: "flex",
+    alignItems: "center",
+    gap: theme.spacing(2),
+    padding: theme.spacing(4),
+    [theme.breakpoints.up("sm")]: {
+        paddingInline: theme.spacing(6),
+    },
+}));
+
+export const ShareDialogHeaderTitle = styled(Typography)(({ theme }) => ({}));
+
+export const ShareDialogContent = styled(Box)(({ theme }) => ({
     paddingInline: 0,
     paddingBottom: 0,
     overflow: "hidden",
     display: "flex",
     flexDirection: "column",
     gap: theme.spacing(4),
+    [theme.breakpoints.up("sm")]: {
+        flex: 1,
+    },
 }));
 
 export const ShareDialogAddPeopleContainer = styled(Box)(({ theme }) => ({
@@ -91,6 +106,13 @@ export const ShareDialogPeopleWithAccessItem = styled(Box)(({ theme }) => ({
     },
 }));
 
+export const ShareDialogGeneralAccessContainer = styled(Box)(({ theme }) => ({
+    marginBottom: theme.spacing(4),
+    [theme.breakpoints.up("sm")]: {
+        marginBottom: 0,
+    },
+}));
+
 export const ShareDialogGeneralAccessLabel = styled(Typography)(
     ({ theme }) => ({
         fontWeight: 500,
@@ -98,7 +120,7 @@ export const ShareDialogGeneralAccessLabel = styled(Typography)(
     })
 );
 
-export const ShareDialogGeneralAccessContainer = styled(Box)(({ theme }) => ({
+export const ShareDialogGeneralAccessDetails = styled(Box)(({ theme }) => ({
     display: "flex",
     alignItems: "center",
     gap: theme.spacing(1),

@@ -13,6 +13,7 @@ import { useShareDialog } from "./ShareDialogProvider";
 import ShareDialogRoleSelect from "./ShareDialogRoleSelect";
 import {
     ShareDialogGeneralAccessContainer,
+    ShareDialogGeneralAccessDetails,
     ShareDialogGeneralAccessLabel,
     ShareDialogGeneralAccessSelect,
 } from "./ui";
@@ -43,11 +44,11 @@ export default function ShareDialogGeneralAccess() {
     };
 
     return (
-        <Box>
+        <ShareDialogGeneralAccessContainer>
             <ShareDialogGeneralAccessLabel variant="subtitle1">
                 General access
             </ShareDialogGeneralAccessLabel>
-            <ShareDialogGeneralAccessContainer>
+            <ShareDialogGeneralAccessDetails>
                 <Avatar
                     sx={{
                         fontSize: "1.125rem",
@@ -103,7 +104,7 @@ export default function ShareDialogGeneralAccess() {
                         onChange={handleDefaultRoleChange}
                     />
                 )}
-            </ShareDialogGeneralAccessContainer>
-        </Box>
+            </ShareDialogGeneralAccessDetails>
+        </ShareDialogGeneralAccessContainer>
     );
 }

@@ -261,7 +261,7 @@ export default function TaskBoardProvider({
             ],
             mutationFn: async () => {
                 await ClientTaskBoardAPI.patch(selectedTaskBoard.id, {
-                    flowDirection: flowDirection === "row" ? "column" : "row",
+                    flowDirection,
                 });
             },
         });

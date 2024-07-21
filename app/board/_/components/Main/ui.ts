@@ -1,7 +1,7 @@
 import { Box, ButtonBase, styled, Typography } from "@mui/material";
 import Link from "next/link";
 
-export const MainContainer = styled(Box)(({ theme }) => ({
+export const MainContainer = styled(Box)(() => ({
     display: "flex",
     flexDirection: "column",
 }));
@@ -50,6 +50,9 @@ export const TaskBoardsContainer = styled(Box)(({ theme }) => ({
     paddingInline: theme.spacing(6),
     paddingBlock: theme.spacing(4),
     maxWidth: theme.spacing(224),
+    [theme.breakpoints.up("sm")]: {
+        paddingInline: theme.spacing(16),
+    },
 }));
 
 export const TaskBoardsRecentBoards = styled(Typography)(({ theme }) => ({
@@ -60,12 +63,12 @@ export const TaskBoardsRecentBoards = styled(Typography)(({ theme }) => ({
 
 export const TaskBoardsGrid = styled(Box)(({ theme }) => ({
     display: "grid",
-    gridTemplateRows: "auto",
-    gridTemplateColumns: "1fr 1fr 1fr",
+    gridTemplateColumns: `repeat(auto-fit, minmax(${theme.spacing(56)}, 1fr))`,
     gap: theme.spacing(6),
 }));
 
 export const TaskBoardCard = styled(Link)(({ theme }) => ({
+    flexBasis: theme.spacing(64),
     overflow: "hidden",
     cursor: "pointer",
     textDecoration: "none",
