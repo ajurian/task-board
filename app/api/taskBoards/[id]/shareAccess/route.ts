@@ -2,14 +2,17 @@ import {
     PERMISSION_TASK_BOARD_USER_UPDATE_PERMISSION,
     ROLE_TO_PERMISSION,
 } from "@/_/common/constants/permissions";
-import prisma from "@/_/common/lib/prisma";
 import Mail from "@/_/common/services/Mail";
 import {
     TaskBoardShareAccessBodySchema,
     TaskBoardShareAccessResponse,
 } from "@/api/_/common/schema/taskBoards";
 import { checkAuthorityWithDocument } from "@/api/_/utils/checkAuthority";
-import { unprocessableEntityErrorResponse } from "@/api/_/utils/errorResponse";
+import {
+    forbiddenErrorResponse,
+    unprocessableEntityErrorResponse,
+} from "@/api/_/utils/errorResponse";
+import runTransaction from "@/api/_/utils/runTransaction";
 import { NextRequest, NextResponse } from "next/server";
 
 interface Segment {
@@ -32,18 +35,30 @@ export async function POST(request: NextRequest, { params }: Segment) {
 
     const { id } = params;
     const authority = await checkAuthorityWithDocument({
+        requiredPermission: PERMISSION_TASK_BOARD_USER_UPDATE_PERMISSION,
         documentType: "taskBoard",
         documentId: id,
-        requiredPermission: PERMISSION_TASK_BOARD_USER_UPDATE_PERMISSION,
     });
 
     if (!authority.success) {
         return authority.errorResponse<TaskBoardShareAccessResponse>({});
     }
 
+    const { user, taskBoardUser } = authority;
+
+    const canUserChangeRole =
+        (taskBoardUser.permission &
+            PERMISSION_TASK_BOARD_USER_UPDATE_PERMISSION) !==
+        0;
+    const isUserVisitor = taskBoardUser.isVisitor;
+
+    if (!canUserChangeRole || isUserVisitor) {
+        return forbiddenErrorResponse<TaskBoardShareAccessResponse>({});
+    }
+
     const { userEmails, role } = data;
 
-    await prisma.$transaction(async (prisma) => {
+    await runTransaction(async (prisma) => {
         const queries = [];
 
         for (const userEmail of userEmails) {
@@ -81,17 +96,16 @@ export async function POST(request: NextRequest, { params }: Segment) {
         await Promise.all(queries);
     });
 
-    const { user: owner } = authority;
     const baseUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/login`;
     const redirectUri = encodeURIComponent(
         `${process.env.NEXT_PUBLIC_SITE_URL}/board/${id}`
     );
 
     await Mail.sendMail({
-        from: `${owner.displayName} <noreply.taskboard@gmail.com>`,
+        from: `${user.displayName} <noreply.taskboard@gmail.com>`,
         to: userEmails.join(", "),
-        subject: `${owner.displayName} shared a board with you`,
-        html: `<p>${owner.displayName} ${owner.email} shared a board with you.</p><br /><a href='${baseUrl}?hint={{ contact.EMAIL }}&redirectUri=${redirectUri}'>Open board</a>`,
+        subject: `${user.displayName} shared a board with you`,
+        html: `<p>${user.displayName} ${user.email} shared a board with you.</p><br /><a href='${baseUrl}?hint={{ contact.EMAIL }}&redirectUri=${redirectUri}'>Open board</a>`,
     });
 
     return NextResponse.json({});

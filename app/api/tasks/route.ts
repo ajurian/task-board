@@ -9,6 +9,7 @@ import { z } from "zod";
 import { TasksGetResponse, TasksPostResponse } from "../_/common/schema/tasks";
 import { checkAuthorityWithDocument } from "../_/utils/checkAuthority";
 import { unprocessableEntityErrorResponse } from "../_/utils/errorResponse";
+import runTransaction from "../_/utils/runTransaction";
 
 export async function GET(request: NextRequest) {
     const { nextUrl } = request;
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
         return authority.errorResponse<TasksPostResponse>({ task: null });
     }
 
-    const task = await prisma.$transaction(async (prisma) => {
+    const task = await runTransaction(async (prisma) => {
         await prisma.task.updateMany({
             where: { taskListId: data.taskListId },
             data: { order: { increment: 1 } },

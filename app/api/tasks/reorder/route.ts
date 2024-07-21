@@ -2,6 +2,7 @@ import { PERMISSION_TASK_REORDER } from "@/_/common/constants/permissions";
 import prisma from "@/_/common/lib/prisma";
 import { TasksReorderPostBodySchema } from "@/api/_/common/schema/tasks";
 import { checkAuthorityWithDocument } from "@/api/_/utils/checkAuthority";
+import runTransaction from "@/api/_/utils/runTransaction";
 import { NextRequest, NextResponse } from "next/server";
 import {
     badRequestErrorResponse,
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
     const { id } = targetTask;
 
     if (fromListIndex === toListIndex) {
-        await prisma.$transaction(async (prisma) => {
+        await runTransaction(async (prisma) => {
             await prisma.task.update({
                 where: { id },
                 data: { order: toIndex },
@@ -113,27 +114,27 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({});
     }
 
-    await prisma.$transaction([
-        prisma.task.update({
+    await runTransaction(async (prisma) => {
+        await prisma.task.update({
             where: { id },
             data: { taskListId: toList.id, order: toIndex },
-        }),
-        prisma.task.updateMany({
+        });
+        await prisma.task.updateMany({
             where: {
                 taskListId: fromList.id,
                 order: { gt: fromIndex },
             },
             data: { order: { decrement: 1 } },
-        }),
-        prisma.task.updateMany({
+        });
+        await prisma.task.updateMany({
             where: {
                 id: { not: id },
                 taskListId: toList.id,
                 order: { gte: toIndex },
             },
             data: { order: { increment: 1 } },
-        }),
-    ]);
+        });
+    });
 
     return NextResponse.json({});
 }

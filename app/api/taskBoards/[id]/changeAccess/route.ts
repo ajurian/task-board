@@ -4,13 +4,16 @@ import {
     PERMISSION_ROLE_WORKER,
     PERMISSION_TASK_BOARD_USER_UPDATE_PERMISSION,
 } from "@/_/common/constants/permissions";
-import prisma from "@/_/common/lib/prisma";
 import {
     TaskBoardChangeAccessBody,
     TaskBoardChangeAccessBodySchema,
 } from "@/api/_/common/schema/taskBoards";
 import { checkAuthorityWithDocument } from "@/api/_/utils/checkAuthority";
-import { unprocessableEntityErrorResponse } from "@/api/_/utils/errorResponse";
+import {
+    forbiddenErrorResponse,
+    unprocessableEntityErrorResponse,
+} from "@/api/_/utils/errorResponse";
+import runTransaction from "@/api/_/utils/runTransaction";
 import { NextRequest, NextResponse } from "next/server";
 
 interface Segment {
@@ -40,9 +43,21 @@ export async function POST(request: NextRequest, { params }: Segment) {
         return authority.errorResponse<TaskBoardChangeAccessBody>({});
     }
 
+    const { taskBoardUser } = authority;
+
+    const canUserChangeRole =
+        (taskBoardUser.permission &
+            PERMISSION_TASK_BOARD_USER_UPDATE_PERMISSION) !==
+        0;
+    const isUserVisitor = taskBoardUser.isVisitor;
+
+    if (!canUserChangeRole || isUserVisitor) {
+        return forbiddenErrorResponse<TaskBoardChangeAccessBody>({});
+    }
+
     const { editorEmails = [], workerEmails = [], viewerEmails = [] } = data;
 
-    await prisma.$transaction(async (prisma) => {
+    await runTransaction(async (prisma) => {
         const queries = [];
 
         if (editorEmails.length > 0) {

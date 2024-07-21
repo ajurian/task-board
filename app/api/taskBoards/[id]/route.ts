@@ -15,6 +15,7 @@ import {
     TaskBoardPatchResponse,
 } from "@/api/_/common/schema/taskBoards";
 import { checkAuthorityWithDocument } from "@/api/_/utils/checkAuthority";
+import runTransaction from "@/api/_/utils/runTransaction";
 import { NextRequest, NextResponse } from "next/server";
 import { unprocessableEntityErrorResponse } from "../../_/utils/errorResponse";
 
@@ -160,7 +161,6 @@ export async function GET(request: NextRequest, { params }: Segment) {
             {
                 $addFields: {
                     id: { $toString: "$_id" },
-                    ownerId: { $toString: "$ownerId" },
                     createdAt: { $toString: "$createdAt" },
                 },
             },
@@ -209,7 +209,7 @@ export async function PATCH(request: NextRequest, { params }: Segment) {
         });
     }
 
-    const updatedTaskBoard = await prisma.$transaction(async (prisma) => {
+    const updatedTaskBoard = await runTransaction(async (prisma) => {
         if (defaultPermission === PERMISSION_ROLE_NONE) {
             await prisma.taskBoardUser.deleteMany({
                 where: { isVisitor: true },
@@ -239,7 +239,7 @@ export async function DELETE(request: NextRequest, { params }: Segment) {
         });
     }
 
-    const deletedTaskBoard = await prisma.$transaction(async (prisma) => {
+    const deletedTaskBoard = await runTransaction(async (prisma) => {
         await prisma.task.deleteMany({
             where: { taskList: { taskBoardId: id } },
         });

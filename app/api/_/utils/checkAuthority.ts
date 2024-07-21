@@ -2,6 +2,8 @@ import "server-only";
 
 import { PERMISSION_ROLE_NONE } from "@/_/common/constants/permissions";
 import prisma from "@/_/common/lib/prisma";
+import { TaskBoardModel } from "@/_/common/schema/taskBoard";
+import { TaskBoardUserModel } from "@/_/common/schema/taskBoardUser";
 import { UserModel } from "@/_/common/schema/user";
 import ObjectID from "bson-objectid";
 import { NextResponse } from "next/server";
@@ -13,41 +15,36 @@ import {
     unauthorizedErrorResponse,
     unprocessableEntityErrorResponse,
 } from "./errorResponse";
+import runTransaction from "./runTransaction";
 import verifyToken from "./verifyToken";
 
 type DocumentType = "taskBoardUser" | "taskBoard" | "taskList" | "task";
 
-interface TaskBoardUserDocument {
-    userGoogleId: string;
-    permission: number;
-}
+type TaskBoardUserDocument = Pick<
+    TaskBoardUserModel,
+    "userGoogleId" | "permission" | "isVisitor"
+>;
 
-interface TaskBoardDocument {
-    id: string;
-    defaultPermission: number;
-    users: { userGoogleId: string }[];
-}
+type TaskBoardDocument = Pick<TaskBoardModel, "id" | "defaultPermission"> & {
+    users: Pick<TaskBoardUserModel, "userGoogleId">[];
+};
 
-interface TaskListDocument {
-    taskBoard: TaskBoardDocument;
-}
+type TaskListDocument = { taskBoard: TaskBoardDocument };
 
-interface TaskDocument {
-    taskList: TaskListDocument;
-}
+type TaskDocument = { taskList: TaskListDocument };
 
-interface Document {
+type Document = {
     taskBoardUser: TaskBoardUserDocument;
     taskBoard: TaskBoardDocument;
     taskList: TaskListDocument;
     task: TaskDocument;
-}
+};
 
-interface CheckAuthorityWithDocumentOptions<T extends DocumentType> {
+type CheckAuthorityWithDocumentOptions<T extends DocumentType> = {
     requiredPermission: number;
     documentType: T;
     documentId: string;
-}
+};
 
 type Authority =
     | { success: false; errorResponse: <D>(data: D) => NextResponse<D> }
@@ -61,6 +58,7 @@ type AuthorityWithDocument<T extends DocumentType> =
     | {
           success: true;
           user: Pick<UserModel, "googleId" | "email" | "displayName">;
+          taskBoardUser: TaskBoardUserDocument;
           document: Document[T];
       };
 
@@ -120,6 +118,7 @@ export async function checkAuthorityWithDocument<T extends DocumentType>(
             select: {
                 userGoogleId: true,
                 permission: true,
+                isVisitor: true,
             },
         });
 
@@ -138,12 +137,13 @@ export async function checkAuthorityWithDocument<T extends DocumentType>(
         return {
             success: true,
             user,
+            taskBoardUser,
             document: taskBoardUser,
         } as AuthorityWithDocument<T>;
     }
 
     if (documentType === "taskBoard") {
-        const result = await prisma.$transaction(async (prisma) => {
+        const result = await runTransaction(async (prisma) => {
             const taskBoard = await prisma.taskBoard.findUnique({
                 where: { id: documentId },
                 select: {
@@ -220,6 +220,7 @@ export async function checkAuthorityWithDocument<T extends DocumentType>(
             return {
                 success: true,
                 user,
+                taskBoardUser,
                 document: taskBoard,
             };
         });
@@ -228,7 +229,7 @@ export async function checkAuthorityWithDocument<T extends DocumentType>(
     }
 
     if (documentType === "taskList") {
-        const result = await prisma.$transaction(async (prisma) => {
+        const result = await runTransaction(async (prisma) => {
             const taskList = await prisma.taskList.findUnique({
                 where: { id: documentId },
                 select: {
@@ -304,13 +305,13 @@ export async function checkAuthorityWithDocument<T extends DocumentType>(
                 };
             }
 
-            return { success: true, user, document: taskList };
+            return { success: true, user, taskBoardUser, document: taskList };
         });
 
         return result as AuthorityWithDocument<T>;
     }
 
-    const result = await prisma.$transaction(async (prisma) => {
+    const result = await runTransaction(async (prisma) => {
         const task = await prisma.task.findUnique({
             where: { id: documentId },
             select: {
@@ -391,7 +392,7 @@ export async function checkAuthorityWithDocument<T extends DocumentType>(
             };
         }
 
-        return { success: true, user, document: task };
+        return { success: true, user, taskBoardUser, document: task };
     });
 
     return result as AuthorityWithDocument<T>;

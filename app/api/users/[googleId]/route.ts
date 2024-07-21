@@ -20,6 +20,12 @@ export async function PUT(request: NextRequest, { params }: Segment) {
         return authority.errorResponse({ user: null });
     }
 
+    const { googleId } = params;
+
+    if (authority.user.googleId !== googleId) {
+        return forbiddenErrorResponse({ user: null });
+    }
+
     let data;
 
     try {
@@ -27,12 +33,6 @@ export async function PUT(request: NextRequest, { params }: Segment) {
         data = UsersPutBodySchema.parse(rawBody);
     } catch (e) {
         return unprocessableEntityErrorResponse({ user: null });
-    }
-
-    const { googleId } = params;
-
-    if (authority.user.googleId !== googleId) {
-        return forbiddenErrorResponse({ user: null });
     }
 
     const user = await prisma.user.upsert({

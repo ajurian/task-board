@@ -12,6 +12,7 @@ import {
 } from "../_/common/schema/taskLists";
 import { checkAuthorityWithDocument } from "../_/utils/checkAuthority";
 import { unprocessableEntityErrorResponse } from "../_/utils/errorResponse";
+import runTransaction from "../_/utils/runTransaction";
 
 export async function GET(request: NextRequest) {
     const { nextUrl } = request;
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
         });
     }
 
-    const taskList = await prisma.$transaction(async (prisma) => {
+    const taskList = await runTransaction(async (prisma) => {
         const order = await prisma.taskList.count({
             where: { taskBoardId: data.taskBoardId },
         });

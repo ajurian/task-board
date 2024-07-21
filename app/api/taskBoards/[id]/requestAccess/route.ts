@@ -1,7 +1,10 @@
-import { PERMISSION_ROLE_OWNER } from "@/_/common/constants/permissions";
+import {
+    PERMISSION_ROLE_NONE,
+    PERMISSION_ROLE_OWNER,
+} from "@/_/common/constants/permissions";
 import prisma from "@/_/common/lib/prisma";
 import Mail from "@/_/common/services/Mail";
-import { checkAuthority } from "@/api/_/utils/checkAuthority";
+import { checkAuthorityWithDocument } from "@/api/_/utils/checkAuthority";
 import { badRequestErrorResponse } from "@/api/_/utils/errorResponse";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -12,13 +15,17 @@ interface Segment {
 }
 
 export async function POST(request: NextRequest, { params }: Segment) {
-    const authority = await checkAuthority();
+    const { id } = params;
+    const authority = await checkAuthorityWithDocument({
+        requiredPermission: PERMISSION_ROLE_NONE,
+        documentType: "taskBoard",
+        documentId: id,
+    });
 
     if (!authority.success) {
         return authority.errorResponse({});
     }
 
-    const { id } = params;
     const owner = await prisma.taskBoardUser.findFirst({
         where: {
             taskBoardId: id,

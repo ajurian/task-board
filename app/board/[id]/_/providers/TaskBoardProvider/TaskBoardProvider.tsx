@@ -91,7 +91,7 @@ export default function TaskBoardProvider({
     );
 
     const taskBoardQuery = useQuery({
-        queryKey: ["taskBoard", selectedTaskBoard.id, searchQuery],
+        queryKey: ["taskBoard", selectedTaskBoard, searchQuery],
         queryFn: async ({ signal }) => {
             const {
                 data: { taskBoard },
@@ -646,9 +646,9 @@ export default function TaskBoardProvider({
             return;
         }
 
-        await ClientTaskBoardAPI.patch(selectedTaskBoard.id, {
+        /* await ClientTaskBoardAPI.patch(selectedTaskBoard.id, {
             thumbnailData: canvas.toDataURL("image/jpeg").split(";base64,")[1],
-        });
+        }); */
     }, [selectedTaskBoard.id, canUserUpdateThumbnail]);
 
     useLayoutEffect(() => {
@@ -656,6 +656,8 @@ export default function TaskBoardProvider({
             return;
         }
 
+        setDisplayName(taskBoardQuery.data.displayName);
+        setFlowDirection(taskBoardQuery.data.flowDirection);
         setTaskLists(taskBoardQuery.data.taskLists);
     }, [taskBoardQuery.isRefetching, taskBoardQuery.data]);
 

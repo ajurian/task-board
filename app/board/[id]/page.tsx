@@ -1,5 +1,4 @@
 import withProtectedRoute from "@/_/common/hoc/withProtectedRoute";
-import { UserInfo } from "@/_/common/schema/userInfo";
 import ServerTaskBoardAPI from "@/api/_/common/layers/server/TaskBoardAPI";
 import ServerTaskBoardUserAPI from "@/api/_/common/layers/server/TaskBoardUserAPI";
 import { isAxiosError } from "axios";

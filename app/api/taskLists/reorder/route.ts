@@ -2,6 +2,7 @@ import { PERMISSION_TASK_LIST_REORDER } from "@/_/common/constants/permissions";
 import prisma from "@/_/common/lib/prisma";
 import { TaskListsReorderPostBodySchema } from "@/api/_/common/schema/taskLists";
 import { checkAuthorityWithDocument } from "@/api/_/utils/checkAuthority";
+import runTransaction from "@/api/_/utils/runTransaction";
 import { NextRequest, NextResponse } from "next/server";
 import {
     badRequestErrorResponse,
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     const { id } = targetList;
 
-    await prisma.$transaction(async (prisma) => {
+    await runTransaction(async (prisma) => {
         await prisma.taskList.update({
             where: { id },
             data: { order: toIndex },

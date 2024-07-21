@@ -11,6 +11,7 @@ import {
     TaskListPatchResponse,
 } from "@/api/_/common/schema/taskLists";
 import { checkAuthorityWithDocument } from "@/api/_/utils/checkAuthority";
+import runTransaction from "@/api/_/utils/runTransaction";
 import { NextRequest, NextResponse } from "next/server";
 import { unprocessableEntityErrorResponse } from "../../_/utils/errorResponse";
 
@@ -84,7 +85,7 @@ export async function DELETE(request: NextRequest, { params }: Segment) {
         });
     }
 
-    const deletedTaskList = await prisma.$transaction(async (prisma) => {
+    const deletedTaskList = await runTransaction(async (prisma) => {
         await prisma.task.deleteMany({ where: { taskListId: id } });
         const deletedTaskList = await prisma.taskList.delete({ where: { id } });
 
