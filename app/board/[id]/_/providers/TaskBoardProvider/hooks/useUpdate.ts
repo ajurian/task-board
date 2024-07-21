@@ -19,6 +19,8 @@ export default function useUpdate<T extends UpdateOptions>({
         (options: T) => {
             queryClient.cancelQueries({
                 queryKey: ["taskBoard", "taskBoardUser"],
+                fetchStatus: "fetching",
+                type: "active",
             });
 
             onOptimisticUpdate(options);

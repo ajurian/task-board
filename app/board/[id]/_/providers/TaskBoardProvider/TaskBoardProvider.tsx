@@ -105,6 +105,7 @@ export default function TaskBoardProvider({
                     "`selectedTaskBoard.id` is existent and yet we reached this code. (taskBoard === null)"
                 );
             }
+            console.log(taskBoard.taskLists[0].tasks);
 
             return taskBoard;
         },

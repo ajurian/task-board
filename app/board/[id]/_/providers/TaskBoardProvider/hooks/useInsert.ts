@@ -23,6 +23,8 @@ export default function useInsert<T extends InsertOptions>({
 
             queryClient.cancelQueries({
                 queryKey: ["taskBoard", "taskBoardUser"],
+                fetchStatus: "fetching",
+                type: "active",
             });
 
             onOptimisticUpdate(optionsWithId);
