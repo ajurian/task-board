@@ -646,9 +646,9 @@ export default function TaskBoardProvider({
             return;
         }
 
-        /* await ClientTaskBoardAPI.patch(selectedTaskBoard.id, {
+        await ClientTaskBoardAPI.patch(selectedTaskBoard.id, {
             thumbnailData: canvas.toDataURL("image/jpeg").split(";base64,")[1],
-        }); */
+        });
     }, [selectedTaskBoard.id, canUserUpdateThumbnail]);
 
     useLayoutEffect(() => {
