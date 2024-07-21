@@ -1,11 +1,11 @@
-import { AggregatedTaskModel } from "@/_/common/schema/task";
+import { TaskModel } from "@/_/common/schema/task";
 import { Droppable } from "@hello-pangea/dnd";
 import TaskItem from "./TaskItem";
 import { TaskListItemsContainer } from "./ui";
 
 interface TaskListItemsWrapperProps {
     order: number;
-    tasks: AggregatedTaskModel[];
+    tasks: TaskModel[];
 }
 
 export default function TaskListItemsWrapper({
