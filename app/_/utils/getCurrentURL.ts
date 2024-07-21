@@ -4,5 +4,5 @@ export default function getCurrentURL() {
             ? "https://"
             : "http://";
 
-    return protocol + process.env.NEXT_PUBLIC_VERCEL_URL;
+    return protocol + process.env.NEXT_PUBLIC_SITE_URL;
 }
