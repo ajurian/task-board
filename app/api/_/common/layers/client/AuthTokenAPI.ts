@@ -7,7 +7,7 @@ import {
     AuthTokenPostBody,
 } from "../../schema/authToken";
 
-const API_URL = "/auth/Token";
+const API_URL = "/auth/token";
 
 const ClientAuthTokenAPI = {
     get: (config?: AxiosRequestConfig<{}>) =>
