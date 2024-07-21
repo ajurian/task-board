@@ -14,13 +14,11 @@ export default function setCredentials(refreshToken: string | null) {
 
     gauth.setCredentials({ refresh_token: refreshToken });
 
-    console.log(refreshToken);
-
     cookies().set({
         name: "refreshToken",
         value: refreshToken,
         maxAge: 60 * 60 * 24 * 400,
-        sameSite: "none",
+        sameSite: "lax",
         httpOnly: true,
         secure: process.env.NEXT_PUBLIC_VERCEL_ENV === "production",
     });

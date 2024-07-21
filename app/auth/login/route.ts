@@ -9,10 +9,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(
         gauth.generateAuthUrl({
             access_type: "offline",
+            prompt: "consent",
             scope: ["profile", "email"],
-            ...(hint === null
-                ? { prompt: "select_account" }
-                : { prompt: "consent", login_hint: hint }),
+            ...(hint !== null && { login_hint: hint }),
             ...(redirectUri !== null &&
                 redirectUri.length > 0 && {
                     state: Buffer.from(

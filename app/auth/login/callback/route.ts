@@ -1,7 +1,6 @@
 import { gauth } from "@/_/common/lib/google";
 import { badRequestErrorResponse } from "@/api/_/utils/errorResponse";
 import setCredentials from "@/api/_/utils/setCredentials";
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -21,8 +20,6 @@ export async function GET(request: NextRequest) {
     try {
         const { tokens } = await gauth.getToken(data);
         setCredentials(tokens.refresh_token ?? null);
-
-        console.log(cookies().getAll());
 
         const rawState = searchParams.get("state");
 

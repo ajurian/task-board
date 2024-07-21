@@ -15,6 +15,10 @@ const nextConfig = {
             },
             {
                 protocol: "https",
+                hostname: "task-board-olive.vercel.app",
+            },
+            {
+                protocol: "https",
                 hostname: "lh3.googleusercontent.com",
             },
         ],
