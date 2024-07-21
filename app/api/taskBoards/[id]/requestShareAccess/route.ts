@@ -65,7 +65,7 @@ export async function POST(request: NextRequest, { params }: Segment) {
     link.searchParams.set("hint", owner.user.email);
 
     await Mail.sendMail({
-        from: `${user.displayName} <noreply.taskboard@gmail.com>`,
+        from: `${user.displayName} <${process.env.GMAIL_SERVICE_ACCOUNT}>`,
         to: owner.user.email,
         subject: `Share access request for board '${owner.taskBoard.displayName}'`,
         html: `<p>${user.displayName} ${user.email} wants you to share access.</p><br /><a href='${link}'>Grant access</a>`,
