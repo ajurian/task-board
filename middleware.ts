@@ -8,11 +8,14 @@ export async function middleware(request: NextRequest) {
     try {
         const { headers } = await ServerAuthTokenAPI.get();
         const SetCookie = headers["set-cookie"]?.toString();
+        console.log(request.url, SetCookie);
 
         splitCookiesString(SetCookie).forEach((cookie) =>
             response.headers.append("set-cookie", cookie)
         );
-    } catch (e) {}
+    } catch (e) {
+        console.error(e);
+    }
 
     response.headers.set("x-url", request.url);
 
