@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { TaskBoardsPostResponseSchema } from "@/api/_/common/schema/taskBoards";
 
 const ServerAPI = axios.create({
-    baseURL: `${process.env.NEXT_PUBLIC_SITE_URL}/api`,
+    baseURL: `${process.env.NEXT_PUBLIC_VERCEL_URL}/api`,
 });
 
 ServerAPI.interceptors.request.use(async (config) => {

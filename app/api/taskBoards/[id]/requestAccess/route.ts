@@ -42,8 +42,8 @@ export async function POST(request: NextRequest, { params }: Segment) {
     }
 
     const { user } = authority;
-    const redirectUri = `${process.env.NEXT_PUBLIC_SITE_URL}/board/${id}?share=${user.email}`;
-    const link = new URL(`${process.env.NEXT_PUBLIC_SITE_URL}/auth/login`);
+    const redirectUri = `${process.env.NEXT_PUBLIC_VERCEL_URL}/board/${id}?share=${user.email}`;
+    const link = new URL(`${process.env.NEXT_PUBLIC_VERCEL_URL}/auth/login`);
 
     link.searchParams.set("redirectUri", redirectUri);
     link.searchParams.set("hint", owner.user.email);

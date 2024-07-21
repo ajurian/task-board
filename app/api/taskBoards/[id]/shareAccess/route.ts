@@ -96,9 +96,9 @@ export async function POST(request: NextRequest, { params }: Segment) {
         await Promise.all(queries);
     });
 
-    const baseUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/login`;
+    const baseUrl = `${process.env.NEXT_PUBLIC_VERCEL_URL}/auth/login`;
     const redirectUri = encodeURIComponent(
-        `${process.env.NEXT_PUBLIC_SITE_URL}/board/${id}`
+        `${process.env.NEXT_PUBLIC_VERCEL_URL}/board/${id}`
     );
 
     await Mail.sendMail({
