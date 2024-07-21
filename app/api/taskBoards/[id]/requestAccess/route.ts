@@ -4,6 +4,7 @@ import {
 } from "@/_/common/constants/permissions";
 import prisma from "@/_/common/lib/prisma";
 import Mail from "@/_/common/services/Mail";
+import getCurrentURL from "@/_/utils/getCurrentURL";
 import { checkAuthorityWithDocument } from "@/api/_/utils/checkAuthority";
 import { badRequestErrorResponse } from "@/api/_/utils/errorResponse";
 import { NextRequest, NextResponse } from "next/server";
@@ -42,8 +43,8 @@ export async function POST(request: NextRequest, { params }: Segment) {
     }
 
     const { user } = authority;
-    const redirectUri = `${process.env.NEXT_PUBLIC_VERCEL_URL}/board/${id}?share=${user.email}`;
-    const link = new URL(`${process.env.NEXT_PUBLIC_VERCEL_URL}/auth/login`);
+    const redirectUri = `${getCurrentURL()}/board/${id}?share=${user.email}`;
+    const link = new URL(`${getCurrentURL()}/auth/login`);
 
     link.searchParams.set("redirectUri", redirectUri);
     link.searchParams.set("hint", owner.user.email);

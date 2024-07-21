@@ -1,9 +1,10 @@
 import "client-only";
 
+import getCurrentURL from "@/_/utils/getCurrentURL";
 import axios from "axios";
 
 const ClientAPI = axios.create({
-    baseURL: `${process.env.NEXT_PUBLIC_VERCEL_URL}/api`,
+    baseURL: `${getCurrentURL()}/api`,
 });
 
 ClientAPI.interceptors.response.use((response) => {

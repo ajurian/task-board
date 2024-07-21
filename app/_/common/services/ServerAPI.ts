@@ -1,11 +1,11 @@
 import "server-only";
 
+import getCurrentURL from "@/_/utils/getCurrentURL";
 import axios from "axios";
 import { cookies } from "next/headers";
-import { TaskBoardsPostResponseSchema } from "@/api/_/common/schema/taskBoards";
 
 const ServerAPI = axios.create({
-    baseURL: `${process.env.NEXT_PUBLIC_VERCEL_URL}/api`,
+    baseURL: `${getCurrentURL()}/api`,
 });
 
 ServerAPI.interceptors.request.use(async (config) => {

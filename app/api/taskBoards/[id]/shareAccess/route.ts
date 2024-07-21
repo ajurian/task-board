@@ -3,6 +3,7 @@ import {
     ROLE_TO_PERMISSION,
 } from "@/_/common/constants/permissions";
 import Mail from "@/_/common/services/Mail";
+import getCurrentURL from "@/_/utils/getCurrentURL";
 import {
     TaskBoardShareAccessBodySchema,
     TaskBoardShareAccessResponse,
@@ -96,10 +97,8 @@ export async function POST(request: NextRequest, { params }: Segment) {
         await Promise.all(queries);
     });
 
-    const baseUrl = `${process.env.NEXT_PUBLIC_VERCEL_URL}/auth/login`;
-    const redirectUri = encodeURIComponent(
-        `${process.env.NEXT_PUBLIC_VERCEL_URL}/board/${id}`
-    );
+    const baseUrl = `${getCurrentURL()}/auth/login`;
+    const redirectUri = encodeURIComponent(`${getCurrentURL()}/board/${id}`);
 
     await Mail.sendMail({
         from: `${user.displayName} <noreply.taskboard@gmail.com>`,

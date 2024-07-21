@@ -20,7 +20,7 @@ export default function setCredentials(refreshToken: string | null) {
         maxAge: 60 * 60 * 24 * 400,
         sameSite: "lax",
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: process.env.NEXT_PUBLIC_VERCEL_ENV === "production",
     });
 
     return true;
