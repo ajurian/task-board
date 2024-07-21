@@ -4,7 +4,7 @@ import { PropsWithChildren } from "react";
 
 interface TaskBoardsContextValue {
     taskBoardsQuery: UseQueryResult<
-        TaskBoardUsersGetResponse<{ userGoogleId: string }>["taskBoardUsers"]
+        TaskBoardUsersGetResponse<null>["taskBoardUsers"]
     >;
 }
 
