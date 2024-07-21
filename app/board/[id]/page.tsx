@@ -8,6 +8,7 @@ import Header from "./_/components/Header";
 import TaskBoard from "./_/components/TaskBoard";
 import DragDropProvider from "./_/providers/DragDropProvider";
 import TaskBoardProvider from "./_/providers/TaskBoardProvider";
+import { Metadata } from "next";
 
 interface BoardPageProps {
     params: {
@@ -50,5 +51,24 @@ const BoardPage: React.FC<BoardPageProps> = async ({ params }) => {
         </TaskBoardProvider>
     );
 };
+
+export async function generateMetadata({
+    params,
+}: BoardPageProps): Promise<Metadata> {
+    const { id } = params;
+    let pageTitle = "TaskBoard";
+
+    try {
+        const {
+            data: { taskBoard },
+        } = await ServerTaskBoardAPI.get(id);
+
+        if (taskBoard !== null) {
+            pageTitle = `${taskBoard.displayName} - ${pageTitle}`;
+        }
+    } catch (e) {}
+
+    return { title: pageTitle };
+}
 
 export default withProtectedRoute(BoardPage);
