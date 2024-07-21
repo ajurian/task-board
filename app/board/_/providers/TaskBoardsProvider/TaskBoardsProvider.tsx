@@ -1,5 +1,6 @@
 "use client";
 
+import { useUserInfo } from "@/_/providers/UserInfoProvider";
 import ClientTaskBoardUserAPI from "@/api/_/common/layers/client/TaskBoardUserAPI";
 import { useQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
@@ -23,11 +24,12 @@ export const useTaskBoards = () => {
 };
 
 export default function TaskBoardsProvider({
-    userInfo,
     children,
 }: TaskBoardsProviderProps) {
+    const userInfo = useUserInfo();
+
     const taskBoardsQuery = useQuery({
-        queryKey: ["taskBoards", userInfo.sub],
+        queryKey: ["taskBoards", userInfo?.sub],
         queryFn: async () => {
             const {
                 data: { taskBoardUsers: taskBoards },

@@ -6,7 +6,14 @@ import { redirect } from "next/navigation";
 import React from "react";
 import { z } from "zod";
 
-export default function withProtectedRoute<P = {}>(Page: React.FC<P>) {
+interface RouteProps {
+    params?: { [key: string]: string };
+    searchParams?: { [key: string]: string | string[] | undefined };
+}
+
+export default function withProtectedRoute<P extends RouteProps>(
+    Page: React.FC<P>
+) {
     return async function WithProtectedRoute(props: P) {
         const {
             data: { userInfo },
@@ -17,6 +24,6 @@ export default function withProtectedRoute<P = {}>(Page: React.FC<P>) {
             return redirect(`/auth/login?redirectUri=${currentUrl}`);
         }
 
-        return <Page {...props} userInfo={userInfo} />;
+        return <Page {...props} />;
     };
 }

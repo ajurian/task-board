@@ -1,4 +1,3 @@
-import { UserInfo } from "@/_/common/schema/userInfo";
 import { TaskBoardUsersGetResponse } from "@/api/_/common/schema/taskBoardUsers";
 import { UseQueryResult } from "@tanstack/react-query";
 import { PropsWithChildren } from "react";
@@ -9,6 +8,4 @@ interface TaskBoardsContextValue {
     >;
 }
 
-interface TaskBoardsProviderProps extends PropsWithChildren {
-    userInfo: UserInfo;
-}
+interface TaskBoardsProviderProps extends PropsWithChildren {}
