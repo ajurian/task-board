@@ -6,6 +6,8 @@ declare global {
             GOOGLE_OAUTH_CLIENT_ID: string;
             GOOGLE_OAUTH_CLIENT_SECRET: string;
             GMAIL_SERVICE_ACCOUNT: string;
+            SMTP_AUTH_USER: string;
+            SMTP_AUTH_PASS: string;
             DATABASE_URL: string;
         }
     }
