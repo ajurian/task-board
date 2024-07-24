@@ -249,6 +249,7 @@ export async function DELETE(request: NextRequest, { params }: Segment) {
             where: { taskList: { taskBoardId: id } },
         });
         await prisma.taskList.deleteMany({ where: { taskBoardId: id } });
+        await prisma.taskBoardUser.deleteMany({ where: { taskBoardId: id } });
 
         return prisma.taskBoard.delete({ where: { id } });
     });

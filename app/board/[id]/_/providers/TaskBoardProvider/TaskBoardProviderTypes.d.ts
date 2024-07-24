@@ -73,6 +73,7 @@ interface TaskBoardContextValue {
     taskLists: AggregatedTaskListModel[];
     users: AggregatedTaskBoardModel["users"];
     taskBoardUser: TaskBoardUserModel;
+    isUserOwner: boolean;
     canUserChangeRole: boolean;
     canUserRenameTaskBoard: boolean;
     canUserToggleFlowDirection: boolean;

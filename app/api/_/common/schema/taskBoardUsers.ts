@@ -38,6 +38,10 @@ export const TaskBoardUserPatchResponseSchema = z.object({
     taskBoardUser: TaskBoardUserModelSchema.nullable(),
 });
 
+export const TaskBoardUserDeleteResponseSchema = z.object({
+    taskBoardUser: TaskBoardUserModelSchema.nullable(),
+});
+
 export type TaskBoardUsersGetResponse<Id extends string | null> = z.infer<
     Id extends null
         ? typeof TaskBoardUsersGetResponseManyWithTaskBoardsSchema
@@ -50,4 +54,8 @@ export type TaskBoardUserPatchBody = z.infer<
 
 export type TaskBoardUserPatchResponse = z.infer<
     typeof TaskBoardUserPatchResponseSchema
+>;
+
+export type TaskBoardUserDeleteResponse = z.infer<
+    typeof TaskBoardUserDeleteResponseSchema
 >;

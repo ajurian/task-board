@@ -3,6 +3,8 @@ import "server-only";
 import ServerAPI from "@/_/common/services/ServerAPI";
 import { AxiosRequestConfig } from "axios";
 import {
+    TaskBoardUserDeleteResponse,
+    TaskBoardUserDeleteResponseSchema,
     TaskBoardUserPatchBody,
     TaskBoardUserPatchResponse,
     TaskBoardUserPatchResponseSchema,
@@ -33,6 +35,11 @@ const ServerTaskBoardUserAPI = {
         ServerAPI.patch<TaskBoardUserPatchResponse>(`${API_URL}/${id}`, data, {
             ...config,
             schema: TaskBoardUserPatchResponseSchema,
+        }),
+    delete: (id: string, config?: AxiosRequestConfig<{}>) =>
+        ServerAPI.delete<TaskBoardUserDeleteResponse>(`${API_URL}/${id}`, {
+            ...config,
+            schema: TaskBoardUserDeleteResponseSchema,
         }),
 };
 

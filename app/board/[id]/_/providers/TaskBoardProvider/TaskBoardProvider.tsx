@@ -1,6 +1,7 @@
 "use client";
 
 import {
+    PERMISSION_ROLE_OWNER,
     PERMISSION_TASK_BOARD_UPDATE_DEFAULT_PERMISSION,
     PERMISSION_TASK_BOARD_UPDATE_DISPLAY_NAME,
     PERMISSION_TASK_BOARD_UPDATE_FLOW_DIRECTION,
@@ -160,6 +161,8 @@ export default function TaskBoardProvider({
         () => taskBoardUserQuery.data,
         [taskBoardUserQuery.data]
     );
+
+    const isUserOwner = taskBoardUser.permission === PERMISSION_ROLE_OWNER;
 
     const canUserChangeRole =
         (taskBoardUser.permission &
@@ -737,6 +740,7 @@ export default function TaskBoardProvider({
                 taskLists,
                 users,
                 taskBoardUser,
+                isUserOwner,
                 canUserChangeRole,
                 canUserRenameTaskBoard,
                 canUserToggleFlowDirection,

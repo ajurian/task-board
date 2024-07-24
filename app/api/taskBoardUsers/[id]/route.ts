@@ -1,6 +1,7 @@
 import { PERMISSION_EMPTY } from "@/_/common/constants/permissions";
 import prisma from "@/_/common/lib/prisma";
 import {
+    TaskBoardUserDeleteResponse,
     TaskBoardUserPatchBodySchema,
     TaskBoardUserPatchResponse,
 } from "@/api/_/common/schema/taskBoardUsers";
@@ -45,4 +46,25 @@ export async function PATCH(request: NextRequest, { params }: Segment) {
     });
 
     return NextResponse.json({ taskBoardUser: updatedTaskBoardUser });
+}
+
+export async function DELETE(request: NextRequest, { params }: Segment) {
+    const { id } = params;
+    const authority = await checkAuthorityWithDocument({
+        requiredPermission: PERMISSION_EMPTY,
+        documentType: "taskBoardUser",
+        documentId: id,
+    });
+
+    if (!authority.success) {
+        return authority.errorResponse<TaskBoardUserDeleteResponse>({
+            taskBoardUser: null,
+        });
+    }
+
+    const deletedTaskBoardUser = await prisma.taskBoardUser.delete({
+        where: { id },
+    });
+
+    return NextResponse.json({ taskBoardUser: deletedTaskBoardUser });
 }

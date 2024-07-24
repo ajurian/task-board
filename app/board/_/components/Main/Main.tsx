@@ -1,28 +1,25 @@
 "use client";
 
 import ClientTaskBoardAPI from "@/api/_/common/layers/client/TaskBoardAPI";
-import { faAdd, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Box, Divider, Typography } from "@mui/material";
-import Image from "next/image";
+import { Box, CircularProgress, Divider } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTaskBoards } from "../../providers/TaskBoardsProvider";
+import TaskBoardCard from "./TaskBoardCard";
 import {
     MainContainer,
     NewTaskBoardCard,
     NewTaskBoardCardLabel,
     NewTaskBoardContainer,
-    TaskBoardCard,
-    TaskBoardCardHeader,
-    TaskBoardCardTitleContainer,
     TaskBoardsContainer,
     TaskBoardsGrid,
     TaskBoardsRecentBoards,
-    ThumbnailImageWrapper,
 } from "./ui";
 
 export default function Main() {
+    const [isGeneratingNewBoard, setIsGeneratingNewBoard] = useState(false);
     const router = useRouter();
 
     const { taskBoardsQuery } = useTaskBoards();
@@ -33,9 +30,13 @@ export default function Main() {
     );
 
     const generateNewBoard = useCallback(async () => {
+        setIsGeneratingNewBoard(true);
+
         const {
             data: { taskBoard },
         } = await ClientTaskBoardAPI.post({ displayName: "Untitled" });
+
+        setIsGeneratingNewBoard(false);
 
         if (taskBoard === null) {
             return;
@@ -48,8 +49,19 @@ export default function Main() {
         <MainContainer component="main">
             <NewTaskBoardContainer>
                 <Box>
-                    <NewTaskBoardCard onClick={generateNewBoard}>
-                        <FontAwesomeIcon icon={faAdd} />
+                    <NewTaskBoardCard
+                        onClick={generateNewBoard}
+                        isDisabled={isGeneratingNewBoard}
+                    >
+                        {isGeneratingNewBoard && (
+                            <CircularProgress
+                                size={24}
+                                sx={{ color: "inherit" }}
+                            />
+                        )}
+                        {!isGeneratingNewBoard && (
+                            <FontAwesomeIcon icon={faAdd} />
+                        )}
                     </NewTaskBoardCard>
                     <NewTaskBoardCardLabel variant="subtitle2">
                         New board
@@ -61,36 +73,19 @@ export default function Main() {
                 <TaskBoardsRecentBoards>Recent boards</TaskBoardsRecentBoards>
                 <TaskBoardsGrid>
                     {taskBoards.map(
-                        ({ recentlyAccessedAt, taskBoard }, index) => (
+                        (
+                            { id, permission, recentlyAccessedAt, taskBoard },
+                            index
+                        ) => (
                             <TaskBoardCard
                                 key={index}
-                                role="option"
-                                href={`/board/${taskBoard.id}`}
-                            >
-                                <TaskBoardCardHeader>
-                                    <TaskBoardCardTitleContainer>
-                                        <Typography>
-                                            {taskBoard.displayName}
-                                        </Typography>
-                                        {taskBoard.users.length > 1 && (
-                                            <FontAwesomeIcon
-                                                icon={faUserGroup}
-                                            />
-                                        )}
-                                    </TaskBoardCardTitleContainer>
-                                    <Typography variant="caption">
-                                        {recentlyAccessedAt.toLocaleString()}
-                                    </Typography>
-                                </TaskBoardCardHeader>
-                                <Divider sx={{ borderColor: "inherit" }} />
-                                <ThumbnailImageWrapper>
-                                    <Image
-                                        fill
-                                        src={`${location.origin}/api/thumbnails/${taskBoard.id}`}
-                                        alt="thumbnail"
-                                    />
-                                </ThumbnailImageWrapper>
-                            </TaskBoardCard>
+                                boardUserId={id}
+                                permission={permission}
+                                accessedAt={recentlyAccessedAt}
+                                boardId={taskBoard.id}
+                                title={taskBoard.displayName}
+                                isShared={taskBoard.users.length > 1}
+                            />
                         )
                     )}
                 </TaskBoardsGrid>

@@ -1,5 +1,4 @@
 import { Box, ButtonBase, styled, Typography } from "@mui/material";
-import Link from "next/link";
 
 export const MainContainer = styled(Box)(() => ({
     display: "flex",
@@ -14,7 +13,9 @@ export const NewTaskBoardContainer = styled(Box)(({ theme }) => ({
     paddingBlock: theme.spacing(4),
 }));
 
-export const NewTaskBoardCard = styled(ButtonBase)(({ theme }) => ({
+export const NewTaskBoardCard = styled(ButtonBase, {
+    shouldForwardProp: (propName) => propName !== "isDisabled",
+})<{ isDisabled: boolean }>(({ theme, isDisabled }) => ({
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -31,10 +32,15 @@ export const NewTaskBoardCard = styled(ButtonBase)(({ theme }) => ({
         duration: theme.transitions.duration.shortest,
     }),
     borderRadius: theme.shape.borderRadius,
-    ":hover": {
-        borderColor: theme.palette.primary.light,
-        color: theme.palette.primary.light,
-    },
+    ...(isDisabled && {
+        cursor: "default",
+    }),
+    ...(!isDisabled && {
+        ":hover": {
+            borderColor: theme.palette.primary.light,
+            color: theme.palette.primary.light,
+        },
+    }),
 }));
 
 export const NewTaskBoardCardLabel = styled(Typography)(({ theme }) => ({
@@ -67,7 +73,7 @@ export const TaskBoardsGrid = styled(Box)(({ theme }) => ({
     gap: theme.spacing(6),
 }));
 
-export const TaskBoardCard = styled(Link)(({ theme }) => ({
+export const TaskBoardCardContainer = styled(Box)(({ theme }) => ({
     flexBasis: theme.spacing(64),
     overflow: "hidden",
     cursor: "pointer",
