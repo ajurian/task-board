@@ -51,20 +51,19 @@ export default function TaskBoardCardMenu({
                     ? undefined
                     : { top: position.y, left: position.x }
             }
-            MenuListProps={{ "aria-labelledby": menuTriggerId }}
-            slotProps={{ paper: { sx: { boxShadow: 3 } } }}
+            MenuListProps={{ "aria-labelledby": menuTriggerId, dense: true }}
         >
             <MenuItem
                 disabled={onRename === undefined}
                 onClick={makeHandler(onRename)}
             >
-                <ListItemIcon>
+                <ListItemIcon sx={{ mr: "1em" }} style={{ minWidth: 0 }}>
                     <FontAwesomeIcon icon={faPen} style={{ fontSize: "1em" }} />
                 </ListItemIcon>
                 Rename
             </MenuItem>
             <MenuItem onClick={makeHandler(onDelete)}>
-                <ListItemIcon>
+                <ListItemIcon sx={{ mr: "1em" }} style={{ minWidth: 0 }}>
                     <FontAwesomeIcon
                         icon={faTrash}
                         style={{ fontSize: "1em" }}
@@ -80,7 +79,7 @@ export default function TaskBoardCardMenu({
                 sx={{ textDecoration: "inherit", color: "inherit" }}
                 onClick={makeHandler()}
             >
-                <ListItemIcon>
+                <ListItemIcon sx={{ mr: "1em" }} style={{ minWidth: 0 }}>
                     <FontAwesomeIcon
                         icon={faArrowUpRightFromSquare}
                         style={{ fontSize: "1em" }}

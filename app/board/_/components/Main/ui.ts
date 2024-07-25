@@ -100,6 +100,7 @@ export const TaskBoardsEmptyListContainer = styled(Box)(({ theme }) => ({
 }));
 
 export const TaskBoardCardContainer = styled(Box)(({ theme }) => ({
+    WebkitTapHighlightColor: "transparent",
     flexBasis: theme.spacing(64),
     overflow: "hidden",
     cursor: "pointer",

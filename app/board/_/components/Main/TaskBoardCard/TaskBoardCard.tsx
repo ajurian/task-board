@@ -136,17 +136,17 @@ export default function TaskBoardCard({
                         alt="thumbnail"
                     />
                 </ThumbnailImageWrapper>
+                <TaskBoardCardMenu
+                    id={menuId}
+                    menuTriggerId={buttonId}
+                    boardId={boardId}
+                    position={menuPosition}
+                    isOpen={menuPosition !== null}
+                    onClose={handleMenuClose}
+                    onRename={canUserRenameTaskBoard ? handleRename : undefined}
+                    onDelete={handleDelete}
+                />
             </TaskBoardCardContainer>
-            <TaskBoardCardMenu
-                id={menuId}
-                menuTriggerId={buttonId}
-                boardId={boardId}
-                position={menuPosition}
-                isOpen={menuPosition !== null}
-                onClose={handleMenuClose}
-                onRename={canUserRenameTaskBoard ? handleRename : undefined}
-                onDelete={handleDelete}
-            />
             {canUserRenameTaskBoard && (
                 <TaskBoardCardRenameDialog
                     boardId={boardId}
