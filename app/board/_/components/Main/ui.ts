@@ -26,7 +26,7 @@ export const NewTaskBoardCard = styled(ButtonBase, {
     borderStyle: "solid",
     borderColor: theme.palette.divider,
     color: theme.palette.text.disabled,
-    height: theme.spacing(1.27375 * 30),
+    height: theme.spacing(1.2939 * 30),
     width: theme.spacing(30),
     transition: theme.transitions.create(["border-color", "color"], {
         duration: theme.transitions.duration.shortest,
@@ -50,14 +50,16 @@ export const NewTaskBoardCardLabel = styled(Typography)(({ theme }) => ({
 }));
 
 export const TaskBoardsContainer = styled(Box)(({ theme }) => ({
-    width: "100%",
     marginInline: "auto",
     marginBottom: theme.spacing(40),
     paddingInline: theme.spacing(6),
     paddingBlock: theme.spacing(4),
-    maxWidth: theme.spacing(224),
+    width: theme.spacing(70),
     [theme.breakpoints.up("sm")]: {
-        paddingInline: theme.spacing(16),
+        width: theme.spacing(146),
+    },
+    [theme.breakpoints.up("md")]: {
+        width: theme.spacing(222),
     },
 }));
 
@@ -69,8 +71,32 @@ export const TaskBoardsRecentBoards = styled(Typography)(({ theme }) => ({
 
 export const TaskBoardsGrid = styled(Box)(({ theme }) => ({
     display: "grid",
-    gridTemplateColumns: `repeat(auto-fit, minmax(${theme.spacing(56)}, 1fr))`,
+    gridTemplateRows: "auto",
+    gridTemplateColumns: "repeat(1, 1fr)",
     gap: theme.spacing(6),
+    [theme.breakpoints.up("sm")]: {
+        gridTemplateColumns: "repeat(2, 1fr)",
+    },
+    [theme.breakpoints.up("md")]: {
+        gridTemplateColumns: "repeat(3, 1fr)",
+    },
+}));
+
+export const TaskBoardsLoadingContainer = styled(Box)(({ theme }) => ({
+    display: "flex",
+    justifyContent: "center",
+    gridColumn: "1 / -1",
+    color: theme.palette.text.secondary,
+    marginTop: theme.spacing(40),
+}));
+
+export const TaskBoardsEmptyListContainer = styled(Box)(({ theme }) => ({
+    display: "flex",
+    justifyContent: "center",
+    gridColumn: "1 / -1",
+    opacity: 0.5,
+    color: theme.palette.text.secondary,
+    marginTop: theme.spacing(40),
 }));
 
 export const TaskBoardCardContainer = styled(Box)(({ theme }) => ({

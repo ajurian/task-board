@@ -9,18 +9,20 @@ import {
     faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useDisclosure } from "@mantine/hooks";
 import { Divider, IconButton, Typography } from "@mui/material";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { MouseEventHandler, useId, useState } from "react";
-import TaskBoardCardMenu, { MenuPosition } from "./TaskBoardCardMenu";
+import { useTaskBoards } from "../../../providers/TaskBoardsProvider";
 import {
     TaskBoardCardContainer,
     TaskBoardCardHeader,
     TaskBoardCardTitleContainer,
     ThumbnailImageWrapper,
-} from "./ui";
-import { useTaskBoards } from "../../providers/TaskBoardsProvider";
+} from "../ui";
+import TaskBoardCardMenu, { MenuPosition } from "./TaskBoardCardMenu";
+import TaskBoardCardRenameDialog from "./TaskBoardCardRenameDialog";
 
 interface TaskBoardCardProps {
     boardUserId: string;
@@ -40,16 +42,20 @@ export default function TaskBoardCard({
     isShared,
 }: TaskBoardCardProps) {
     const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
+    const [
+        isRenameDialogOpen,
+        { open: openRenameDialog, close: closeRenameDialog },
+    ] = useDisclosure(false);
     const router = useRouter();
 
     const menuId = useId();
     const buttonId = useId();
 
-    const { taskBoardsQuery } = useTaskBoards();
+    const { refreshData } = useTaskBoards();
 
-    const isUserOwner = permission === PERMISSION_ROLE_OWNER;
     const canUserRenameTaskBoard =
         (permission & PERMISSION_TASK_BOARD_UPDATE_DISPLAY_NAME) !== 0;
+    const canUserDeleteTaskBoard = permission === PERMISSION_ROLE_OWNER;
 
     const handleMenuPosition = (position: MenuPosition) =>
         setMenuPosition(menuPosition === null ? position : null);
@@ -63,6 +69,10 @@ export default function TaskBoardCard({
     };
 
     const handleContainerClick: MouseEventHandler<HTMLDivElement> = (e) => {
+        if (menuPosition !== null) {
+            return;
+        }
+
         e.preventDefault();
         router.push(`/board/${boardId}`);
     };
@@ -83,16 +93,16 @@ export default function TaskBoardCard({
 
     const handleMenuClose = () => setMenuPosition(null);
 
-    const handleRename = () => {};
+    const handleRename = openRenameDialog;
 
     const handleDelete = async () => {
-        if (isUserOwner) {
+        if (canUserDeleteTaskBoard) {
             await ClientTaskBoardAPI.delete(boardId);
         } else {
             await ClientTaskBoardUserAPI.delete(boardUserId);
         }
 
-        taskBoardsQuery.refetch();
+        refreshData();
     };
 
     return (
@@ -137,6 +147,14 @@ export default function TaskBoardCard({
                 onRename={canUserRenameTaskBoard ? handleRename : undefined}
                 onDelete={handleDelete}
             />
+            {canUserRenameTaskBoard && (
+                <TaskBoardCardRenameDialog
+                    boardId={boardId}
+                    initialTitle={title}
+                    isOpen={isRenameDialogOpen}
+                    onClose={closeRenameDialog}
+                />
+            )}
         </>
     );
 }

@@ -59,6 +59,7 @@ export const TaskBoardHeaderContainer = styled(Box, {
 export const TaskBoardHeaderDisplayNameContainer = styled(Box, {
     shouldForwardProp: (propName) => propName !== "isFocused",
 })<{ isFocused: boolean }>(({ isFocused }) => ({
+    WebkitTapHighlightColor: "transparent",
     overflowX: "auto",
     flexGrow: isFocused ? 1 : 0,
 }));

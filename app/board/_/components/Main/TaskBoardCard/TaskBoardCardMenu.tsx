@@ -33,6 +33,13 @@ export default function TaskBoardCardMenu({
     onRename,
     onDelete,
 }: TaskBoardCardMenuProps) {
+    const makeHandler = (handler?: () => void) => {
+        return () => {
+            onClose();
+            handler?.();
+        };
+    };
+
     return (
         <Menu
             id={id}
@@ -47,13 +54,16 @@ export default function TaskBoardCardMenu({
             MenuListProps={{ "aria-labelledby": menuTriggerId }}
             slotProps={{ paper: { sx: { boxShadow: 3 } } }}
         >
-            <MenuItem disabled={onRename === undefined} onClick={onRename}>
+            <MenuItem
+                disabled={onRename === undefined}
+                onClick={makeHandler(onRename)}
+            >
                 <ListItemIcon>
                     <FontAwesomeIcon icon={faPen} style={{ fontSize: "1em" }} />
                 </ListItemIcon>
                 Rename
             </MenuItem>
-            <MenuItem onClick={onDelete}>
+            <MenuItem onClick={makeHandler(onDelete)}>
                 <ListItemIcon>
                     <FontAwesomeIcon
                         icon={faTrash}
@@ -62,22 +72,22 @@ export default function TaskBoardCardMenu({
                 </ListItemIcon>
                 Delete
             </MenuItem>
-            <Link
+            <MenuItem
+                component={Link}
                 href={`/board/${boardId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ textDecoration: "inherit", color: "inherit" }}
+                sx={{ textDecoration: "inherit", color: "inherit" }}
+                onClick={makeHandler()}
             >
-                <MenuItem>
-                    <ListItemIcon>
-                        <FontAwesomeIcon
-                            icon={faArrowUpRightFromSquare}
-                            style={{ fontSize: "1em" }}
-                        />
-                    </ListItemIcon>
-                    Open in new tab
-                </MenuItem>
-            </Link>
+                <ListItemIcon>
+                    <FontAwesomeIcon
+                        icon={faArrowUpRightFromSquare}
+                        style={{ fontSize: "1em" }}
+                    />
+                </ListItemIcon>
+                Open in new tab
+            </MenuItem>
         </Menu>
     );
 }

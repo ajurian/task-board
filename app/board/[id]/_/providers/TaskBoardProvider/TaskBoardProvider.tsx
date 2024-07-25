@@ -665,7 +665,9 @@ export default function TaskBoardProvider({
     }, [
         taskBoardQuery.isRefetching,
         taskBoardUserQuery.isRefetching,
-        taskBoardQuery.data,
+        taskBoardQuery.data.displayName,
+        taskBoardQuery.data.flowDirection,
+        taskBoardQuery.data.taskLists,
     ]);
 
     useEffect(() => {
@@ -718,15 +720,23 @@ export default function TaskBoardProvider({
     ]);
 
     useEffect(() => {
-        takeSnapshot();
-        saveSnapshot().catch(() => {});
-    }, [takeSnapshot, saveSnapshot]);
+        if (!isChangesSaved) {
+            return;
+        }
+
+        document.title = `${displayName} - TaskBoard`;
+    }, [isChangesSaved, displayName]);
 
     useEffect(() => {
         ClientTaskBoardUserAPI.patch(taskBoardUser.id, {
             recentlyAccessedAt: new Date(),
         });
     }, [taskBoardUser.id]);
+
+    useEffect(() => {
+        takeSnapshot();
+        saveSnapshot().catch(() => {});
+    }, [takeSnapshot, saveSnapshot]);
 
     return (
         <TaskBoardContext.Provider

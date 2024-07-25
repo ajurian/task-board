@@ -15,7 +15,7 @@ const nextConfig = {
             },
             {
                 protocol: "https",
-                hostname: "task-board-olive.vercel.app",
+                hostname: "task-board-urian.vercel.app",
             },
             {
                 protocol: "https",

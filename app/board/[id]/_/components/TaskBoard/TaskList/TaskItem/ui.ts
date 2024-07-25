@@ -16,6 +16,7 @@ export const TaskItemContainer = styled(Box, {
         propName !== "isDragDisabled",
 })<{ isDragging: boolean; isFocused: boolean; isDragDisabled: boolean }>(
     ({ theme, isDragging, isFocused, isDragDisabled }) => ({
+        WebkitTapHighlightColor: "transparent",
         position: "relative",
         paddingInline: theme.spacing(2.75),
         paddingBlock: theme.spacing(1.5),
@@ -134,6 +135,7 @@ export const TaskItemDetailsText = styled(Typography, {
 export const TaskItemPlaceholderContainer = styled(Box, {
     shouldForwardProp: (propName) => propName !== "isFocused",
 })<{ isFocused: boolean }>(({ theme, isFocused }) => ({
+    WebkitTapHighlightColor: "transparent",
     paddingInline: theme.spacing(2.75),
     paddingBlock: theme.spacing(1.5),
     color: theme.palette.primary.main,

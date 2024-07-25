@@ -2,8 +2,8 @@
 
 import { useUserInfo } from "@/_/providers/UserInfoProvider";
 import ClientTaskBoardUserAPI from "@/api/_/common/layers/client/TaskBoardUserAPI";
-import { useQuery } from "@tanstack/react-query";
-import { createContext, useContext } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createContext, useCallback, useContext } from "react";
 import {
     TaskBoardsContextValue,
     TaskBoardsProviderProps,
@@ -26,6 +26,7 @@ export const useTaskBoards = () => {
 export default function TaskBoardsProvider({
     children,
 }: TaskBoardsProviderProps) {
+    const queryClient = useQueryClient();
     const userInfo = useUserInfo();
 
     const taskBoardsQuery = useQuery({
@@ -39,8 +40,13 @@ export default function TaskBoardsProvider({
         },
     });
 
+    const refreshData = useCallback(
+        () => queryClient.invalidateQueries({ queryKey: ["taskBoards"] }),
+        [queryClient]
+    );
+
     return (
-        <TaskBoardsContext.Provider value={{ taskBoardsQuery }}>
+        <TaskBoardsContext.Provider value={{ taskBoardsQuery, refreshData }}>
             {children}
         </TaskBoardsContext.Provider>
     );

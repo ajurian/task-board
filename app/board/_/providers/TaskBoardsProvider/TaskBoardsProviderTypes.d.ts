@@ -6,6 +6,7 @@ interface TaskBoardsContextValue {
     taskBoardsQuery: UseQueryResult<
         TaskBoardUsersGetResponse<null>["taskBoardUsers"]
     >;
+    refreshData: () => Promise<void>;
 }
 
 interface TaskBoardsProviderProps extends PropsWithChildren {}

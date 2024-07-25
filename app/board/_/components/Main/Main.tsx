@@ -3,7 +3,7 @@
 import ClientTaskBoardAPI from "@/api/_/common/layers/client/TaskBoardAPI";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Box, CircularProgress, Divider } from "@mui/material";
+import { Box, CircularProgress, Divider, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { useTaskBoards } from "../../providers/TaskBoardsProvider";
@@ -14,7 +14,9 @@ import {
     NewTaskBoardCardLabel,
     NewTaskBoardContainer,
     TaskBoardsContainer,
+    TaskBoardsEmptyListContainer,
     TaskBoardsGrid,
+    TaskBoardsLoadingContainer,
     TaskBoardsRecentBoards,
 } from "./ui";
 
@@ -72,22 +74,46 @@ export default function Main() {
             <TaskBoardsContainer>
                 <TaskBoardsRecentBoards>Recent boards</TaskBoardsRecentBoards>
                 <TaskBoardsGrid>
-                    {taskBoards.map(
-                        (
-                            { id, permission, recentlyAccessedAt, taskBoard },
-                            index
-                        ) => (
-                            <TaskBoardCard
-                                key={index}
-                                boardUserId={id}
-                                permission={permission}
-                                accessedAt={recentlyAccessedAt}
-                                boardId={taskBoard.id}
-                                title={taskBoard.displayName}
-                                isShared={taskBoard.users.length > 1}
-                            />
-                        )
+                    {taskBoardsQuery.isLoading && (
+                        <TaskBoardsLoadingContainer>
+                            <CircularProgress color="inherit" />
+                        </TaskBoardsLoadingContainer>
                     )}
+                    {!taskBoardsQuery.isLoading && taskBoards.length === 0 && (
+                        <TaskBoardsEmptyListContainer>
+                            <Typography
+                                variant="h6"
+                                sx={{
+                                    "::after": {
+                                        content: "'Your list is empty'",
+                                    },
+                                }}
+                            />
+                        </TaskBoardsEmptyListContainer>
+                    )}
+                    {!taskBoardsQuery.isLoading &&
+                        taskBoards.length > 0 &&
+                        taskBoards.map(
+                            (
+                                {
+                                    id,
+                                    permission,
+                                    recentlyAccessedAt,
+                                    taskBoard,
+                                },
+                                index
+                            ) => (
+                                <TaskBoardCard
+                                    key={index}
+                                    boardUserId={id}
+                                    permission={permission}
+                                    accessedAt={recentlyAccessedAt}
+                                    boardId={taskBoard.id}
+                                    title={taskBoard.displayName}
+                                    isShared={taskBoard.users.length > 1}
+                                />
+                            )
+                        )}
                 </TaskBoardsGrid>
             </TaskBoardsContainer>
         </MainContainer>

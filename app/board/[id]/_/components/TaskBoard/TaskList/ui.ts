@@ -57,6 +57,7 @@ export const TaskListHeaderContainer = styled(Box)(({ theme }) => ({
 export const TaskListHeaderTitleContainer = styled(Box, {
     shouldForwardProp: (propName) => propName !== "isFocused",
 })<{ isFocused: boolean }>(({ isFocused }) => ({
+    WebkitTapHighlightColor: "transparent",
     overflowX: "auto",
     flexGrow: isFocused ? 1 : 0,
 }));
@@ -103,6 +104,7 @@ export const TaskListPlaceholderContainer = styled(Box, {
         propName !== "direction" && propName !== "isFocused",
 })<{ direction: FlowDirection; isFocused: boolean }>(
     ({ theme, direction, isFocused }) => ({
+        WebkitTapHighlightColor: "transparent",
         display: "flex",
         alignItems: "center",
         cursor: isFocused ? "inherit" : "pointer",
