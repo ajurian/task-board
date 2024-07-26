@@ -120,7 +120,8 @@ export const TaskBoardCardContainer = styled(Box)(({ theme }) => ({
 
 export const TaskBoardCardHeader = styled(Box)(({ theme }) => ({
     color: theme.palette.text.secondary,
-    paddingInline: theme.spacing(4),
+    paddingLeft: theme.spacing(4),
+    paddingRight: `calc(${theme.spacing(4)} - 5px)`,
     paddingBlock: theme.spacing(3),
 }));
 

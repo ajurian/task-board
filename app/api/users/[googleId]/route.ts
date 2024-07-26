@@ -1,10 +1,11 @@
 import prisma from "@/_/common/lib/prisma";
 import { UsersPutBodySchema } from "@/api/_/common/schema/users";
-import { checkAuthority } from "@/api/_/utils/checkAuthority";
 import {
     forbiddenErrorResponse,
+    unauthorizedErrorResponse,
     unprocessableEntityErrorResponse,
 } from "@/api/_/utils/errorResponse";
+import verifyToken from "@/api/_/utils/verifyToken";
 import { NextRequest, NextResponse } from "next/server";
 
 interface Segment {
@@ -14,15 +15,14 @@ interface Segment {
 }
 
 export async function PUT(request: NextRequest, { params }: Segment) {
-    const authority = await checkAuthority();
+    const userInfo = await verifyToken();
 
-    if (!authority.success) {
-        return authority.errorResponse({ user: null });
+    if (userInfo === null) {
+        return unauthorizedErrorResponse({ user: null });
     }
 
     const { googleId } = params;
-
-    if (authority.user.googleId !== googleId) {
+    if (userInfo.sub !== googleId) {
         return forbiddenErrorResponse({ user: null });
     }
 

@@ -86,6 +86,10 @@ export default function TaskBoardProvider({
 
     const [isMutationOngoing, setIsMutationOngoing] = useState(false);
 
+    const [taskBoardChanges, setTaskBoardChanges] = useState({});
+    const [taskListsChanges, setTaskListsChanges] = useState({});
+    const [tasksChanges, setTasksChanges] = useState({});
+
     const isChangesSaved = useMemo(
         () => mutationQueue.length === 0 && asyncMutationList.length === 0,
         [mutationQueue, asyncMutationList]
@@ -251,6 +255,7 @@ export default function TaskBoardProvider({
         useMutation({
             mutationKey: ["renameTaskBoard", selectedTaskBoard.id],
             mutationFn: async (options) => {
+                console.log(options);
                 await ClientTaskBoardAPI.patch(selectedTaskBoard.id, options);
             },
         });
@@ -669,6 +674,19 @@ export default function TaskBoardProvider({
         taskBoardQuery.data.flowDirection,
         taskBoardQuery.data.taskLists,
     ]);
+
+    /* useEffect(() => {
+        pusherClient.subscribe(id);
+
+        pusherClient.bind("rename-task-board", (data: string) => {
+            console.log(data);
+        });
+
+        return () => {
+            pusherClient.unsubscribe(id);
+            pusherClient.unbind("rename-task-board");
+        };
+    }, [id]); */
 
     useEffect(() => {
         if (
