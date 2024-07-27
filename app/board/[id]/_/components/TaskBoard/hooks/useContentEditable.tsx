@@ -37,7 +37,7 @@ export default function useContentEditable<T extends HTMLElement>({
 
         onEdit?.();
         setFocusedElement(null);
-    }) as React.MutableRefObject<T | null>;
+    }, ["mousedown", "touchend"]) as React.MutableRefObject<T | null>;
 
     const onClick: MouseEventHandler<T> = useCallback(
         (e) =>
