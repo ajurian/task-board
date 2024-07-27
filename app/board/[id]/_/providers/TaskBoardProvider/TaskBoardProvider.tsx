@@ -851,7 +851,7 @@ export default function TaskBoardProvider({
                 previousMutationQueueSize > 0 ||
                 previousAsyncMutationListSize > 0
             ) {
-                saveSnapshot().catch(() => {});
+                // saveSnapshot().catch(() => {});
             }
 
             setIsMutationOngoing(false);
