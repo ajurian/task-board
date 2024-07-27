@@ -62,6 +62,7 @@ export default function TaskBoardHeader() {
                 {...contentEditableProps}
                 ref={ref}
                 isFocused={isFocused}
+                onFocus={(e) => e.currentTarget.click()}
             >
                 <TaskBoardHeaderDisplayNameInput
                     inputRef={displayNameInputRef}
@@ -69,7 +70,7 @@ export default function TaskBoardHeader() {
                     value={displayNameInput}
                     onChange={setDisplayNameInput}
                     onFocus={(e) => e.currentTarget.select()}
-                    inputProps={{ style: { paddingBlock: 1.625 } }}
+                    inputProps={{ style: { padding: 0 } }}
                     size="small"
                     fullWidth
                 />

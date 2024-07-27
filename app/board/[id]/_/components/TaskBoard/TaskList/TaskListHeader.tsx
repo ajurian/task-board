@@ -1,7 +1,3 @@
-import {
-    PERMISSION_TASK_LIST_CREATE_DELETE,
-    PERMISSION_TASK_LIST_UPDATE_TITLE,
-} from "@/_/common/constants/permissions";
 import { useInputState } from "@mantine/hooks";
 import { useRef } from "react";
 import { useTaskBoard } from "../../../providers/TaskBoardProvider";
@@ -49,7 +45,7 @@ export default function TaskListHeader({ listId, title }: TaskListHeaderProps) {
                 {...contentEditableProps}
                 ref={ref}
                 isFocused={isFocused}
-                onFocus={() => ref.current?.click()}
+                onFocus={(e) => e.currentTarget.click()}
             >
                 <TaskListHeaderTitleInput
                     inputRef={titleInputRef}

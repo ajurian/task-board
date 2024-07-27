@@ -58,7 +58,11 @@ export default function TaskList({
                 >
                     <TaskListHeader listId={id} title={title} />
                     <TaskItemPlaceholder listId={id} />
-                    <TaskListItemsWrapper order={order} tasks={pendingTasks} />
+                    <TaskListItemsWrapper
+                        id={id}
+                        order={order}
+                        tasks={pendingTasks}
+                    />
                     {completedTasks.length > 0 && (
                         <TaskListCompletedItems
                             tasks={completedTasks}

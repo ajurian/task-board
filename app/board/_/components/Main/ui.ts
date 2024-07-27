@@ -99,8 +99,11 @@ export const TaskBoardsEmptyListContainer = styled(Box)(({ theme }) => ({
     marginTop: theme.spacing(40),
 }));
 
-export const TaskBoardCardContainer = styled(Box)(({ theme }) => ({
+export const TaskBoardCardContainer = styled(Box, {
+    shouldForwardProp: (propName) => propName !== "isDeleting",
+})<{ isDeleting: boolean }>(({ theme, isDeleting }) => ({
     WebkitTapHighlightColor: "transparent",
+    opacity: isDeleting ? 0.5 : 1,
     flexBasis: theme.spacing(64),
     overflow: "hidden",
     cursor: "pointer",

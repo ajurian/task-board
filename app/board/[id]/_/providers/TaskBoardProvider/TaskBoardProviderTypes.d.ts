@@ -1,11 +1,18 @@
-import { TaskCreate, TaskUpdate } from "@/_/common/schema/task";
+import {
+    AddTaskListOptions,
+    AddTaskOptions,
+    DeleteTaskListOptions,
+    DeleteTaskOptions,
+    EditTaskOptions,
+    MoveTaskListOptions,
+    MoveTaskOptions,
+    RenameTaskBoardOptions,
+    RenameTaskListOptions,
+    UpdateFlowDirectionOptions,
+} from "@/_/common/schema/mutation";
 import { AggregatedTaskBoardModel } from "@/_/common/schema/taskBoard.aggregation";
 import { TaskBoardUserModel } from "@/_/common/schema/taskBoardUser";
-import {
-    AggregatedTaskListModel,
-    TaskListCreate,
-    TaskListUpdate,
-} from "@/_/common/schema/taskList";
+import { AggregatedTaskListModel } from "@/_/common/schema/taskList";
 import { FlowDirection } from "@prisma/client";
 import {
     DefinedUseQueryResult,
@@ -13,9 +20,7 @@ import {
 } from "@tanstack/react-query";
 import { Dispatch, PropsWithChildren, SetStateAction } from "react";
 
-interface RenameTaskBoardOptions {
-    displayName: string;
-}
+/* interface RenameTaskBoardOptions extends Pick<TaskBoardModel, "displayName"> {}
 
 interface ToggleFlowDirectionOptions {}
 
@@ -49,19 +54,64 @@ interface EditTaskOptions extends TaskUpdate {
 
 interface DeleteTaskOptions {
     id: string;
-}
+} */
 
-type UpdateOptions =
-    | RenameTaskBoardOptions
-    | ToggleFlowDirectionOptions
-    | MoveTaskListOptions
-    | MoveTaskOptions
-    | RenameTaskListOptions
-    | DeleteTaskListOptions
-    | EditTaskOptions
-    | DeleteTaskOptions;
+type CreationType = "addTaskList" | "addTask";
+type CreationOptions = {
+    addTaskList: AddTaskListOptions;
+    addTask: AddTaskOptions;
+};
+type CreationMutation<
+    T extends CreationType,
+    O extends CreationOptions[T] = CreationOptions[T]
+> = {
+    type: T;
+    options: O;
+    onMutate: UseMutateAsyncFunction<void, Error, O>;
+};
 
-type InsertOptions = AddTaskListOptions | AddTaskOptions;
+type NonCreationType =
+    | "renameTaskBoard"
+    | "updateFlowDirection"
+    | "moveTaskList"
+    | "moveTask"
+    | "renameTaskList"
+    | "deleteTaskList"
+    | "editTask"
+    | "deleteTask";
+type NonCreationOptions = {
+    renameTaskBoard: RenameTaskBoardOptions;
+    updateFlowDirection: UpdateFlowDirectionOptions;
+    moveTaskList: MoveTaskListOptions;
+    moveTask: MoveTaskOptions;
+    renameTaskList: RenameTaskListOptions;
+    deleteTaskList: DeleteTaskListOptions;
+    editTask: EditTaskOptions;
+    deleteTask: DeleteTaskOptions;
+};
+type NonCreationMutation<
+    T extends NonCreationType,
+    O extends NonCreationOptions[T] = NonCreationOptions[T]
+> = {
+    type: T;
+    options: O;
+    onMutate: UseMutateAsyncFunction<void, Error, O>;
+};
+
+type UpdateType = CreationType | NonCreationType;
+type UpdateOptions<T extends UpdateType = UpdateType> = T extends CreationType
+    ? CreationOptions[T]
+    : T extends NonCreationType
+    ? NonCreationOptions[T]
+    : never;
+type UpdateMutation<
+    T extends UpdateType = UpdateType,
+    O extends UpdateOptions<T> = UpdateOptions<T>
+> = T extends CreationType
+    ? CreationMutation<T, O>
+    : T extends NonCreationType
+    ? NonCreationMutation<T, O>
+    : never;
 
 interface TaskBoardContextValue {
     selectedTaskBoard: AggregatedTaskBoardModel;
@@ -76,7 +126,7 @@ interface TaskBoardContextValue {
     isUserOwner: boolean;
     canUserChangeRole: boolean;
     canUserRenameTaskBoard: boolean;
-    canUserToggleFlowDirection: boolean;
+    canUserUpdateFlowDirection: boolean;
     canUserUpdateDefaultPermission: boolean;
     canUserUpdateThumbnail: boolean;
     canUserCreateOrDeleteTaskList: boolean;
@@ -94,10 +144,10 @@ interface TaskBoardContextValue {
         Error,
         RenameTaskBoardOptions
     >;
-    toggleFlowDirectionMutation: UseMutationResult<
+    updateFlowDirectionMutation: UseMutationResult<
         void,
         Error,
-        ToggleFlowDirectionOptions
+        UpdateFlowDirectionOptions
     >;
     moveTaskListMutation: UseMutationResult<void, Error, MoveTaskListOptions>;
     moveTaskMutation: UseMutationResult<void, Error, MoveTaskOptions>;
@@ -116,7 +166,7 @@ interface TaskBoardContextValue {
     editTaskMutation: UseMutationResult<void, Error, EditTaskOptions>;
     deleteTaskMutation: UseMutationResult<void, Error, DeleteTaskOptions>;
     renameTaskBoard: (options: RenameTaskBoardOptions) => void;
-    toggleFlowDirection: (options: ToggleFlowDirectionOptions) => void;
+    updateFlowDirection: (options: UpdateFlowDirectionOptions) => void;
     moveTaskList: (options: MoveTaskListOptions) => void;
     moveTask: (options: MoveTaskOptions) => void;
     addTaskList: (options: Omit<AddTaskListOptions, "id">) => void;

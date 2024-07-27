@@ -1,6 +1,7 @@
 import withProtectedRoute from "@/_/common/hoc/withProtectedRoute";
 import ServerTaskBoardAPI from "@/api/_/common/layers/server/TaskBoardAPI";
 import ServerTaskBoardUserAPI from "@/api/_/common/layers/server/TaskBoardUserAPI";
+import { NoSsr } from "@mui/material";
 import { isAxiosError } from "axios";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -9,7 +10,6 @@ import Header from "./_/components/Header";
 import TaskBoard from "./_/components/TaskBoard";
 import DragDropProvider from "./_/providers/DragDropProvider";
 import TaskBoardProvider from "./_/providers/TaskBoardProvider";
-import { NoSsr } from "@mui/material";
 
 export const dynamic = "force-dynamic";
 

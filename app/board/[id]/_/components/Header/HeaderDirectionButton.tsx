@@ -9,10 +9,18 @@ import { IconButton } from "@mui/material";
 import { useTaskBoard } from "../../providers/TaskBoardProvider";
 
 export default function HeaderDirectionButton() {
-    const { flowDirection, toggleFlowDirection } = useTaskBoard();
+    const { flowDirection, updateFlowDirection } = useTaskBoard();
 
     return (
-        <IconButton onClick={toggleFlowDirection} size="small" tabIndex={-1}>
+        <IconButton
+            onClick={() =>
+                updateFlowDirection({
+                    flowDirection: flowDirection === "row" ? "column" : "row",
+                })
+            }
+            size="small"
+            tabIndex={-1}
+        >
             <FontAwesomeIcon
                 icon={
                     flowDirection === "row" ? faArrowsLeftRight : faArrowsUpDown

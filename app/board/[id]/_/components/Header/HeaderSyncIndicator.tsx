@@ -3,7 +3,7 @@
 import { faRefresh } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, CircularProgress, IconButton } from "@mui/material";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useTaskBoard } from "../../providers/TaskBoardProvider";
 
 export default function HeaderSyncIndicator() {
@@ -16,12 +16,16 @@ export default function HeaderSyncIndicator() {
     } = useTaskBoard();
     const isLoading = taskBoardQuery.isRefetching || isMutationOngoing;
 
+    const refreshData = useCallback(() => {
+        refreshBoard();
+        refreshUser();
+    }, [refreshBoard, refreshUser]);
+
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.ctrlKey && e.key === "R") {
                 e.preventDefault();
-                refreshBoard();
-                refreshUser();
+                refreshData();
             }
         };
 
@@ -42,7 +46,7 @@ export default function HeaderSyncIndicator() {
             window.removeEventListener("keydown", handleKeyDown);
             window.removeEventListener("beforeunload", handleBeforeUnload);
         };
-    }, [isChangesSaved, refreshBoard, refreshUser]);
+    }, [isChangesSaved, refreshData]);
 
     if (isLoading) {
         return (
@@ -53,7 +57,7 @@ export default function HeaderSyncIndicator() {
     }
 
     return (
-        <IconButton tabIndex={-1} size="small" onClick={refreshBoard}>
+        <IconButton tabIndex={-1} size="small" onClick={refreshData}>
             <FontAwesomeIcon icon={faRefresh} />
         </IconButton>
     );

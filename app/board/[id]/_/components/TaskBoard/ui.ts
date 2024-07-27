@@ -64,6 +64,20 @@ export const TaskBoardHeaderDisplayNameContainer = styled(Box, {
     flexGrow: isFocused ? 1 : 0,
 }));
 
+export const TaskBoardHeaderDisplayNameInput = styled(InputBase, {
+    shouldForwardProp: (propName) => propName !== "isContainerFocused",
+})<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
+    ...theme.typography.h6,
+    height: `1lh`,
+    color: theme.palette.text.secondary,
+    fontWeight: 400,
+    ...(!isContainerFocused && {
+        display: "none",
+        visibility: "hidden",
+        pointerEvents: "none",
+    }),
+}));
+
 export const TaskBoardHeaderDisplayNameText = styled(Typography, {
     shouldForwardProp: (propName) => propName !== "isContainerFocused",
 })<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
@@ -71,19 +85,6 @@ export const TaskBoardHeaderDisplayNameText = styled(Typography, {
     fontWeight: 400,
     cursor: "text",
     ...(isContainerFocused && {
-        display: "none",
-        visibility: "hidden",
-        pointerEvents: "none",
-    }),
-}));
-
-export const TaskBoardHeaderDisplayNameInput = styled(InputBase, {
-    shouldForwardProp: (propName) => propName !== "isContainerFocused",
-})<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
-    ...theme.typography.h6,
-    color: theme.palette.text.secondary,
-    fontWeight: 400,
-    ...(!isContainerFocused && {
         display: "none",
         visibility: "hidden",
         pointerEvents: "none",

@@ -1,5 +1,6 @@
 "use client";
 
+import pusherClient from "@/_/common/lib/pusherClient";
 import ClientAuthTokenAPI from "@/api/_/common/layers/client/AuthTokenAPI";
 import ClientUserAPI from "@/api/_/common/layers/client/UserAPI";
 import { useRouter } from "next/navigation";
@@ -47,7 +48,9 @@ export default function AuthProvider({ children }: AuthProviderProps) {
                 photoURL: userInfo.picture,
             },
             { signal: controller.signal }
-        ).catch(() => {});
+        )
+            .then(() => pusherClient.signin())
+            .catch(() => {});
 
         return () => controller.abort();
     }, [userInfo]);

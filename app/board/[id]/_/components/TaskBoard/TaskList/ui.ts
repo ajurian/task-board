@@ -65,6 +65,7 @@ export const TaskListHeaderTitleContainer = styled(Box, {
 export const TaskListHeaderTitleInput = styled(InputBase, {
     shouldForwardProp: (propName) => propName !== "isContainerFocused",
 })<{ isContainerFocused: boolean }>(({ isContainerFocused }) => ({
+    height: `1lh`,
     ...(!isContainerFocused && {
         display: "none",
         visibility: "hidden",
@@ -138,6 +139,7 @@ export const TaskListPlaceholderContainer = styled(Box, {
 export const TaskListPlaceholderInput = styled(InputBase, {
     shouldForwardProp: (propName) => propName !== "isContainerFocused",
 })<{ isContainerFocused: boolean }>(({ isContainerFocused }) => ({
+    height: `1lh`,
     ...(!isContainerFocused && {
         display: "none",
         visibility: "hidden",

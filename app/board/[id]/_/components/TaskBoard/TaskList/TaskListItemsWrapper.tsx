@@ -4,11 +4,13 @@ import TaskItem from "./TaskItem";
 import { TaskListItemsContainer } from "./ui";
 
 interface TaskListItemsWrapperProps {
+    id: string;
     order: number;
     tasks: TaskModel[];
 }
 
 export default function TaskListItemsWrapper({
+    id,
     order,
     tasks,
 }: TaskListItemsWrapperProps) {

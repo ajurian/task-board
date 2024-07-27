@@ -10,7 +10,13 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useDisclosure } from "@mantine/hooks";
-import { Divider, IconButton, Typography } from "@mui/material";
+import {
+    Box,
+    CircularProgress,
+    Divider,
+    IconButton,
+    Typography,
+} from "@mui/material";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { MouseEventHandler, useId, useState } from "react";
@@ -46,12 +52,12 @@ export default function TaskBoardCard({
         isRenameDialogOpen,
         { open: openRenameDialog, close: closeRenameDialog },
     ] = useDisclosure(false);
-    const router = useRouter();
-
-    const menuId = useId();
-    const buttonId = useId();
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const { refreshData } = useTaskBoards();
+    const router = useRouter();
+    const menuId = useId();
+    const buttonId = useId();
 
     const canUserRenameTaskBoard =
         (permission & PERMISSION_TASK_BOARD_UPDATE_DISPLAY_NAME) !== 0;
@@ -96,13 +102,17 @@ export default function TaskBoardCard({
     const handleRename = openRenameDialog;
 
     const handleDelete = async () => {
+        setIsDeleting(true);
+
         if (canUserDeleteTaskBoard) {
             await ClientTaskBoardAPI.delete(boardId);
         } else {
             await ClientTaskBoardUserAPI.delete(boardUserId);
         }
 
-        refreshData();
+        await refreshData();
+
+        setIsDeleting(false);
     };
 
     return (
@@ -111,18 +121,31 @@ export default function TaskBoardCard({
                 role="option"
                 onContextMenu={handleContextMenu}
                 onClick={handleContainerClick}
+                isDeleting={isDeleting}
             >
                 <TaskBoardCardHeader>
                     <TaskBoardCardTitleContainer>
                         <Typography>{title}</Typography>
                         {isShared && <FontAwesomeIcon icon={faUserGroup} />}
-                        <IconButton
-                            size="small"
-                            sx={{ ml: "auto" }}
-                            onClick={handleMenuTriggerClick}
-                        >
-                            <FontAwesomeIcon icon={faEllipsisVertical} />
-                        </IconButton>
+                        {isDeleting && (
+                            <Box
+                                color="text.secondary"
+                                maxHeight={28}
+                                padding="5px"
+                                ml="auto"
+                            >
+                                <CircularProgress size={18} color="inherit" />
+                            </Box>
+                        )}
+                        {!isDeleting && (
+                            <IconButton
+                                size="small"
+                                sx={{ ml: "auto" }}
+                                onClick={handleMenuTriggerClick}
+                            >
+                                <FontAwesomeIcon icon={faEllipsisVertical} />
+                            </IconButton>
+                        )}
                     </TaskBoardCardTitleContainer>
                     <Typography variant="caption">
                         {accessedAt.toLocaleString()}

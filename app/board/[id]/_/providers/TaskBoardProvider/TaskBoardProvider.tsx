@@ -17,7 +17,21 @@ import {
     PERMISSION_TASK_UPDATE_IS_DONE,
     PERMISSION_TASK_UPDATE_TITLE,
 } from "@/_/common/constants/permissions";
+import pusherClient from "@/_/common/lib/pusherClient";
+import {
+    AddTaskListOptions,
+    AddTaskOptions,
+    DeleteTaskListOptions,
+    DeleteTaskOptions,
+    EditTaskOptions,
+    MoveTaskListOptions,
+    MoveTaskOptions,
+    RenameTaskBoardOptions,
+    RenameTaskListOptions,
+    UpdateFlowDirectionOptions,
+} from "@/_/common/schema/mutation";
 import { AggregatedTaskListModel } from "@/_/common/schema/taskList";
+import ClientAPI from "@/_/common/services/ClientAPI";
 import ClientTaskAPI from "@/api/_/common/layers/client/TaskAPI";
 import ClientTaskBoardAPI from "@/api/_/common/layers/client/TaskBoardAPI";
 import ClientTaskBoardUserAPI from "@/api/_/common/layers/client/TaskBoardUserAPI";
@@ -35,20 +49,13 @@ import {
     useRef,
     useState,
 } from "react";
-import useInsert from "./hooks/useInsert";
+import useCreationUpdate from "./hooks/useCreationUpdate";
+import useNonCreationUpdate from "./hooks/useNonCreationUpdate";
 import useOptimisticUpdate from "./hooks/useOptimisticUpdate";
-import useUpdate from "./hooks/useUpdate";
 import {
-    AddTaskListOptions,
-    AddTaskOptions,
-    DeleteTaskListOptions,
-    EditTaskOptions,
-    MoveTaskListOptions,
-    MoveTaskOptions,
-    RenameTaskBoardOptions,
-    RenameTaskListOptions,
     TaskBoardContextValue,
     TaskBoardProviderProps,
+    UpdateMutation,
 } from "./TaskBoardProviderTypes";
 import reorderArray from "./utils/reorderArray";
 
@@ -73,11 +80,9 @@ export default function TaskBoardProvider({
 }: TaskBoardProviderProps) {
     const queryClient = useQueryClient();
 
-    const [mutationQueue, setMutationQueue] = useState<(() => Promise<void>)[]>(
-        []
-    );
+    const [mutationQueue, setMutationQueue] = useState<UpdateMutation[]>([]);
     const [asyncMutationList, setAsyncMutationList] = useState<
-        (() => Promise<void>)[]
+        UpdateMutation[]
     >([]);
     const previousMutationQueueSize = usePrevious(mutationQueue.length);
     const previousAsyncMutationListSize = usePrevious(asyncMutationList.length);
@@ -85,10 +90,6 @@ export default function TaskBoardProvider({
     const [searchQuery, setSearchQuery] = useState("");
 
     const [isMutationOngoing, setIsMutationOngoing] = useState(false);
-
-    const [taskBoardChanges, setTaskBoardChanges] = useState({});
-    const [taskListsChanges, setTaskListsChanges] = useState({});
-    const [tasksChanges, setTasksChanges] = useState({});
 
     const isChangesSaved = useMemo(
         () => mutationQueue.length === 0 && asyncMutationList.length === 0,
@@ -114,6 +115,9 @@ export default function TaskBoardProvider({
             return taskBoard;
         },
         initialData: selectedTaskBoard,
+        refetchInterval: false,
+        refetchIntervalInBackground: false,
+        refetchOnWindowFocus: false,
     });
 
     const taskBoardUserQuery = useQuery({
@@ -177,7 +181,7 @@ export default function TaskBoardProvider({
         (taskBoardUser.permission &
             PERMISSION_TASK_BOARD_UPDATE_DISPLAY_NAME) !==
         0;
-    const canUserToggleFlowDirection =
+    const canUserUpdateFlowDirection =
         (taskBoardUser.permission &
             PERMISSION_TASK_BOARD_UPDATE_FLOW_DIRECTION) !==
         0;
@@ -215,8 +219,22 @@ export default function TaskBoardProvider({
     );
 
     const enqueueMutation = useCallback(
-        (mutation: () => Promise<void>) =>
-            setMutationQueue((mutationQueue) => [...mutationQueue, mutation]),
+        ({ type, options, onMutate }: UpdateMutation) =>
+            setMutationQueue((mutationQueue) => {
+                for (let i = mutationQueue.length - 1; i >= 0; i--) {
+                    const mutation = mutationQueue[i];
+
+                    if (
+                        (mutation.type === "addTaskList" &&
+                            type === "deleteTaskList") ||
+                        (mutation.type === "addTask" && type === "deleteTask")
+                    ) {
+                        return mutationQueue.toSpliced(i, 1);
+                    }
+                }
+
+                return [...mutationQueue, { type, options, onMutate }];
+            }),
         []
     );
 
@@ -226,11 +244,27 @@ export default function TaskBoardProvider({
     );
 
     const addAsyncMutation = useCallback(
-        (asyncMutation: () => Promise<void>) =>
-            setAsyncMutationList((asyncMutationList) => [
-                ...asyncMutationList,
-                asyncMutation,
-            ]),
+        ({ type, options, onMutate }: (typeof asyncMutationList)[number]) =>
+            setAsyncMutationList((asyncMutationList) => {
+                const newAsyncMutationList = [...asyncMutationList];
+
+                for (let i = newAsyncMutationList.length - 1; i >= 0; i--) {
+                    const mutation = newAsyncMutationList[i];
+
+                    if (mutation.type === type) {
+                        mutation.options = {
+                            ...mutation.options,
+                            ...options,
+                        };
+
+                        return newAsyncMutationList;
+                    }
+                }
+
+                newAsyncMutationList.push({ type, options, onMutate });
+
+                return newAsyncMutationList;
+            }),
         []
     );
 
@@ -238,13 +272,15 @@ export default function TaskBoardProvider({
 
     const dispatchMutation = useCallback(() => {
         if (mutationQueue.length > 0) {
-            const mutate = mutationQueue[0];
-            mutate().then(dequeueMutation).catch(dequeueMutation);
+            const { options, onMutate } = mutationQueue[0];
+            onMutate(options).then(dequeueMutation).catch(dequeueMutation);
         }
 
         if (asyncMutationList.length > 0) {
             Promise.allSettled(
-                asyncMutationList.map((asyncMutation) => asyncMutation())
+                asyncMutationList.map(({ options, onMutate }) =>
+                    onMutate(options)
+                )
             )
                 .then(clearAsyncMutation)
                 .catch(clearAsyncMutation);
@@ -255,22 +291,28 @@ export default function TaskBoardProvider({
         useMutation({
             mutationKey: ["renameTaskBoard", selectedTaskBoard.id],
             mutationFn: async (options) => {
-                console.log(options);
                 await ClientTaskBoardAPI.patch(selectedTaskBoard.id, options);
+                await ClientAPI.post(
+                    `/pusher/${selectedTaskBoard.id}/renameTaskBoard`,
+                    { ...options, socketId: pusherClient.connection.socket_id }
+                );
             },
         });
 
-    const toggleFlowDirectionMutation: TaskBoardContextValue["toggleFlowDirectionMutation"] =
+    const updateFlowDirectionMutation: TaskBoardContextValue["updateFlowDirectionMutation"] =
         useMutation({
-            mutationKey: [
-                "toggleFlowDirection",
-                selectedTaskBoard.id,
-                flowDirection,
-            ],
-            mutationFn: async () => {
+            mutationKey: ["updateFlowDirection", selectedTaskBoard.id],
+            mutationFn: async ({ flowDirection }) => {
                 await ClientTaskBoardAPI.patch(selectedTaskBoard.id, {
                     flowDirection,
                 });
+                await ClientAPI.post(
+                    `/pusher/${selectedTaskBoard.id}/updateFlowDirection`,
+                    {
+                        flowDirection,
+                        socketId: pusherClient.connection.socket_id,
+                    }
+                );
             },
         });
 
@@ -282,6 +324,10 @@ export default function TaskBoardProvider({
                     ...options,
                     boardId: selectedTaskBoard.id,
                 });
+                await ClientAPI.post(
+                    `/pusher/${selectedTaskBoard.id}/moveTaskList`,
+                    { ...options, socketId: pusherClient.connection.socket_id }
+                );
             },
         });
 
@@ -293,6 +339,10 @@ export default function TaskBoardProvider({
                     ...options,
                     boardId: selectedTaskBoard.id,
                 });
+                await ClientAPI.post(
+                    `/pusher/${selectedTaskBoard.id}/moveTask`,
+                    { ...options, socketId: pusherClient.connection.socket_id }
+                );
             },
         });
 
@@ -304,6 +354,10 @@ export default function TaskBoardProvider({
                     ...options,
                     taskBoardId: selectedTaskBoard.id,
                 });
+                await ClientAPI.post(
+                    `/pusher/${selectedTaskBoard.id}/addTaskList`,
+                    { ...options, socketId: pusherClient.connection.socket_id }
+                );
             },
         });
 
@@ -312,6 +366,10 @@ export default function TaskBoardProvider({
             mutationKey: ["renameTaskList"],
             mutationFn: async ({ id, title }) => {
                 await ClientTaskListAPI.patch(id, { title });
+                await ClientAPI.post(
+                    `/pusher/${selectedTaskBoard.id}/renameTaskList`,
+                    { id, title, socketId: pusherClient.connection.socket_id }
+                );
             },
         });
 
@@ -320,6 +378,10 @@ export default function TaskBoardProvider({
             mutationKey: ["deleteTaskList"],
             mutationFn: async ({ id }) => {
                 await ClientTaskListAPI.delete(id);
+                await ClientAPI.post(
+                    `/pusher/${selectedTaskBoard.id}/deleteTaskList`,
+                    { id, socketId: pusherClient.connection.socket_id }
+                );
             },
         });
 
@@ -328,6 +390,10 @@ export default function TaskBoardProvider({
             mutationKey: ["addTask"],
             mutationFn: async (options) => {
                 await ClientTaskAPI.post(options);
+                await ClientAPI.post(
+                    `/pusher/${selectedTaskBoard.id}/addTask`,
+                    { ...options, socketId: pusherClient.connection.socket_id }
+                );
             },
         });
 
@@ -336,6 +402,14 @@ export default function TaskBoardProvider({
             mutationKey: ["editTask"],
             mutationFn: async ({ id, ...options }) => {
                 await ClientTaskAPI.patch(id, options);
+                await ClientAPI.post(
+                    `/pusher/${selectedTaskBoard.id}/editTask`,
+                    {
+                        id,
+                        ...options,
+                        socketId: pusherClient.connection.socket_id,
+                    }
+                );
             },
         });
 
@@ -344,6 +418,10 @@ export default function TaskBoardProvider({
             mutationKey: ["deleteTask"],
             mutationFn: async ({ id }) => {
                 await ClientTaskAPI.delete(id);
+                await ClientAPI.post(
+                    `/pusher/${selectedTaskBoard.id}/deleteTask`,
+                    { id, socketId: pusherClient.connection.socket_id }
+                );
             },
         });
 
@@ -353,11 +431,9 @@ export default function TaskBoardProvider({
         []
     );
 
-    const toggleFlowDirectionOptimistic = useCallback(
-        () =>
-            setFlowDirection((flowDirection) =>
-                flowDirection === "row" ? "column" : "row"
-            ),
+    const updateFlowDirectionOptimistic = useCallback(
+        ({ flowDirection }: UpdateFlowDirectionOptions) =>
+            setFlowDirection(flowDirection),
         []
     );
 
@@ -524,7 +600,7 @@ export default function TaskBoardProvider({
         },
     });
 
-    const deleteTaskOptimistic = useOptimisticUpdate<DeleteTaskListOptions>({
+    const deleteTaskOptimistic = useOptimisticUpdate<DeleteTaskOptions>({
         setTaskLists,
         onTaskListsChange: (taskLists, { id }) => {
             for (const taskList of taskLists) {
@@ -548,62 +624,72 @@ export default function TaskBoardProvider({
         },
     });
 
-    const renameTaskBoard = useUpdate({
-        mutation: renameTaskBoardMutation,
+    const renameTaskBoard = useNonCreationUpdate({
+        type: "renameTaskBoard",
+        onMutate: renameTaskBoardMutation.mutateAsync,
         onOptimisticUpdate: renameTaskBoardOptimistic,
         onMutationStateChange: addAsyncMutation,
     });
 
-    const toggleFlowDirection = useUpdate({
-        mutation: toggleFlowDirectionMutation,
-        onOptimisticUpdate: toggleFlowDirectionOptimistic,
+    const updateFlowDirection = useNonCreationUpdate({
+        type: "updateFlowDirection",
+        onMutate: updateFlowDirectionMutation.mutateAsync,
+        onOptimisticUpdate: updateFlowDirectionOptimistic,
         onMutationStateChange: addAsyncMutation,
     });
 
-    const moveTaskList = useUpdate({
-        mutation: moveTaskListMutation,
+    const moveTaskList = useNonCreationUpdate({
+        type: "moveTaskList",
+        onMutate: moveTaskListMutation.mutateAsync,
         onOptimisticUpdate: moveTaskListOptimistic,
         onMutationStateChange: enqueueMutation,
     });
 
-    const moveTask = useUpdate({
-        mutation: moveTaskMutation,
+    const moveTask = useNonCreationUpdate({
+        type: "moveTask",
+        onMutate: moveTaskMutation.mutateAsync,
         onOptimisticUpdate: moveTaskOptimistic,
         onMutationStateChange: enqueueMutation,
     });
 
-    const addTaskList = useInsert({
-        mutation: addTaskListMutation,
+    const addTaskList = useCreationUpdate({
+        type: "addTaskList",
+        onMutate: addTaskListMutation.mutateAsync,
         onOptimisticUpdate: addTaskListOptimistic,
         onMutationStateChange: enqueueMutation,
     });
 
-    const renameTaskList = useUpdate({
-        mutation: renameTaskListMutation,
+    const renameTaskList = useNonCreationUpdate({
+        type: "renameTaskList",
+        onMutate: renameTaskListMutation.mutateAsync,
         onOptimisticUpdate: renameTaskListOptimistic,
         onMutationStateChange: addAsyncMutation,
     });
 
-    const deleteTaskList = useUpdate({
-        mutation: deleteTaskListMutation,
+    const deleteTaskList = useNonCreationUpdate({
+        type: "deleteTaskList",
+        onMutate: deleteTaskListMutation.mutateAsync,
         onOptimisticUpdate: deleteTaskListOptimistic,
         onMutationStateChange: enqueueMutation,
     });
 
-    const addTask = useInsert({
-        mutation: addTaskMutation,
+    const addTask = useCreationUpdate({
+        type: "addTask",
+        onMutate: addTaskMutation.mutateAsync,
         onOptimisticUpdate: addTaskOptimistic,
         onMutationStateChange: enqueueMutation,
     });
 
-    const editTask = useUpdate({
-        mutation: editTaskMutation,
+    const editTask = useNonCreationUpdate({
+        type: "editTask",
+        onMutate: editTaskMutation.mutateAsync,
         onOptimisticUpdate: editTaskOptimistic,
         onMutationStateChange: addAsyncMutation,
     });
 
-    const deleteTask = useUpdate({
-        mutation: deleteTaskMutation,
+    const deleteTask = useNonCreationUpdate({
+        type: "deleteTaskList",
+        onMutate: deleteTaskMutation.mutateAsync,
         onOptimisticUpdate: deleteTaskOptimistic,
         onMutationStateChange: enqueueMutation,
     });
@@ -675,18 +761,82 @@ export default function TaskBoardProvider({
         taskBoardQuery.data.taskLists,
     ]);
 
-    /* useEffect(() => {
+    useEffect(() => {
         pusherClient.subscribe(id);
 
-        pusherClient.bind("rename-task-board", (data: string) => {
-            console.log(data);
-        });
+        pusherClient.bind(
+            "rename-task-board",
+            ({ displayName }: RenameTaskBoardOptions) =>
+                setDisplayName(displayName)
+        );
+
+        pusherClient.bind(
+            "update-flow-direction",
+            ({ flowDirection }: UpdateFlowDirectionOptions) => {
+                setFlowDirection(flowDirection);
+            }
+        );
+
+        pusherClient.bind("move-task-list", (options: MoveTaskListOptions) =>
+            moveTaskListOptimistic(options)
+        );
+
+        pusherClient.bind("move-task", (options: MoveTaskOptions) =>
+            moveTaskOptimistic(options)
+        );
+
+        pusherClient.bind("add-task-list", (options: AddTaskListOptions) =>
+            addTaskListOptimistic(options)
+        );
+
+        pusherClient.bind(
+            "rename-task-list",
+            (options: RenameTaskListOptions) =>
+                renameTaskListOptimistic(options)
+        );
+
+        pusherClient.bind(
+            "delete-task-list",
+            (options: DeleteTaskListOptions) =>
+                deleteTaskListOptimistic(options)
+        );
+
+        pusherClient.bind("add-task", (options: AddTaskOptions) =>
+            addTaskOptimistic(options)
+        );
+
+        pusherClient.bind("edit-task", (options: EditTaskOptions) =>
+            editTaskOptimistic(options)
+        );
+
+        pusherClient.bind("delete-task", (options: DeleteTaskOptions) =>
+            deleteTaskOptimistic(options)
+        );
 
         return () => {
             pusherClient.unsubscribe(id);
             pusherClient.unbind("rename-task-board");
+            pusherClient.unbind("update-flow-direction");
+            pusherClient.unbind("move-task-list");
+            pusherClient.unbind("move-task");
+            pusherClient.unbind("add-task-list");
+            pusherClient.unbind("rename-task-list");
+            pusherClient.unbind("delete-task-list");
+            pusherClient.unbind("add-task");
+            pusherClient.unbind("edit-task");
+            pusherClient.unbind("delete-task");
         };
-    }, [id]); */
+    }, [
+        id,
+        moveTaskListOptimistic,
+        moveTaskOptimistic,
+        addTaskListOptimistic,
+        renameTaskListOptimistic,
+        deleteTaskListOptimistic,
+        addTaskOptimistic,
+        editTaskOptimistic,
+        deleteTaskOptimistic,
+    ]);
 
     useEffect(() => {
         if (
@@ -708,14 +858,14 @@ export default function TaskBoardProvider({
             return;
         }
 
-        if (mutationQueue.length < previousMutationQueueSize) {
+        if (isMutationOngoing) {
             dispatchMutation();
             return;
         }
 
         if (
             mutationQueue.length > previousMutationQueueSize ||
-            asyncMutationList.length > 0
+            asyncMutationList.length > previousAsyncMutationListSize
         ) {
             takeSnapshot();
         }
@@ -731,6 +881,7 @@ export default function TaskBoardProvider({
         asyncMutationList,
         previousMutationQueueSize,
         previousAsyncMutationListSize,
+        isMutationOngoing,
         isChangesSaved,
         dispatchMutation,
         takeSnapshot,
@@ -771,7 +922,7 @@ export default function TaskBoardProvider({
                 isUserOwner,
                 canUserChangeRole,
                 canUserRenameTaskBoard,
-                canUserToggleFlowDirection,
+                canUserUpdateFlowDirection,
                 canUserUpdateDefaultPermission,
                 canUserUpdateThumbnail,
                 canUserCreateOrDeleteTaskList,
@@ -785,7 +936,7 @@ export default function TaskBoardProvider({
                 canUserReorderTask,
                 isUserVisitor,
                 renameTaskBoardMutation,
-                toggleFlowDirectionMutation,
+                updateFlowDirectionMutation,
                 moveTaskListMutation,
                 moveTaskMutation,
                 addTaskListMutation,
@@ -795,7 +946,7 @@ export default function TaskBoardProvider({
                 editTaskMutation,
                 deleteTaskMutation,
                 renameTaskBoard,
-                toggleFlowDirection,
+                updateFlowDirection,
                 moveTaskList,
                 moveTask,
                 addTaskList,

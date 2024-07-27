@@ -3,20 +3,20 @@ import _ from "lodash";
 import { Dispatch, SetStateAction, useCallback } from "react";
 import { UpdateOptions } from "../TaskBoardProviderTypes";
 
-interface UseOptimisticUpdateOptions<T extends UpdateOptions> {
+interface UseOptimisticUpdateOptions<O extends UpdateOptions> {
     setTaskLists: Dispatch<SetStateAction<AggregatedTaskListModel[]>>;
     onTaskListsChange: (
         taskLists: AggregatedTaskListModel[],
-        options: T
+        options: O
     ) => AggregatedTaskListModel[];
 }
 
-export default function useOptimisticUpdate<T extends UpdateOptions>({
+export default function useOptimisticUpdate<O extends UpdateOptions>({
     setTaskLists,
     onTaskListsChange,
-}: UseOptimisticUpdateOptions<T>) {
+}: UseOptimisticUpdateOptions<O>) {
     return useCallback(
-        (options: T) =>
+        (options: O) =>
             setTaskLists((taskLists) =>
                 onTaskListsChange(_.cloneDeep(taskLists), options)
             ),

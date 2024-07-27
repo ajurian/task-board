@@ -3,7 +3,7 @@ import { useTaskBoard } from "@/board/[id]/_/providers/TaskBoardProvider";
 import { faCheck, faCircleDot } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Draggable } from "@hello-pangea/dnd";
-import { useInputState } from "@mantine/hooks";
+import { mergeRefs, useInputState } from "@mantine/hooks";
 import { Box, IconButton } from "@mui/material";
 import {
     TransitionEventHandler,
@@ -124,10 +124,7 @@ export default function TaskItem({ index, id, title, details }: TaskItemProps) {
                         {...draggableProps}
                         {...dragHandleProps}
                         {...contentEditableProps}
-                        ref={(node: HTMLElement | null) => {
-                            innerRef(node);
-                            ref.current = node;
-                        }}
+                        ref={mergeRefs(innerRef, ref)}
                         isDragging={isDragging}
                         isDragDisabled={isDragDisabled}
                         isFocused={isFocused}

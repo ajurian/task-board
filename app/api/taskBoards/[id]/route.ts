@@ -18,8 +18,6 @@ import { checkAuthorityWithDocument } from "@/api/_/utils/checkAuthority";
 import runTransaction from "@/api/_/utils/runTransaction";
 import { NextRequest, NextResponse } from "next/server";
 import { unprocessableEntityErrorResponse } from "../../_/utils/errorResponse";
-import pusherServer from "@/_/common/lib/pusherServer";
-import _ from "lodash";
 
 interface Segment {
     params: {
@@ -228,12 +226,6 @@ export async function PATCH(request: NextRequest, { params }: Segment) {
             data,
         });
     });
-
-    /* delete data["thumbnailData"];
-
-    if (displayName !== undefined) {
-        await pusherServer.trigger(id, "rename-task-board", { displayName });
-    } */
 
     return NextResponse.json({ taskBoard: updatedTaskBoard });
 }

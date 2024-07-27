@@ -9,7 +9,7 @@ import {
     DialogTitle,
     OutlinedInput,
 } from "@mui/material";
-import { useRef, useState } from "react";
+import { TransitionEventHandler, useRef, useState } from "react";
 import TaskBoardCardRenameDialogProgress from "./TaskBoardCardRenameDialogProgress";
 
 interface TaskBoardCardRenameDialogProps {
@@ -30,6 +30,17 @@ export default function TaskBoardCardRenameDialog({
     const { refreshData } = useTaskBoards();
 
     const titleInputRef = useRef<HTMLInputElement | null>(null);
+
+    const handleTransitionEnd: TransitionEventHandler<HTMLDivElement> = (e) => {
+        if (
+            !(e.target as HTMLElement).classList.contains("MuiDialog-container")
+        ) {
+            return;
+        }
+
+        titleInputRef.current?.select();
+        setTitle(initialTitle);
+    };
 
     const handleDone = async () => {
         if (initialTitle === title) {
@@ -52,7 +63,7 @@ export default function TaskBoardCardRenameDialog({
             maxWidth="xs"
             open={isOpen}
             onClose={onClose}
-            onTransitionEnd={() => titleInputRef.current?.select()}
+            onTransitionEnd={handleTransitionEnd}
         >
             <TaskBoardCardRenameDialogProgress isLoading={isRenaming} />
             <DialogTitle>Rename</DialogTitle>
@@ -70,7 +81,7 @@ export default function TaskBoardCardRenameDialog({
                     Cancel
                 </Button>
                 <Button disabled={isRenaming} onClick={handleDone}>
-                    Done
+                    {title === initialTitle ? "Done" : "Save"}
                 </Button>
             </DialogActions>
         </Dialog>
