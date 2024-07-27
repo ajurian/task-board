@@ -74,6 +74,7 @@ export default function TaskBoardCardRenameDialog({
                     onChange={setTitle}
                     size="small"
                     fullWidth
+                    sx={{ mt: "1px" }}
                 />
             </DialogContent>
             <DialogActions>
