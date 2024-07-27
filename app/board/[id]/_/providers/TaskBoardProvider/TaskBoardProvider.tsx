@@ -721,8 +721,12 @@ export default function TaskBoardProvider({
 
         document.body.appendChild(snapshotNode);
 
+        snapshotNode.style.position = "absolute";
+        snapshotNode.style.left = "0";
+        snapshotNode.style.top = "200vh";
         snapshotNode.style.width = "512px";
         snapshotNode.style.height = "512px";
+        snapshotNode.style.zIndex = "-10000";
 
         const canvas = await html2canvas(snapshotNode, {
             logging: false,
@@ -746,7 +750,7 @@ export default function TaskBoardProvider({
     }, [selectedTaskBoard.id, canUserUpdateThumbnail]);
 
     useLayoutEffect(() => {
-        if (taskBoardQuery.isRefetching || taskBoardUserQuery.isRefetching) {
+        if (taskBoardQuery.isRefetching) {
             return;
         }
 
@@ -755,7 +759,6 @@ export default function TaskBoardProvider({
         setTaskLists(taskBoardQuery.data.taskLists);
     }, [
         taskBoardQuery.isRefetching,
-        taskBoardUserQuery.isRefetching,
         taskBoardQuery.data.displayName,
         taskBoardQuery.data.flowDirection,
         taskBoardQuery.data.taskLists,
@@ -766,15 +769,14 @@ export default function TaskBoardProvider({
 
         pusherClient.bind(
             "rename-task-board",
-            ({ displayName }: RenameTaskBoardOptions) =>
-                setDisplayName(displayName)
+            (options: RenameTaskBoardOptions) =>
+                renameTaskBoardOptimistic(options)
         );
 
         pusherClient.bind(
             "update-flow-direction",
-            ({ flowDirection }: UpdateFlowDirectionOptions) => {
-                setFlowDirection(flowDirection);
-            }
+            (options: UpdateFlowDirectionOptions) =>
+                updateFlowDirectionOptimistic(options)
         );
 
         pusherClient.bind("move-task-list", (options: MoveTaskListOptions) =>
@@ -828,6 +830,8 @@ export default function TaskBoardProvider({
         };
     }, [
         id,
+        renameTaskBoardOptimistic,
+        updateFlowDirectionOptimistic,
         moveTaskListOptimistic,
         moveTaskOptimistic,
         addTaskListOptimistic,
@@ -851,7 +855,7 @@ export default function TaskBoardProvider({
                 previousMutationQueueSize > 0 ||
                 previousAsyncMutationListSize > 0
             ) {
-                // saveSnapshot().catch(() => {});
+                saveSnapshot().catch(() => {});
             }
 
             setIsMutationOngoing(false);
