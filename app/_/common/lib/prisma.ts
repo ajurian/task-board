@@ -8,7 +8,7 @@ declare const globalThis: {
 
 const prisma = globalThis.prismaGlobal ?? new PrismaClient();
 
-if (process.env.NEXT_PUBLIC_VERCEL_ENV !== "production") {
+if (process.env.NEXT_PUBLIC_VERCEL_ENV! !== "production") {
     globalThis.prismaGlobal = prisma;
 }
 

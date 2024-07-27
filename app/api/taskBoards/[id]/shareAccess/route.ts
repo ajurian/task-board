@@ -101,7 +101,7 @@ export async function POST(request: NextRequest, { params }: Segment) {
     const redirectUri = encodeURIComponent(`${getCurrentURL()}/board/${id}`);
 
     await Mail.sendMail({
-        from: `${user.displayName} <${process.env.GMAIL_SERVICE_ACCOUNT}>`,
+        from: `${user.displayName} <${process.env.GMAIL_SERVICE_ACCOUNT!}>`,
         to: userEmails.join(", "),
         subject: `${user.displayName} shared a board with you`,
         html: `<p>${user.displayName} ${user.email} shared a board with you.</p><br /><a href='${baseUrl}?hint={{ contact.EMAIL }}&redirectUri=${redirectUri}'>Open board</a>`,
