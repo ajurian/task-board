@@ -155,6 +155,7 @@ export default function TaskBoardCard({
                 <ThumbnailImageWrapper>
                     <Image
                         fill
+                        unoptimized
                         src={`${location.origin}/api/thumbnails/${boardId}`}
                         alt="thumbnail"
                     />
