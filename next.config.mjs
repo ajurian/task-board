@@ -22,6 +22,7 @@ const nextConfig = {
                 hostname: "lh3.googleusercontent.com",
             },
         ],
+        path: "/_next/image",
     },
 };
 
