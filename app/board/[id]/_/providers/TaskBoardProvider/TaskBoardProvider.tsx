@@ -707,12 +707,20 @@ export default function TaskBoardProvider({
     const snapshotNodeRef = useRef<HTMLElement | null>(null);
 
     const takeSnapshot = useCallback(() => {
+        if (!canUserUpdateThumbnail) {
+            return;
+        }
+
         const snapshotNode =
             document.querySelector("main")?.cloneNode(true) ?? null;
         snapshotNodeRef.current = snapshotNode as HTMLElement;
-    }, []);
+    }, [canUserUpdateThumbnail]);
 
     const saveSnapshot = useCallback(async () => {
+        if (!canUserUpdateThumbnail) {
+            return;
+        }
+
         const snapshotNode = snapshotNodeRef.current;
 
         if (snapshotNode === null) {
@@ -721,14 +729,10 @@ export default function TaskBoardProvider({
 
         document.body.appendChild(snapshotNode);
 
-        snapshotNode.style.position = "absolute";
-        snapshotNode.style.left = "0";
-        snapshotNode.style.top = "200vh";
         snapshotNode.style.width = "512px";
         snapshotNode.style.height = "512px";
-        snapshotNode.style.zIndex = "-10000";
 
-        const canvas = await html2canvas(snapshotNode, {
+        const canvasPromise = html2canvas(snapshotNode, {
             logging: false,
             windowWidth: 512,
             windowHeight: 512,
@@ -736,14 +740,14 @@ export default function TaskBoardProvider({
             height: 512,
             scrollX: 0,
             scrollY: 0,
+            onclone: (document) => {
+                window.scrollTo({ top: document.body.scrollTop });
+            },
         });
 
         document.body.removeChild(snapshotNode);
 
-        if (!canUserUpdateThumbnail) {
-            return;
-        }
-
+        const canvas = await canvasPromise;
         await ClientTaskBoardAPI.patch(selectedTaskBoard.id, {
             thumbnailData: canvas.toDataURL("image/jpeg").split(";base64,")[1],
         });
