@@ -1,11 +1,27 @@
 {
     "name": "bson",
+    "description": "A bson parser for node.js and the browser",
+    "version": "6.8.0",
     "main": "./bson.cjs",
     "module": "./bson.cjs",
+    "author": {
+        "name": "The MongoDB NodeJS Team",
+        "email": "dbx-node@mongodb.com"
+    },
+    "license": "Apache-2.0",
+    "contributors": [],
+    "repository": "mongodb/js-bson",
+    "files": [
+        "bson.cjs",
+        "bson.d.ts"
+    ],
     "types": "./bson.d.ts",
     "exports": {
         "require": "./bson.cjs",
         "import": "./bson.cjs",
         "types": "./bson.d.ts"
+    },
+    "engines": {
+        "node": ">=16.20.1"
     }
 }

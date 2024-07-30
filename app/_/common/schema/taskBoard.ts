@@ -1,4 +1,3 @@
-import { Binary } from "bson";
 import { z } from "zod";
 
 const BinarySchema = z.object({
@@ -93,5 +92,5 @@ export type TaskBoardCreate = z.infer<typeof TaskBoardCreateSchema>;
 export type TaskBoardUpdateInput = Omit<
     z.infer<typeof TaskBoardUpdateSchema>,
     "thumbnailData"
-> & { thumbnailData?: Binary | string | { type: "Buffer"; data: number[] } };
+> & { thumbnailData?: Buffer | string | { type: "Buffer"; data: number[] } };
 export type TaskBoardUpdateOutput = z.infer<typeof TaskBoardUpdateSchema>;
