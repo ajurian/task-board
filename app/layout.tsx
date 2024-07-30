@@ -11,6 +11,7 @@ import type { Metadata } from "next";
 import { PropsWithChildren } from "react";
 import { z } from "zod";
 import GlobalProviders from "./GlobalProviders";
+import RouteProgress from "./_/components/RouteProgress";
 import AuthProvider from "./_/providers/AuthProvider";
 import UserInfoProvider from "./_/providers/UserInfoProvider";
 import ServerAuthTokenAPI from "./api/_/common/layers/server/AuthTokenAPI";
@@ -40,6 +41,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
                     <UserInfoProvider userInfo={userInfo}>
                         <AuthProvider>
                             <GlobalProviders>
+                                <RouteProgress />
                                 <CssBaseline />
                                 {children}
                             </GlobalProviders>
