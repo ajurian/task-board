@@ -1,27 +1,22 @@
 "use client";
 
 import { Box, LinearProgress } from "@mui/material";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useTransition } from "react";
 
 export default function RouteProgress() {
-    const [isLoading, setIsLoading] = useState(false);
-    const pathname = usePathname();
-    const searchParams = useSearchParams().toString();
     const router = useRouter();
+    const [isChangingRoute, startTransition] = useTransition();
 
     useEffect(() => {
         const _push = router.push.bind(router);
 
         router.push = (href, options) => {
-            setIsLoading(true);
-            _push(href, options);
+            startTransition(() => _push(href, options));
         };
     }, [router]);
 
-    useEffect(() => setIsLoading(false), [pathname, searchParams]);
-
-    if (!isLoading) {
+    if (!isChangingRoute) {
         return null;
     }
 
