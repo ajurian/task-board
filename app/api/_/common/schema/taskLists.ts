@@ -3,6 +3,7 @@ import {
     TaskListModelSchema,
     TaskListUpdate,
 } from "@/_/common/schema/taskList";
+import { ObjectId } from "bson";
 import { z } from "zod";
 
 export const TaskListsGetResponseSchema = z.object({
@@ -19,7 +20,7 @@ export const TaskListPatchResponseSchema = TaskListGetResponseSchema;
 export const TaskListDeleteResponseSchema = TaskListGetResponseSchema;
 
 export const TaskListsReorderPostBodySchema = z.object({
-    boardId: z.string(),
+    boardId: z.string().refine(ObjectId.isValid),
     fromIndex: z.number(),
     toIndex: z.number(),
 });

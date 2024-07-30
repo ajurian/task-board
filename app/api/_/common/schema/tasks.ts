@@ -3,6 +3,7 @@ import {
     TaskModelSchema,
     TaskUpdate,
 } from "@/_/common/schema/task";
+import { ObjectId } from "bson";
 import { z } from "zod";
 
 export const TasksGetResponseSchema = z.object({
@@ -19,7 +20,7 @@ export const TaskPatchResponseSchema = TaskGetResponseSchema;
 export const TaskDeleteResponseSchema = TaskGetResponseSchema;
 
 export const TasksReorderPostBodySchema = z.object({
-    boardId: z.string(),
+    boardId: z.string().refine(ObjectId.isValid),
     fromListIndex: z.number(),
     toListIndex: z.number(),
     fromIndex: z.number(),

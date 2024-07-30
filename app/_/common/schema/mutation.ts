@@ -1,7 +1,11 @@
 import { z } from "zod";
-import { TaskCreateSchema, TaskUpdateSchema } from "./task";
+import { TaskCreateSchema, TaskModelSchema, TaskUpdateSchema } from "./task";
 import { TaskBoardModelSchema } from "./taskBoard";
-import { TaskListCreateSchema, TaskListUpdateSchema } from "./taskList";
+import {
+    TaskListCreateSchema,
+    TaskListModelSchema,
+    TaskListUpdateSchema,
+} from "./taskList";
 
 export const RenameTaskBoardOptionsSchema = TaskBoardModelSchema.pick({
     displayName: true,
@@ -27,19 +31,21 @@ export const AddTaskListOptionsSchema = TaskListCreateSchema.omit({
     taskBoardId: true,
 });
 
-export const RenameTaskListOptionsSchema = TaskListUpdateSchema.extend({
-    id: z.string(),
-});
+export const RenameTaskListOptionsSchema = TaskListUpdateSchema.and(
+    TaskListModelSchema.pick({ id: true })
+);
 
-export const DeleteTaskListOptionsSchema = z.object({ id: z.string() });
+export const DeleteTaskListOptionsSchema = TaskListModelSchema.pick({
+    id: true,
+});
 
 export const AddTaskOptionsSchema = TaskCreateSchema;
 
 export const EditTaskOptionsSchema = TaskUpdateSchema.and(
-    z.object({ id: z.string() })
+    TaskModelSchema.pick({ id: true })
 );
 
-export const DeleteTaskOptionsSchema = z.object({ id: z.string() });
+export const DeleteTaskOptionsSchema = TaskModelSchema.pick({ id: true });
 
 export type RenameTaskBoardOptions = z.infer<
     typeof RenameTaskBoardOptionsSchema

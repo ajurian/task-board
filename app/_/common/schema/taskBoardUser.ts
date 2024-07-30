@@ -1,12 +1,21 @@
+import { ObjectId } from "bson";
 import { z } from "zod";
+import {
+    PERMISSION_ROLE_NONE,
+    PERMISSION_ROLE_OWNER,
+} from "../constants/permissions";
 import { TaskBoardModelSchema } from "./taskBoard";
 import { UserModelSchema } from "./user";
 
 export const TaskBoardUserModelSchema = z.object({
-    id: z.string(),
+    id: z.string().refine(ObjectId.isValid),
     userGoogleId: z.string(),
-    taskBoardId: z.string(),
-    permission: z.number().int(),
+    taskBoardId: z.string().refine(ObjectId.isValid),
+    permission: z
+        .number()
+        .int()
+        .min(PERMISSION_ROLE_NONE)
+        .max(PERMISSION_ROLE_OWNER),
     isVisitor: z.boolean(),
     joinedAt: z.coerce.date(),
     recentlyAccessedAt: z.coerce.date(),

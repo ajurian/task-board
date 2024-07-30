@@ -1,3 +1,9 @@
+import {
+    TASK_DETAILS_MAX_LEN,
+    TASK_DETAILS_MIN_LEN,
+    TASK_TITLE_MAX_LEN,
+    TASK_TITLE_MIN_LEN,
+} from "@/_/common/constants/constraints";
 import { TaskModel } from "@/_/common/schema/task";
 import { useTaskBoard } from "@/board/[id]/_/providers/TaskBoardProvider";
 import { faCheck, faCircleDot } from "@fortawesome/free-solid-svg-icons";
@@ -81,7 +87,11 @@ export default function TaskItem({ index, id, title, details }: TaskItemProps) {
             const hasDataChanged =
                 titleInput !== initialTitle || detailsInput !== initialDetails;
 
-            if (titleInput.length === 0 || !hasDataChanged) {
+            if (
+                titleInput.length < TASK_TITLE_MIN_LEN ||
+                detailsInput.length < TASK_DETAILS_MIN_LEN ||
+                !hasDataChanged
+            ) {
                 return;
             }
 
@@ -167,6 +177,7 @@ export default function TaskItem({ index, id, title, details }: TaskItemProps) {
                                 value={titleInput}
                                 onChange={setTitleInput}
                                 onFocus={(e) => e.currentTarget.select()}
+                                inputProps={{ maxLength: TASK_TITLE_MAX_LEN }}
                                 placeholder="Title"
                                 size="small"
                                 multiline
@@ -204,6 +215,7 @@ export default function TaskItem({ index, id, title, details }: TaskItemProps) {
                             value={detailsInput}
                             onChange={setDetailsInput}
                             onFocus={(e) => e.currentTarget.select()}
+                            inputProps={{ maxLength: TASK_DETAILS_MAX_LEN }}
                             placeholder="Details"
                             size="small"
                             multiline

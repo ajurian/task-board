@@ -1,7 +1,8 @@
+import { ObjectId } from "bson";
 import { z } from "zod";
 
 export const UserModelSchema = z.object({
-    id: z.string(),
+    id: z.string().refine(ObjectId.isValid),
     googleId: z.string(),
     email: z.string().email(),
     displayName: z.string(),

@@ -365,7 +365,7 @@ export default function TaskBoardProvider({
 
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/moveTaskList`,
-                    options
+                    { ...options }
                 );
             },
         });

@@ -1,11 +1,18 @@
+import { ObjectId } from "bson";
 import { z } from "zod";
+import {
+    TASK_DETAILS_MAX_LEN,
+    TASK_DETAILS_MIN_LEN,
+    TASK_TITLE_MAX_LEN,
+    TASK_TITLE_MIN_LEN,
+} from "../constants/constraints";
 
 export const TaskModelSchema = z.object({
-    id: z.string(),
-    taskListId: z.string(),
-    order: z.number().int(),
-    title: z.string(),
-    details: z.string(),
+    id: z.string().refine(ObjectId.isValid),
+    taskListId: z.string().refine(ObjectId.isValid),
+    order: z.number().int().min(0),
+    title: z.string().min(TASK_TITLE_MIN_LEN).max(TASK_TITLE_MAX_LEN),
+    details: z.string().min(TASK_DETAILS_MIN_LEN).max(TASK_DETAILS_MAX_LEN),
     isDone: z.boolean(),
     createdAt: z.coerce.date(),
     dueAt: z.coerce.date().nullable(),

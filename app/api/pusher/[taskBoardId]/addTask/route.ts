@@ -13,7 +13,9 @@ export async function POST(request: NextRequest, { params }: Segment) {
     const rawBody = await request.json();
     const body = AddTaskOptionsSchema.parse(rawBody);
 
-    pusherServer.trigger(taskBoardId, "add-task", body);
+    pusherServer.trigger(taskBoardId, "add-task", body, {
+        socket_id: rawBody.socketId,
+    });
 
     return NextResponse.json({});
 }

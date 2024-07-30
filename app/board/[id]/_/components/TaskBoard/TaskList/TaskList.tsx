@@ -1,4 +1,3 @@
-import { PERMISSION_TASK_LIST_REORDER } from "@/_/common/constants/permissions";
 import { AggregatedTaskListModel } from "@/_/common/schema/taskList";
 import { Draggable } from "@hello-pangea/dnd";
 import { useMemo, useState } from "react";

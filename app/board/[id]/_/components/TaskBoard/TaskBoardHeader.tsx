@@ -14,6 +14,10 @@ import {
     TaskBoardHeaderDisplayNameInput,
     TaskBoardHeaderDisplayNameText,
 } from "./ui";
+import {
+    TASK_BOARD_DISPLAY_NAME_MAX_LEN,
+    TASK_BOARD_DISPLAY_NAME_MIN_LEN,
+} from "@/_/common/constants/constraints";
 
 export default function TaskBoardHeader() {
     const {
@@ -43,7 +47,7 @@ export default function TaskBoardHeader() {
         onStateReset: () => setDisplayNameInput(displayName),
         onEdit: () => {
             if (
-                displayNameInput.length === 0 ||
+                displayNameInput.length < TASK_BOARD_DISPLAY_NAME_MIN_LEN ||
                 displayNameInput === displayName
             ) {
                 return;
@@ -70,7 +74,10 @@ export default function TaskBoardHeader() {
                     value={displayNameInput}
                     onChange={setDisplayNameInput}
                     onFocus={(e) => e.currentTarget.select()}
-                    inputProps={{ style: { padding: 0 } }}
+                    inputProps={{
+                        style: { padding: 0 },
+                        maxLength: TASK_BOARD_DISPLAY_NAME_MAX_LEN,
+                    }}
                     size="small"
                     fullWidth
                 />

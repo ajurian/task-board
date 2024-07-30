@@ -1,15 +1,26 @@
+import { ObjectId } from "bson";
 import { z } from "zod";
-
-const BinarySchema = z.object({
-    base64: z.string().base64(),
-    subType: z.string(),
-});
+import {
+    TASK_BOARD_DISPLAY_NAME_MAX_LEN,
+    TASK_BOARD_DISPLAY_NAME_MIN_LEN,
+} from "../constants/constraints";
+import {
+    PERMISSION_ROLE_NONE,
+    PERMISSION_ROLE_OWNER,
+} from "../constants/permissions";
 
 export const TaskBoardModelSchema = z.object({
-    id: z.string(),
-    displayName: z.string(),
+    id: z.string().refine(ObjectId.isValid),
+    displayName: z
+        .string()
+        .min(TASK_BOARD_DISPLAY_NAME_MIN_LEN)
+        .max(TASK_BOARD_DISPLAY_NAME_MAX_LEN),
     flowDirection: z.enum(["row", "column"]),
-    defaultPermission: z.number().int(),
+    defaultPermission: z
+        .number()
+        .int()
+        .min(PERMISSION_ROLE_NONE)
+        .max(PERMISSION_ROLE_OWNER),
     thumbnailData: z
         .union([
             z.string().base64(),
@@ -17,7 +28,12 @@ export const TaskBoardModelSchema = z.object({
                 type: z.literal("Buffer"),
                 data: z.number().int().array(),
             }),
-            z.object({ $binary: BinarySchema }),
+            z.object({
+                $binary: z.object({
+                    base64: z.string().base64(),
+                    subType: z.string(),
+                }),
+            }),
         ])
         .transform((bufferLike) => {
             if (typeof bufferLike === "string") {
@@ -89,8 +105,5 @@ export const TaskBoardUpdateSchema = TaskBoardModelSchema.omit({
 export type TaskBoardModel = z.infer<typeof TaskBoardModelSchema>;
 export type TaskBoardCreate = z.infer<typeof TaskBoardCreateSchema>;
 
-export type TaskBoardUpdateInput = Omit<
-    z.infer<typeof TaskBoardUpdateSchema>,
-    "thumbnailData"
-> & { thumbnailData?: Buffer | string | { type: "Buffer"; data: number[] } };
+export type TaskBoardUpdateInput = z.input<typeof TaskBoardUpdateSchema>;
 export type TaskBoardUpdateOutput = z.infer<typeof TaskBoardUpdateSchema>;

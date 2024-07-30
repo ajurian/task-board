@@ -9,6 +9,10 @@ import {
     TaskListHeaderTitleInput,
     TaskListHeaderTitleText,
 } from "./ui";
+import {
+    TASK_LIST_TITLE_MAX_LEN,
+    TASK_LIST_TITLE_MIN_LEN,
+} from "@/_/common/constants/constraints";
 
 interface TaskListHeaderProps {
     listId: string;
@@ -31,7 +35,10 @@ export default function TaskListHeader({ listId, title }: TaskListHeaderProps) {
         onFocus: () => titleInputRef.current?.focus(),
         onStateReset: () => setTitleInput(title),
         onEdit: () => {
-            if (titleInput.length === 0 || titleInput === title) {
+            if (
+                titleInput.length < TASK_LIST_TITLE_MIN_LEN ||
+                titleInput === title
+            ) {
                 return;
             }
 
@@ -53,7 +60,10 @@ export default function TaskListHeader({ listId, title }: TaskListHeaderProps) {
                     value={titleInput}
                     onChange={setTitleInput}
                     onFocus={(e) => e.currentTarget.select()}
-                    inputProps={{ style: { padding: 0 } }}
+                    inputProps={{
+                        style: { padding: 0 },
+                        maxLength: TASK_LIST_TITLE_MAX_LEN,
+                    }}
                     placeholder="Title"
                     size="small"
                     fullWidth
