@@ -13,9 +13,7 @@ export async function POST(request: NextRequest, { params }: Segment) {
     const rawBody = await request.json();
     const body = UpdateFlowDirectionOptionsSchema.parse(rawBody);
 
-    pusherServer.trigger(taskBoardId, "update-flow-direction", body, {
-        socket_id: rawBody.socketId,
-    });
+    pusherServer.trigger(taskBoardId, "update-flow-direction", body);
 
     return NextResponse.json({});
 }

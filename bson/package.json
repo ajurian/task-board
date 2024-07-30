@@ -1,0 +1,11 @@
+{
+    "name": "bson",
+    "main": "./bson.cjs",
+    "module": "./bson.cjs",
+    "types": "./bson.d.ts",
+    "exports": {
+        "require": "./bson.cjs",
+        "import": "./bson.cjs",
+        "types": "./bson.d.ts"
+    }
+}

@@ -13,9 +13,7 @@ export async function POST(request: NextRequest, { params }: Segment) {
     const rawBody = await request.json();
     const body = RenameTaskBoardOptionsSchema.parse(rawBody);
 
-    pusherServer.trigger(taskBoardId, "rename-task-board", body, {
-        socket_id: rawBody.socketId,
-    });
+    pusherServer.trigger(taskBoardId, "rename-task-board", body);
 
     return NextResponse.json({});
 }

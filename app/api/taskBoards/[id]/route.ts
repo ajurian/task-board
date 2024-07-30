@@ -221,10 +221,7 @@ export async function PATCH(request: NextRequest, { params }: Segment) {
             });
         }
 
-        return prisma.taskBoard.update({
-            where: { id },
-            data,
-        });
+        return prisma.taskBoard.update({ where: { id }, data });
     });
 
     return NextResponse.json({ taskBoard: updatedTaskBoard });

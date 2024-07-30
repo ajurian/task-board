@@ -5,7 +5,7 @@ import prisma from "@/_/common/lib/prisma";
 import { TaskBoardModel } from "@/_/common/schema/taskBoard";
 import { TaskBoardUserModel } from "@/_/common/schema/taskBoardUser";
 import { UserModel } from "@/_/common/schema/user";
-import ObjectID from "bson-objectid";
+import { ObjectId } from "bson";
 import { NextResponse } from "next/server";
 import checkUserAccess from "./checkUserAccess";
 import {
@@ -85,7 +85,7 @@ export async function checkAuthorityWithDocument<T extends DocumentType>(
     options: CheckAuthorityWithDocumentOptions<T>
 ): Promise<AuthorityWithDocument<T>> {
     if (options !== undefined) {
-        const isValidDocumentId = ObjectID.isValid(options.documentId);
+        const isValidDocumentId = ObjectId.isValid(options.documentId);
 
         if (!isValidDocumentId) {
             return {

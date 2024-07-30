@@ -20,15 +20,20 @@ import {
 import pusherClient from "@/_/common/lib/pusherClient";
 import {
     AddTaskListOptions,
+    AddTaskListOptionsSchema,
     AddTaskOptions,
+    AddTaskOptionsSchema,
     DeleteTaskListOptions,
     DeleteTaskOptions,
     EditTaskOptions,
     MoveTaskListOptions,
     MoveTaskOptions,
     RenameTaskBoardOptions,
+    RenameTaskBoardOptionsSchema,
     RenameTaskListOptions,
+    RenameTaskListOptionsSchema,
     UpdateFlowDirectionOptions,
+    UpdateFlowDirectionOptionsSchema,
 } from "@/_/common/schema/mutation";
 import { AggregatedTaskListModel } from "@/_/common/schema/taskList";
 import ClientAPI from "@/_/common/services/ClientAPI";
@@ -291,10 +296,26 @@ export default function TaskBoardProvider({
         useMutation({
             mutationKey: ["renameTaskBoard", selectedTaskBoard.id],
             mutationFn: async (options) => {
-                await ClientTaskBoardAPI.patch(selectedTaskBoard.id, options);
+                if (
+                    renameTaskBoardMutation.status !== "idle" &&
+                    renameTaskBoardMutation.status !== "success"
+                ) {
+                    return;
+                }
+
+                const {
+                    data: { taskBoard },
+                } = await ClientTaskBoardAPI.patch(
+                    selectedTaskBoard.id,
+                    options
+                );
+
+                const dataNotification =
+                    RenameTaskBoardOptionsSchema.parse(taskBoard);
+
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/renameTaskBoard`,
-                    { ...options, socketId: pusherClient.connection.socket_id }
+                    dataNotification
                 );
             },
         });
@@ -303,15 +324,25 @@ export default function TaskBoardProvider({
         useMutation({
             mutationKey: ["updateFlowDirection", selectedTaskBoard.id],
             mutationFn: async ({ flowDirection }) => {
-                await ClientTaskBoardAPI.patch(selectedTaskBoard.id, {
+                if (
+                    updateFlowDirectionMutation.status !== "idle" &&
+                    updateFlowDirectionMutation.status !== "success"
+                ) {
+                    return;
+                }
+
+                const {
+                    data: { taskBoard },
+                } = await ClientTaskBoardAPI.patch(selectedTaskBoard.id, {
                     flowDirection,
                 });
+
+                const dataNotification =
+                    UpdateFlowDirectionOptionsSchema.parse(taskBoard);
+
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/updateFlowDirection`,
-                    {
-                        flowDirection,
-                        socketId: pusherClient.connection.socket_id,
-                    }
+                    dataNotification
                 );
             },
         });
@@ -320,13 +351,21 @@ export default function TaskBoardProvider({
         useMutation({
             mutationKey: ["moveTaskList", selectedTaskBoard.id],
             mutationFn: async (options) => {
+                if (
+                    moveTaskListMutation.status !== "idle" &&
+                    moveTaskListMutation.status !== "success"
+                ) {
+                    return;
+                }
+
                 await ClientTaskListAPI.reorder({
                     ...options,
                     boardId: selectedTaskBoard.id,
                 });
+
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/moveTaskList`,
-                    { ...options, socketId: pusherClient.connection.socket_id }
+                    options
                 );
             },
         });
@@ -335,13 +374,21 @@ export default function TaskBoardProvider({
         useMutation({
             mutationKey: ["moveTask", selectedTaskBoard.id],
             mutationFn: async (options) => {
+                if (
+                    moveTaskMutation.status !== "idle" &&
+                    moveTaskMutation.status !== "success"
+                ) {
+                    return;
+                }
+
                 await ClientTaskAPI.reorder({
                     ...options,
                     boardId: selectedTaskBoard.id,
                 });
+
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/moveTask`,
-                    { ...options, socketId: pusherClient.connection.socket_id }
+                    options
                 );
             },
         });
@@ -350,13 +397,26 @@ export default function TaskBoardProvider({
         useMutation({
             mutationKey: ["addTaskList", selectedTaskBoard.id],
             mutationFn: async (options) => {
-                await ClientTaskListAPI.post({
+                if (
+                    addTaskListMutation.status !== "idle" &&
+                    addTaskListMutation.status !== "success"
+                ) {
+                    return;
+                }
+
+                const {
+                    data: { taskList },
+                } = await ClientTaskListAPI.post({
                     ...options,
                     taskBoardId: selectedTaskBoard.id,
                 });
+
+                const dataNotifications =
+                    AddTaskListOptionsSchema.parse(taskList);
+
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/addTaskList`,
-                    { ...options, socketId: pusherClient.connection.socket_id }
+                    dataNotifications
                 );
             },
         });
@@ -365,10 +425,23 @@ export default function TaskBoardProvider({
         useMutation({
             mutationKey: ["renameTaskList"],
             mutationFn: async ({ id, title }) => {
-                await ClientTaskListAPI.patch(id, { title });
+                if (
+                    renameTaskListMutation.status !== "idle" &&
+                    renameTaskListMutation.status !== "success"
+                ) {
+                    return;
+                }
+
+                const {
+                    data: { taskList },
+                } = await ClientTaskListAPI.patch(id, { title });
+
+                const dataNotification =
+                    RenameTaskListOptionsSchema.parse(taskList);
+
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/renameTaskList`,
-                    { id, title, socketId: pusherClient.connection.socket_id }
+                    dataNotification
                 );
             },
         });
@@ -377,10 +450,17 @@ export default function TaskBoardProvider({
         useMutation({
             mutationKey: ["deleteTaskList"],
             mutationFn: async ({ id }) => {
+                if (
+                    deleteTaskListMutation.status !== "idle" &&
+                    deleteTaskListMutation.status !== "success"
+                ) {
+                    return;
+                }
+
                 await ClientTaskListAPI.delete(id);
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/deleteTaskList`,
-                    { id, socketId: pusherClient.connection.socket_id }
+                    { id }
                 );
             },
         });
@@ -389,10 +469,22 @@ export default function TaskBoardProvider({
         useMutation({
             mutationKey: ["addTask"],
             mutationFn: async (options) => {
-                await ClientTaskAPI.post(options);
+                if (
+                    addTaskMutation.status !== "idle" &&
+                    addTaskMutation.status !== "success"
+                ) {
+                    return;
+                }
+
+                const {
+                    data: { task },
+                } = await ClientTaskAPI.post(options);
+
+                const dataNotification = AddTaskOptionsSchema.parse(task);
+
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/addTask`,
-                    { ...options, socketId: pusherClient.connection.socket_id }
+                    dataNotification
                 );
             },
         });
@@ -401,14 +493,22 @@ export default function TaskBoardProvider({
         useMutation({
             mutationKey: ["editTask"],
             mutationFn: async ({ id, ...options }) => {
-                await ClientTaskAPI.patch(id, options);
+                if (
+                    editTaskMutation.status !== "idle" &&
+                    editTaskMutation.status !== "success"
+                ) {
+                    return;
+                }
+
+                const {
+                    data: { task },
+                } = await ClientTaskAPI.patch(id, options);
+
+                const dataNotification = AddTaskOptionsSchema.parse(task);
+
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/editTask`,
-                    {
-                        id,
-                        ...options,
-                        socketId: pusherClient.connection.socket_id,
-                    }
+                    dataNotification
                 );
             },
         });
@@ -417,10 +517,17 @@ export default function TaskBoardProvider({
         useMutation({
             mutationKey: ["deleteTask"],
             mutationFn: async ({ id }) => {
+                if (
+                    deleteTaskMutation.status !== "idle" &&
+                    deleteTaskMutation.status !== "success"
+                ) {
+                    return;
+                }
+
                 await ClientTaskAPI.delete(id);
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/deleteTask`,
-                    { id, socketId: pusherClient.connection.socket_id }
+                    { id }
                 );
             },
         });
@@ -740,9 +847,8 @@ export default function TaskBoardProvider({
             height: 512,
             scrollX: 0,
             scrollY: 0,
-            onclone: (document) => {
-                window.scrollTo({ top: document.body.scrollTop });
-            },
+            onclone: (document) =>
+                window.scrollTo({ top: document.body.scrollTop }),
         });
 
         document.body.removeChild(snapshotNode);

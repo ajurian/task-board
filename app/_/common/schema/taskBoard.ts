@@ -1,4 +1,10 @@
+import { Binary } from "bson";
 import { z } from "zod";
+
+const BinarySchema = z.object({
+    base64: z.string().base64(),
+    subType: z.string(),
+});
 
 export const TaskBoardModelSchema = z.object({
     id: z.string(),
@@ -7,17 +13,12 @@ export const TaskBoardModelSchema = z.object({
     defaultPermission: z.number().int(),
     thumbnailData: z
         .union([
-            z.string(),
+            z.string().base64(),
             z.object({
                 type: z.literal("Buffer"),
                 data: z.number().int().array(),
             }),
-            z.object({
-                $binary: z.object({
-                    base64: z.string(),
-                    subType: z.string(),
-                }),
-            }),
+            z.object({ $binary: BinarySchema }),
         ])
         .transform((bufferLike) => {
             if (typeof bufferLike === "string") {
@@ -55,7 +56,7 @@ export const TaskBoardUpdateSchema = TaskBoardModelSchema.omit({
         thumbnailData: z
             .union([
                 z.instanceof(Buffer),
-                z.string(),
+                z.string().base64(),
                 z.object({
                     type: z.literal("Buffer"),
                     data: z.number().int().array(),
@@ -92,5 +93,5 @@ export type TaskBoardCreate = z.infer<typeof TaskBoardCreateSchema>;
 export type TaskBoardUpdateInput = Omit<
     z.infer<typeof TaskBoardUpdateSchema>,
     "thumbnailData"
-> & { thumbnailData?: Buffer | string | { type: "Buffer"; data: number[] } };
+> & { thumbnailData?: Binary | string | { type: "Buffer"; data: number[] } };
 export type TaskBoardUpdateOutput = z.infer<typeof TaskBoardUpdateSchema>;

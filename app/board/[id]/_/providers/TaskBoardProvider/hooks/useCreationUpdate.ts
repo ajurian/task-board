@@ -1,5 +1,5 @@
 import { UseMutateAsyncFunction, useQueryClient } from "@tanstack/react-query";
-import ObjectID from "bson-objectid";
+import { ObjectId } from "bson";
 import { useCallback } from "react";
 import {
     CreationMutation,
@@ -30,7 +30,7 @@ export default function useCreationUpdate<
 
     return useCallback(
         (options: Omit<O, "id">) => {
-            const id = ObjectID().toHexString();
+            const id = new ObjectId().toString();
             const optionsWithId = { id, ...options } as O;
 
             queryClient.cancelQueries({
