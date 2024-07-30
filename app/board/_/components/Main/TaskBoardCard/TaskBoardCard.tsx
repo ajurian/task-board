@@ -66,14 +66,6 @@ export default function TaskBoardCard({
     const handleMenuPosition = (position: MenuPosition) =>
         setMenuPosition(menuPosition === null ? position : null);
 
-    const handleContextMenu: MouseEventHandler<HTMLDivElement> = (e) => {
-        e.preventDefault();
-        handleMenuPosition({
-            x: e.clientX,
-            y: e.clientY,
-        });
-    };
-
     const handleContainerClick: MouseEventHandler<HTMLDivElement> = (e) => {
         if (menuPosition !== null) {
             return;
@@ -81,6 +73,33 @@ export default function TaskBoardCard({
 
         e.preventDefault();
         router.push(`/board/${boardId}`);
+    };
+
+    const handleMouseUp: MouseEventHandler<HTMLDivElement> = (e) => {
+        if (e.button !== 1) {
+            return;
+        }
+
+        if (menuPosition !== null) {
+            setMenuPosition(null);
+            return;
+        }
+
+        e.preventDefault();
+
+        Object.assign(document.createElement("a"), {
+            target: "_blank",
+            rel: "noopener noreferrer",
+            href: `/board/${boardId}`,
+        }).click();
+    };
+
+    const handleContextMenu: MouseEventHandler<HTMLDivElement> = (e) => {
+        e.preventDefault();
+        handleMenuPosition({
+            x: e.clientX,
+            y: e.clientY,
+        });
     };
 
     const handleMenuTriggerClick: MouseEventHandler<HTMLButtonElement> = (
@@ -119,8 +138,9 @@ export default function TaskBoardCard({
         <>
             <TaskBoardCardContainer
                 role="option"
-                onContextMenu={handleContextMenu}
                 onClick={handleContainerClick}
+                onMouseUp={handleMouseUp}
+                onContextMenu={handleContextMenu}
                 isDeleting={isDeleting}
             >
                 <TaskBoardCardHeader>

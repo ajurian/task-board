@@ -69,8 +69,9 @@ export const TaskBoardHeaderDisplayNameInput = styled(InputBase, {
 })<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
     ...theme.typography.h6,
     height: `1lh`,
-    color: theme.palette.text.secondary,
+    paddingBlock: 0,
     fontWeight: 400,
+    color: theme.palette.text.secondary,
     ...(!isContainerFocused && {
         display: "none",
         visibility: "hidden",

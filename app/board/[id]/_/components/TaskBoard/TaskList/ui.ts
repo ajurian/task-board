@@ -66,6 +66,7 @@ export const TaskListHeaderTitleInput = styled(InputBase, {
     shouldForwardProp: (propName) => propName !== "isContainerFocused",
 })<{ isContainerFocused: boolean }>(({ isContainerFocused }) => ({
     height: `1lh`,
+    paddingBlock: 0,
     ...(!isContainerFocused && {
         display: "none",
         visibility: "hidden",

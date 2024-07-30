@@ -177,10 +177,12 @@ export default function TaskItem({ index, id, title, details }: TaskItemProps) {
                                 value={titleInput}
                                 onChange={setTitleInput}
                                 onFocus={(e) => e.currentTarget.select()}
-                                inputProps={{ maxLength: TASK_TITLE_MAX_LEN }}
+                                inputProps={{
+                                    style: { padding: 0 },
+                                    maxLength: TASK_TITLE_MAX_LEN,
+                                }}
                                 placeholder="Title"
                                 size="small"
-                                multiline
                                 fullWidth
                             />
                             <TaskItemTitleText
@@ -215,7 +217,10 @@ export default function TaskItem({ index, id, title, details }: TaskItemProps) {
                             value={detailsInput}
                             onChange={setDetailsInput}
                             onFocus={(e) => e.currentTarget.select()}
-                            inputProps={{ maxLength: TASK_DETAILS_MAX_LEN }}
+                            inputProps={{
+                                style: { padding: 0 },
+                                maxLength: TASK_DETAILS_MAX_LEN,
+                            }}
                             placeholder="Details"
                             size="small"
                             multiline
