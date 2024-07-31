@@ -365,7 +365,7 @@ export default function TaskBoardProvider({
 
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/moveTaskList`,
-                    { ...options }
+                    { ...options, socketId: pusherClient.connection.socket_id }
                 );
             },
         });
@@ -388,7 +388,7 @@ export default function TaskBoardProvider({
 
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/moveTask`,
-                    options
+                    { ...options, socketId: pusherClient.connection.socket_id }
                 );
             },
         });
@@ -416,7 +416,10 @@ export default function TaskBoardProvider({
 
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/addTaskList`,
-                    dataNotifications
+                    {
+                        ...dataNotifications,
+                        socketId: pusherClient.connection.socket_id,
+                    }
                 );
             },
         });
@@ -460,7 +463,7 @@ export default function TaskBoardProvider({
                 await ClientTaskListAPI.delete(id);
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/deleteTaskList`,
-                    { id }
+                    { id, socketId: pusherClient.connection.socket_id }
                 );
             },
         });
@@ -484,7 +487,10 @@ export default function TaskBoardProvider({
 
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/addTask`,
-                    dataNotification
+                    {
+                        ...dataNotification,
+                        socketId: pusherClient.connection.socket_id,
+                    }
                 );
             },
         });
@@ -527,7 +533,7 @@ export default function TaskBoardProvider({
                 await ClientTaskAPI.delete(id);
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/deleteTask`,
-                    { id }
+                    { id, socketId: pusherClient.connection.socket_id }
                 );
             },
         });
