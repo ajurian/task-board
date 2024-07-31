@@ -102,6 +102,7 @@ export const TaskItemDetailsInput = styled(InputBase, {
     minHeight: "1lh",
     paddingBlock: 0,
     paddingLeft: theme.spacing(9),
+    paddingRight: theme.spacing(1.25),
     color: theme.palette.text.secondary,
     ...(!isContainerFocused && {
         display: "none",
@@ -125,8 +126,9 @@ export const TaskItemDetailsText = styled(Typography, {
     wordWrap: "break-word",
     overflowWrap: "break-word",
     wordBreak: "break-word",
-    color: theme.palette.text.secondary,
     paddingLeft: theme.spacing(9),
+    paddingRight: theme.spacing(1.25),
+    color: theme.palette.text.secondary,
     ...(isContainerFocused && {
         display: "none",
         visibility: "hidden",

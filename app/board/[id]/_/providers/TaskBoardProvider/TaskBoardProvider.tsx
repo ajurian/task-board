@@ -26,6 +26,7 @@ import {
     DeleteTaskListOptions,
     DeleteTaskOptions,
     EditTaskOptions,
+    EditTaskOptionsSchema,
     MoveTaskListOptions,
     MoveTaskOptions,
     RenameTaskBoardOptions,
@@ -510,7 +511,7 @@ export default function TaskBoardProvider({
                     data: { task },
                 } = await ClientTaskAPI.patch(id, options);
 
-                const dataNotification = AddTaskOptionsSchema.parse(task);
+                const dataNotification = EditTaskOptionsSchema.parse(task);
 
                 await ClientAPI.post(
                     `/pusher/${selectedTaskBoard.id}/editTask`,

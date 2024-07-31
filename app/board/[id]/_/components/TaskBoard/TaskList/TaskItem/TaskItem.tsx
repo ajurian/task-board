@@ -11,7 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Draggable } from "@hello-pangea/dnd";
 import { mergeRefs, useInputState } from "@mantine/hooks";
 import { Box, IconButton } from "@mui/material";
-import {
+import React, {
     TransitionEventHandler,
     useCallback,
     useMemo,
@@ -147,7 +147,7 @@ export default function TaskItem({ index, id, title, details }: TaskItemProps) {
                                         justifyContent: "center",
                                         alignItems: "center",
                                         boxSizing: "content-box",
-                                        padding: "5px",
+                                        padding: theme.spacing(1.25),
                                         width: theme.spacing(4.5),
                                         height: theme.spacing(4.5),
                                         color: theme.palette.text.secondary,
@@ -235,7 +235,12 @@ export default function TaskItem({ index, id, title, details }: TaskItemProps) {
                             isContainerFocused={isFocused}
                             variant="body2"
                         >
-                            {initialDetails}
+                            {initialDetails.split("\n").map((line, index) => (
+                                <React.Fragment key={index}>
+                                    {line}
+                                    <br />
+                                </React.Fragment>
+                            ))}
                         </TaskItemDetailsText>
                     </TaskItemContainer>
                 </TaskItemFade>

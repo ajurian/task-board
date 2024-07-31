@@ -151,7 +151,7 @@ export default function TaskBoardCard({
                             <Box
                                 color="text.secondary"
                                 maxHeight={28}
-                                padding="5px"
+                                p={1.25}
                                 ml="auto"
                             >
                                 <CircularProgress size={18} color="inherit" />
