@@ -28,6 +28,7 @@ export const TaskListContainer = styled(Box, {
         }),
         ...(direction === "column" && {
             width: "100%",
+            maxWidth: "calc(100vw - 3rem)",
             marginBottom: theme.spacing(2),
         }),
         ":focus-visible": {

@@ -44,7 +44,7 @@ export default function useContentEditable<T extends HTMLElement>({
 
                 const target = e.target as HTMLTextAreaElement;
 
-                if (target.type === "textarea" && e.shiftKey) {
+                if (target.type === "textarea") {
                     return;
                 }
 

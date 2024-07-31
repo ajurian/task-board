@@ -193,6 +193,7 @@ export default function TaskItem({ index, id, title, details }: TaskItemProps) {
                                 ref={titleRef}
                                 isContainerFocused={isFocused}
                                 variant="subtitle1"
+                                noWrap
                             >
                                 {initialTitle}
                             </TaskItemTitleText>
