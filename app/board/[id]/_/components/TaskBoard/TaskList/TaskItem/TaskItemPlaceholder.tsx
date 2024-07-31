@@ -68,6 +68,7 @@ export default function TaskItemPlaceholder({
                     value={titleInput}
                     onChange={setTitleInput}
                     onFocus={(e) => e.currentTarget.select()}
+                    onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
                     placeholder="Title"
                     size="small"
                     multiline

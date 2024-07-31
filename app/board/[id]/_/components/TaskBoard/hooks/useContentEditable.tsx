@@ -1,12 +1,13 @@
-import { useClickOutside, usePrevious } from "@mantine/hooks";
-import React, {
+import { usePrevious } from "@mantine/hooks";
+import {
     FocusEventHandler,
     HTMLAttributes,
     KeyboardEventHandler,
-    MouseEventHandler,
     useCallback,
+    useEffect,
     useLayoutEffect,
     useMemo,
+    useRef,
     useState,
 } from "react";
 
@@ -29,36 +30,9 @@ export default function useContentEditable<T extends HTMLElement>({
         null
     );
     const previousFocusedElement = usePrevious(focusedElement);
+    const ref = useRef<T | null>(null);
 
-    const ref = useClickOutside<T>(() => {
-        if (focusedElement === null) {
-            return;
-        }
-
-        onEdit?.();
-        setFocusedElement(null);
-    }, ["mousedown", "touchend"]) as React.MutableRefObject<T | null>;
-
-    const onClick: MouseEventHandler<T> = useCallback(
-        (e) =>
-            setFocusedElement((focusedElement) => {
-                if (focusedElement === null) {
-                    const ignoreNode =
-                        onNodeIgnore?.(e.target as HTMLElement) ?? false;
-
-                    onStateReset?.();
-
-                    if (ignoreNode) {
-                        return null;
-                    }
-                }
-
-                return e.target as HTMLElement;
-            }),
-        [onNodeIgnore, onStateReset]
-    );
-
-    const onKeyDown: KeyboardEventHandler<T> = useCallback(
+    const onKeyUp: KeyboardEventHandler<T> = useCallback(
         (e) => {
             if (e.key === "Enter") {
                 if (focusedElement === null) {
@@ -87,21 +61,22 @@ export default function useContentEditable<T extends HTMLElement>({
                 return;
             }
         },
-        [onEdit, onStateReset, focusedElement]
+        [onStateReset, onEdit, focusedElement]
     );
 
     const onBlur: FocusEventHandler<T> = useCallback(
         (e) => {
             if (
                 focusedElement === null ||
+                e.relatedTarget === null ||
                 (e.currentTarget.contains(e.relatedTarget) &&
                     e.currentTarget !== e.relatedTarget)
             ) {
                 return;
             }
 
-            onStateReset?.();
             setFocusedElement(null);
+            onStateReset?.();
         },
         [onStateReset, focusedElement]
     );
@@ -111,13 +86,12 @@ export default function useContentEditable<T extends HTMLElement>({
             isEditDisabled
                 ? {}
                 : {
-                      role: "button",
+                      role: focusedElement === null ? "button" : undefined,
                       tabIndex: focusedElement === null ? 0 : -1,
-                      onClick,
-                      onKeyDown,
+                      onKeyUp,
                       onBlur,
                   },
-        [isEditDisabled, onClick, onKeyDown, onBlur, focusedElement]
+        [isEditDisabled, onKeyUp, onBlur, focusedElement]
     );
 
     useLayoutEffect(() => {
@@ -127,6 +101,50 @@ export default function useContentEditable<T extends HTMLElement>({
 
         onFocus?.(focusedElement);
     }, [onFocus, focusedElement, previousFocusedElement]);
+
+    useEffect(() => {
+        const localElement = ref.current;
+
+        if (localElement === null) {
+            return;
+        }
+
+        const onClick = (e: MouseEvent) => {
+            const eventTarget = e.target as HTMLElement;
+
+            if (localElement.classList.contains("mui-gleyjs")) {
+                console.log(eventTarget);
+            }
+
+            if (localElement.contains(eventTarget)) {
+                if (focusedElement === null) {
+                    const ignoreNode =
+                        onNodeIgnore?.(e.target as HTMLElement) ?? false;
+
+                    onStateReset?.();
+
+                    if (ignoreNode) {
+                        setFocusedElement(null);
+                        return;
+                    }
+                }
+
+                setFocusedElement(eventTarget);
+                return;
+            }
+
+            if (focusedElement === null) {
+                return;
+            }
+
+            onEdit?.();
+            setFocusedElement(null);
+        };
+
+        window.addEventListener("click", onClick);
+
+        return () => window.removeEventListener("click", onClick);
+    }, [onNodeIgnore, onStateReset, onEdit, focusedElement]);
 
     return {
         ref,

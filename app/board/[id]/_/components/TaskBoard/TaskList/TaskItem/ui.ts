@@ -71,7 +71,7 @@ export const TaskItemTitleInput = styled(InputBase, {
     shouldForwardProp: (propName) => propName !== "isContainerFocused",
 })<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
     ...theme.typography.subtitle1,
-    height: "1lh",
+    minHeight: "1lh",
     paddingBlock: 0,
     ...(!isContainerFocused && {
         display: "none",
@@ -99,7 +99,7 @@ export const TaskItemDetailsInput = styled(InputBase, {
     shouldForwardProp: (propName) => propName !== "isContainerFocused",
 })<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
     ...theme.typography.body2,
-    height: "1lh",
+    minHeight: "1lh",
     paddingBlock: 0,
     paddingLeft: theme.spacing(9),
     color: theme.palette.text.secondary,

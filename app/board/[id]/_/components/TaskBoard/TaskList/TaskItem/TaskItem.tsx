@@ -177,12 +177,16 @@ export default function TaskItem({ index, id, title, details }: TaskItemProps) {
                                 value={titleInput}
                                 onChange={setTitleInput}
                                 onFocus={(e) => e.currentTarget.select()}
+                                onKeyDown={(e) =>
+                                    e.key === "Enter" && e.preventDefault()
+                                }
                                 inputProps={{
                                     style: { padding: 0 },
                                     maxLength: TASK_TITLE_MAX_LEN,
                                 }}
                                 placeholder="Title"
                                 size="small"
+                                multiline
                                 fullWidth
                             />
                             <TaskItemTitleText
