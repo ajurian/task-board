@@ -112,10 +112,6 @@ export default function useContentEditable<T extends HTMLElement>({
         const onClick = (e: MouseEvent) => {
             const eventTarget = e.target as HTMLElement;
 
-            if (localElement.classList.contains("mui-gleyjs")) {
-                console.log(eventTarget);
-            }
-
             if (localElement.contains(eventTarget)) {
                 if (focusedElement === null) {
                     const ignoreNode =
