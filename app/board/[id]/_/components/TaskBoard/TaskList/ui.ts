@@ -34,11 +34,11 @@ export const TaskListContainer = styled(Box, {
         ":focus-visible": {
             outline: 0,
             boxShadow: theme.shadows[1],
+            borderColor: "transparent",
         },
         ...(isDragging && {
             boxShadow: theme.shadows[2],
-            borderWidth: 0,
-            margin: 1,
+            borderColor: "transparent",
         }),
     })
 );
@@ -134,6 +134,7 @@ export const TaskListPlaceholderContainer = styled(Box, {
         ":focus-visible": {
             outline: 0,
             boxShadow: theme.shadows[1],
+            borderColor: "transparent",
         },
     })
 );

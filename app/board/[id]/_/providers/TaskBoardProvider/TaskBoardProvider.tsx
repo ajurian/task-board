@@ -37,7 +37,7 @@ import {
     UpdateFlowDirectionOptionsSchema,
 } from "@/_/common/schema/mutation";
 import { AggregatedTaskListModel } from "@/_/common/schema/taskList";
-import ClientAPI from "@/_/common/services/ClientAPI";
+import { useUserInfo } from "@/_/providers/UserInfoProvider";
 import ClientTaskAPI from "@/api/_/common/layers/client/TaskAPI";
 import ClientTaskBoardAPI from "@/api/_/common/layers/client/TaskBoardAPI";
 import ClientTaskBoardUserAPI from "@/api/_/common/layers/client/TaskBoardUserAPI";
@@ -45,6 +45,8 @@ import ClientTaskListAPI from "@/api/_/common/layers/client/TaskListAPI";
 import { usePrevious } from "@mantine/hooks";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import html2canvas from "html2canvas";
+import _ from "lodash";
+import { PresenceChannel } from "pusher-js";
 import {
     createContext,
     useCallback,
@@ -84,7 +86,10 @@ export default function TaskBoardProvider({
     taskBoardUser: initialTaskBoardUser,
     children,
 }: TaskBoardProviderProps) {
+    const userInfo = useUserInfo<false>();
     const queryClient = useQueryClient();
+
+    const [channel, setChannel] = useState<PresenceChannel | null>(null);
 
     const [mutationQueue, setMutationQueue] = useState<UpdateMutation[]>([]);
     const [asyncMutationList, setAsyncMutationList] = useState<
@@ -176,6 +181,15 @@ export default function TaskBoardProvider({
         [taskBoardUserQuery.data]
     );
 
+    const [activeUsers, setActiveUsers] = useState<
+        {
+            googleId: string;
+            email: string;
+            displayName: string;
+            photoURL: string;
+        }[]
+    >([]);
+
     const isUserOwner = taskBoardUser.permission === PERMISSION_ROLE_OWNER;
 
     const canUserChangeRole =
@@ -250,9 +264,9 @@ export default function TaskBoardProvider({
     );
 
     const addAsyncMutation = useCallback(
-        ({ type, options, onMutate }: (typeof asyncMutationList)[number]) =>
+        ({ type, options, onMutate }: UpdateMutation) =>
             setAsyncMutationList((asyncMutationList) => {
-                const newAsyncMutationList = [...asyncMutationList];
+                const newAsyncMutationList = _.cloneDeep(asyncMutationList);
 
                 for (let i = newAsyncMutationList.length - 1; i >= 0; i--) {
                     const mutation = newAsyncMutationList[i];
@@ -274,7 +288,23 @@ export default function TaskBoardProvider({
         []
     );
 
-    const clearAsyncMutation = useCallback(() => setAsyncMutationList([]), []);
+    const clearAsyncMutation = useCallback(
+        () =>
+            setAsyncMutationList((previousAsyncMutationList) =>
+                previousAsyncMutationList.filter((mutation) => {
+                    const unsyncedMutation = asyncMutationList.find(
+                        (unsyncedMutation) =>
+                            unsyncedMutation.type === mutation.type
+                    )!;
+
+                    return !_.isEqual(
+                        mutation.options,
+                        unsyncedMutation.options
+                    );
+                })
+            ),
+        [asyncMutationList]
+    );
 
     const dispatchMutation = useCallback(() => {
         if (mutationQueue.length > 0) {
@@ -313,11 +343,7 @@ export default function TaskBoardProvider({
 
                 const dataNotification =
                     RenameTaskBoardOptionsSchema.parse(taskBoard);
-
-                await ClientAPI.post(
-                    `/pusher/${selectedTaskBoard.id}/renameTaskBoard`,
-                    dataNotification
-                );
+                channel!.trigger("client-rename-task-board", dataNotification);
             },
         });
 
@@ -340,9 +366,8 @@ export default function TaskBoardProvider({
 
                 const dataNotification =
                     UpdateFlowDirectionOptionsSchema.parse(taskBoard);
-
-                await ClientAPI.post(
-                    `/pusher/${selectedTaskBoard.id}/updateFlowDirection`,
+                channel!.trigger(
+                    "client-update-flow-direction",
                     dataNotification
                 );
             },
@@ -364,10 +389,7 @@ export default function TaskBoardProvider({
                     boardId: selectedTaskBoard.id,
                 });
 
-                await ClientAPI.post(
-                    `/pusher/${selectedTaskBoard.id}/moveTaskList`,
-                    { ...options, socketId: pusherClient.connection.socket_id }
-                );
+                channel!.trigger("client-move-task-list", options);
             },
         });
 
@@ -387,10 +409,7 @@ export default function TaskBoardProvider({
                     boardId: selectedTaskBoard.id,
                 });
 
-                await ClientAPI.post(
-                    `/pusher/${selectedTaskBoard.id}/moveTask`,
-                    { ...options, socketId: pusherClient.connection.socket_id }
-                );
+                channel!.trigger("client-move-task", options);
             },
         });
 
@@ -414,14 +433,7 @@ export default function TaskBoardProvider({
 
                 const dataNotifications =
                     AddTaskListOptionsSchema.parse(taskList);
-
-                await ClientAPI.post(
-                    `/pusher/${selectedTaskBoard.id}/addTaskList`,
-                    {
-                        ...dataNotifications,
-                        socketId: pusherClient.connection.socket_id,
-                    }
-                );
+                channel!.trigger("client-add-task-list", dataNotifications);
             },
         });
 
@@ -442,11 +454,7 @@ export default function TaskBoardProvider({
 
                 const dataNotification =
                     RenameTaskListOptionsSchema.parse(taskList);
-
-                await ClientAPI.post(
-                    `/pusher/${selectedTaskBoard.id}/renameTaskList`,
-                    dataNotification
-                );
+                channel!.trigger("client-rename-task-list", dataNotification);
             },
         });
 
@@ -462,10 +470,7 @@ export default function TaskBoardProvider({
                 }
 
                 await ClientTaskListAPI.delete(id);
-                await ClientAPI.post(
-                    `/pusher/${selectedTaskBoard.id}/deleteTaskList`,
-                    { id, socketId: pusherClient.connection.socket_id }
-                );
+                channel!.trigger("client-delete-task-list", { id });
             },
         });
 
@@ -485,14 +490,7 @@ export default function TaskBoardProvider({
                 } = await ClientTaskAPI.post(options);
 
                 const dataNotification = AddTaskOptionsSchema.parse(task);
-
-                await ClientAPI.post(
-                    `/pusher/${selectedTaskBoard.id}/addTask`,
-                    {
-                        ...dataNotification,
-                        socketId: pusherClient.connection.socket_id,
-                    }
-                );
+                channel!.trigger("client-add-task", dataNotification);
             },
         });
 
@@ -512,11 +510,7 @@ export default function TaskBoardProvider({
                 } = await ClientTaskAPI.patch(id, options);
 
                 const dataNotification = EditTaskOptionsSchema.parse(task);
-
-                await ClientAPI.post(
-                    `/pusher/${selectedTaskBoard.id}/editTask`,
-                    dataNotification
-                );
+                channel!.trigger("client-edit-task", dataNotification);
             },
         });
 
@@ -532,10 +526,7 @@ export default function TaskBoardProvider({
                 }
 
                 await ClientTaskAPI.delete(id);
-                await ClientAPI.post(
-                    `/pusher/${selectedTaskBoard.id}/deleteTask`,
-                    { id, socketId: pusherClient.connection.socket_id }
-                );
+                channel!.trigger("client-delete-task", { id });
             },
         });
 
@@ -742,6 +733,7 @@ export default function TaskBoardProvider({
         type: "renameTaskBoard",
         onMutate: renameTaskBoardMutation.mutateAsync,
         onOptimisticUpdate: renameTaskBoardOptimistic,
+        /* @ts-expect-error */
         onMutationStateChange: addAsyncMutation,
     });
 
@@ -749,6 +741,7 @@ export default function TaskBoardProvider({
         type: "updateFlowDirection",
         onMutate: updateFlowDirectionMutation.mutateAsync,
         onOptimisticUpdate: updateFlowDirectionOptimistic,
+        /* @ts-expect-error */
         onMutationStateChange: addAsyncMutation,
     });
 
@@ -756,6 +749,7 @@ export default function TaskBoardProvider({
         type: "moveTaskList",
         onMutate: moveTaskListMutation.mutateAsync,
         onOptimisticUpdate: moveTaskListOptimistic,
+        /* @ts-expect-error */
         onMutationStateChange: enqueueMutation,
     });
 
@@ -763,6 +757,7 @@ export default function TaskBoardProvider({
         type: "moveTask",
         onMutate: moveTaskMutation.mutateAsync,
         onOptimisticUpdate: moveTaskOptimistic,
+        /* @ts-expect-error */
         onMutationStateChange: enqueueMutation,
     });
 
@@ -770,6 +765,7 @@ export default function TaskBoardProvider({
         type: "addTaskList",
         onMutate: addTaskListMutation.mutateAsync,
         onOptimisticUpdate: addTaskListOptimistic,
+        /* @ts-expect-error */
         onMutationStateChange: enqueueMutation,
     });
 
@@ -777,6 +773,7 @@ export default function TaskBoardProvider({
         type: "renameTaskList",
         onMutate: renameTaskListMutation.mutateAsync,
         onOptimisticUpdate: renameTaskListOptimistic,
+        /* @ts-expect-error */
         onMutationStateChange: addAsyncMutation,
     });
 
@@ -784,6 +781,7 @@ export default function TaskBoardProvider({
         type: "deleteTaskList",
         onMutate: deleteTaskListMutation.mutateAsync,
         onOptimisticUpdate: deleteTaskListOptimistic,
+        /* @ts-expect-error */
         onMutationStateChange: enqueueMutation,
     });
 
@@ -791,6 +789,7 @@ export default function TaskBoardProvider({
         type: "addTask",
         onMutate: addTaskMutation.mutateAsync,
         onOptimisticUpdate: addTaskOptimistic,
+        /* @ts-expect-error */
         onMutationStateChange: enqueueMutation,
     });
 
@@ -798,6 +797,7 @@ export default function TaskBoardProvider({
         type: "editTask",
         onMutate: editTaskMutation.mutateAsync,
         onOptimisticUpdate: editTaskOptimistic,
+        /* @ts-expect-error */
         onMutationStateChange: addAsyncMutation,
     });
 
@@ -805,6 +805,7 @@ export default function TaskBoardProvider({
         type: "deleteTaskList",
         onMutate: deleteTaskMutation.mutateAsync,
         onOptimisticUpdate: deleteTaskOptimistic,
+        /* @ts-expect-error */
         onMutationStateChange: enqueueMutation,
     });
 
@@ -882,70 +883,112 @@ export default function TaskBoardProvider({
     ]);
 
     useEffect(() => {
-        pusherClient.subscribe(id);
+        const channel = pusherClient.subscribe(
+            `presence-${id}`
+        ) as PresenceChannel;
 
-        pusherClient.bind(
-            "rename-task-board",
-            (options: RenameTaskBoardOptions) =>
-                renameTaskBoardOptimistic(options)
-        );
+        const handleSubscriptionSucceeded = () => {
+            const members: (typeof activeUsers)[number][] = Object.values(
+                channel.members.members
+            );
 
-        pusherClient.bind(
-            "update-flow-direction",
-            (options: UpdateFlowDirectionOptions) =>
-                updateFlowDirectionOptimistic(options)
-        );
+            setActiveUsers(
+                members.filter((member) => member.googleId !== userInfo.sub)
+            );
+        };
 
-        pusherClient.bind("move-task-list", (options: MoveTaskListOptions) =>
-            moveTaskListOptimistic(options)
-        );
+        const handleMemberAdded = ({
+            info,
+        }: {
+            id: string;
+            info: (typeof activeUsers)[number];
+        }) =>
+            setActiveUsers((activeUsers) => {
+                const newActiveUsers = _.cloneDeep(activeUsers);
+                newActiveUsers.push(info);
+                return newActiveUsers;
+            });
 
-        pusherClient.bind("move-task", (options: MoveTaskOptions) =>
-            moveTaskOptimistic(options)
-        );
+        const handleMemberRemoved = ({
+            id,
+        }: {
+            id: string;
+            info: (typeof activeUsers)[number];
+        }) =>
+            setActiveUsers((activeUsers) => {
+                const newActiveUsers = _.cloneDeep(activeUsers);
+                const index = newActiveUsers.findIndex(
+                    (activeUser) => activeUser.googleId === id
+                );
 
-        pusherClient.bind("add-task-list", (options: AddTaskListOptions) =>
-            addTaskListOptimistic(options)
-        );
+                if (index > -1) {
+                    newActiveUsers.splice(index, 1);
+                }
 
-        pusherClient.bind(
-            "rename-task-list",
-            (options: RenameTaskListOptions) =>
-                renameTaskListOptimistic(options)
-        );
+                return newActiveUsers;
+            });
 
-        pusherClient.bind(
-            "delete-task-list",
-            (options: DeleteTaskListOptions) =>
-                deleteTaskListOptimistic(options)
+        channel.bind(
+            "pusher:subscription_succeeded",
+            handleSubscriptionSucceeded
         );
+        channel.bind("pusher:member_added", handleMemberAdded);
+        channel.bind("pusher:member_removed", handleMemberRemoved);
 
-        pusherClient.bind("add-task", (options: AddTaskOptions) =>
-            addTaskOptimistic(options)
-        );
-
-        pusherClient.bind("edit-task", (options: EditTaskOptions) =>
-            editTaskOptimistic(options)
-        );
-
-        pusherClient.bind("delete-task", (options: DeleteTaskOptions) =>
-            deleteTaskOptimistic(options)
-        );
+        setChannel(channel);
 
         return () => {
-            pusherClient.unsubscribe(id);
-            pusherClient.unbind("rename-task-board");
-            pusherClient.unbind("update-flow-direction");
-            pusherClient.unbind("move-task-list");
-            pusherClient.unbind("move-task");
-            pusherClient.unbind("add-task-list");
-            pusherClient.unbind("rename-task-list");
-            pusherClient.unbind("delete-task-list");
-            pusherClient.unbind("add-task");
-            pusherClient.unbind("edit-task");
-            pusherClient.unbind("delete-task");
+            pusherClient.unsubscribe(`presence-${id}`);
+            channel.unbind(
+                "pusher:subscription_succeeded",
+                handleSubscriptionSucceeded
+            );
+            channel.unbind("pusher:member_added", handleMemberAdded);
+            channel.unbind("pusher:member_removed", handleMemberRemoved);
+
+            setChannel(null);
+        };
+    }, [id, userInfo]);
+
+    useEffect(() => {
+        if (channel === null) {
+            return;
+        }
+
+        channel.bind("client-rename-task-board", renameTaskBoardOptimistic);
+        channel.bind(
+            "client-update-flow-direction",
+            updateFlowDirectionOptimistic
+        );
+        channel.bind("client-move-task-list", moveTaskListOptimistic);
+        channel.bind("client-move-task", moveTaskOptimistic);
+        channel.bind("client-add-task-list", addTaskListOptimistic);
+        channel.bind("client-rename-task-list", renameTaskListOptimistic);
+        channel.bind("client-delete-task-list", deleteTaskListOptimistic);
+        channel.bind("client-add-task", addTaskOptimistic);
+        channel.bind("client-edit-task", editTaskOptimistic);
+        channel.bind("client-delete-task", deleteTaskOptimistic);
+
+        return () => {
+            channel.unbind(
+                "client-rename-task-board",
+                renameTaskBoardOptimistic
+            );
+            channel.unbind(
+                "client-update-flow-direction",
+                updateFlowDirectionOptimistic
+            );
+            channel.unbind("client-move-task-list", moveTaskListOptimistic);
+            channel.unbind("client-move-task", moveTaskOptimistic);
+            channel.unbind("client-add-task-list", addTaskListOptimistic);
+            channel.unbind("client-rename-task-list", renameTaskListOptimistic);
+            channel.unbind("client-delete-task-list", deleteTaskListOptimistic);
+            channel.unbind("client-add-task", addTaskOptimistic);
+            channel.unbind("client-edit-task", editTaskOptimistic);
+            channel.unbind("client-delete-task", deleteTaskOptimistic);
         };
     }, [
+        channel,
         id,
         renameTaskBoardOptimistic,
         updateFlowDirectionOptimistic,
@@ -1018,12 +1061,6 @@ export default function TaskBoardProvider({
     }, [isChangesSaved, displayName]);
 
     useEffect(() => {
-        ClientTaskBoardUserAPI.patch(taskBoardUser.id, {
-            recentlyAccessedAt: new Date(),
-        });
-    }, [taskBoardUser.id]);
-
-    useEffect(() => {
         takeSnapshot();
         saveSnapshot().catch(() => {});
     }, [takeSnapshot, saveSnapshot]);
@@ -1040,6 +1077,7 @@ export default function TaskBoardProvider({
                 taskLists,
                 users,
                 taskBoardUser,
+                activeUsers,
                 isUserOwner,
                 canUserChangeRole,
                 canUserRenameTaskBoard,

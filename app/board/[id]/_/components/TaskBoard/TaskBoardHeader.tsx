@@ -84,6 +84,7 @@ export default function TaskBoardHeader() {
                 <TaskBoardHeaderDisplayNameText
                     variant="h6"
                     isContainerFocused={isFocused}
+                    noWrap
                 >
                     {displayName}
                 </TaskBoardHeaderDisplayNameText>

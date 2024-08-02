@@ -9,6 +9,7 @@ import {
     RenameTaskBoardOptions,
     RenameTaskListOptions,
     UpdateFlowDirectionOptions,
+    UserActiveOptions,
 } from "@/_/common/schema/mutation";
 import { AggregatedTaskBoardModel } from "@/_/common/schema/taskBoard.aggregation";
 import { TaskBoardUserModel } from "@/_/common/schema/taskBoardUser";
@@ -16,45 +17,10 @@ import { AggregatedTaskListModel } from "@/_/common/schema/taskList";
 import { FlowDirection } from "@prisma/client";
 import {
     DefinedUseQueryResult,
+    UseMutateAsyncFunction,
     UseMutationResult,
 } from "@tanstack/react-query";
 import { Dispatch, PropsWithChildren, SetStateAction } from "react";
-
-/* interface RenameTaskBoardOptions extends Pick<TaskBoardModel, "displayName"> {}
-
-interface ToggleFlowDirectionOptions {}
-
-interface MoveTaskListOptions {
-    fromIndex: number;
-    toIndex: number;
-}
-
-interface MoveTaskOptions {
-    fromListIndex: number;
-    toListIndex: number;
-    fromIndex: number;
-    toIndex: number;
-}
-
-interface AddTaskListOptions extends Omit<TaskListCreate, "taskBoardId"> {}
-
-interface RenameTaskListOptions extends TaskListUpdate {
-    id: string;
-}
-
-interface DeleteTaskListOptions {
-    id: string;
-}
-
-interface AddTaskOptions extends TaskCreate {}
-
-interface EditTaskOptions extends TaskUpdate {
-    id: string;
-}
-
-interface DeleteTaskOptions {
-    id: string;
-} */
 
 type CreationType = "addTaskList" | "addTask";
 type CreationOptions = {
@@ -62,7 +28,7 @@ type CreationOptions = {
     addTask: AddTaskOptions;
 };
 type CreationMutation<
-    T extends CreationType,
+    T extends CreationType = CreationType,
     O extends CreationOptions[T] = CreationOptions[T]
 > = {
     type: T;
@@ -90,7 +56,7 @@ type NonCreationOptions = {
     deleteTask: DeleteTaskOptions;
 };
 type NonCreationMutation<
-    T extends NonCreationType,
+    T extends NonCreationType = NonCreationType,
     O extends NonCreationOptions[T] = NonCreationOptions[T]
 > = {
     type: T;
@@ -123,6 +89,7 @@ interface TaskBoardContextValue {
     taskLists: AggregatedTaskListModel[];
     users: AggregatedTaskBoardModel["users"];
     taskBoardUser: TaskBoardUserModel;
+    activeUsers: UserActiveOptions["user"][];
     isUserOwner: boolean;
     canUserChangeRole: boolean;
     canUserRenameTaskBoard: boolean;

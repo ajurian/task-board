@@ -11,10 +11,18 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await request.text();
-    const [socketId] = data.split("&").map((str) => str.split("=")[1]);
+    const [socketId, channelName] = data
+        .split("&")
+        .map((str) => str.split("=")[1]);
 
-    const authResponse = pusherServer.authenticateUser(socketId, {
-        id: userInfo.sub,
+    const authResponse = pusherServer.authorizeChannel(socketId, channelName, {
+        user_id: userInfo.sub,
+        user_info: {
+            googleId: userInfo.sub,
+            email: userInfo.email,
+            displayName: userInfo.name,
+            photoURL: userInfo.picture,
+        },
     });
 
     return NextResponse.json(authResponse);

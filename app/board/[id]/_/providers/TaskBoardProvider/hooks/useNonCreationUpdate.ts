@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import {
     NonCreationMutation,
     NonCreationOptions,
-    NonCreationType
+    NonCreationType,
 } from "../TaskBoardProviderTypes";
 
 interface UseNonCreationUpdateOptions<
