@@ -1,18 +1,18 @@
+import {
+    TASK_LIST_TITLE_MAX_LEN,
+    TASK_LIST_TITLE_MIN_LEN,
+} from "@/_/common/constants/constraints";
 import { useInputState } from "@mantine/hooks";
 import { useRef } from "react";
 import { useTaskBoard } from "../../../providers/TaskBoardProvider";
 import useContentEditable from "../hooks/useContentEditable";
-import TaskListHeaderMenu from "./TaskListHeaderMenu";
+import TaskListHeaderMenuTrigger from "./TaskListHeaderMenuTrigger";
 import {
     TaskListHeaderContainer,
     TaskListHeaderTitleContainer,
     TaskListHeaderTitleInput,
     TaskListHeaderTitleText,
 } from "./ui";
-import {
-    TASK_LIST_TITLE_MAX_LEN,
-    TASK_LIST_TITLE_MIN_LEN,
-} from "@/_/common/constants/constraints";
 
 interface TaskListHeaderProps {
     listId: string;
@@ -73,7 +73,7 @@ export default function TaskListHeader({ listId, title }: TaskListHeaderProps) {
                 </TaskListHeaderTitleText>
             </TaskListHeaderTitleContainer>
             {(canUserRenameTaskList || canUserCreateOrDeleteTaskList) && (
-                <TaskListHeaderMenu
+                <TaskListHeaderMenuTrigger
                     onRenameTitle={
                         canUserRenameTaskList
                             ? () => ref.current?.click()

@@ -34,11 +34,9 @@ export const TaskListContainer = styled(Box, {
         ":focus-visible": {
             outline: 0,
             boxShadow: theme.shadows[1],
-            borderColor: "transparent",
         },
         ...(isDragging && {
             boxShadow: theme.shadows[2],
-            borderColor: "transparent",
         }),
     })
 );
@@ -134,7 +132,6 @@ export const TaskListPlaceholderContainer = styled(Box, {
         ":focus-visible": {
             outline: 0,
             boxShadow: theme.shadows[1],
-            borderColor: "transparent",
         },
     })
 );
@@ -177,7 +174,6 @@ export const TaskListCompletedItemsTrigger = styled(Button)(({ theme }) => ({
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    fontSize: "0.875rem",
     width: "100%",
     color: theme.palette.text.secondary,
     paddingInline: theme.spacing(4),

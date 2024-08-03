@@ -3,8 +3,8 @@ import { useTaskBoard } from "@/board/[id]/_/providers/TaskBoardProvider";
 import { faTrash, faUndo } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useHover } from "@mantine/hooks";
-import { Fade, IconButton, Typography, useTheme } from "@mui/material";
-import { TransitionEventHandler, useCallback, useMemo, useState } from "react";
+import { Fade, IconButton, useTheme } from "@mui/material";
+import { TransitionEventHandler, useCallback, useState } from "react";
 import {
     TaskItemCompletedContainer,
     TaskItemTitleContainer,
@@ -15,11 +15,8 @@ export interface TaskItemCompletedProps extends Omit<TaskModel, "isDone"> {}
 
 export default function TaskItemCompleted({
     id,
-    order,
     title,
 }: TaskItemCompletedProps) {
-    const initialTitle = useMemo(() => title.replace(/\\n/g, "\n"), [title]);
-
     const theme = useTheme();
     const { editTask, deleteTask } = useTaskBoard();
     const [actionAfterFade, setActionAfterFade] = useState<(() => void) | null>(
@@ -63,13 +60,12 @@ export default function TaskItemCompleted({
                     >
                         <FontAwesomeIcon icon={faUndo} />
                     </IconButton>
-                    <Typography variant="subtitle1">({order})</Typography>
                     <TaskItemTitleText
                         isContainerFocused={false}
                         variant="subtitle1"
                         sx={{ textDecoration: "line-through" }}
                     >
-                        {initialTitle}
+                        {title}
                     </TaskItemTitleText>
                     <Fade
                         in={isDeleteIconVisible}

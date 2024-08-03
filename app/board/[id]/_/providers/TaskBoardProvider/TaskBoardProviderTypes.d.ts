@@ -146,7 +146,6 @@ interface TaskBoardContextValue {
     refreshUser: () => void;
     setSearchQuery: Dispatch<SetStateAction<string>>;
     searchQuery: string;
-    isMutationOngoing: boolean;
     isChangesSaved: boolean;
 }
 

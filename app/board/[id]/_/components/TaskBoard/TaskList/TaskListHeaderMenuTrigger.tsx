@@ -7,35 +7,38 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconButton, ListItemIcon, Menu, MenuItem } from "@mui/material";
 import { useId, useRef, useState } from "react";
 
-interface TaskItemMenuProps {
-    onEdit?: () => void;
-    onDelete?: () => void;
+interface TaskListHeaderMenuTriggerProps {
+    onRenameTitle?: () => void;
+    onDeleteTitle?: () => void;
 }
 
-export default function TaskItemMenu({ onEdit, onDelete }: TaskItemMenuProps) {
+export default function TaskListHeaderMenuTrigger({
+    onRenameTitle,
+    onDeleteTitle,
+}: TaskListHeaderMenuTriggerProps) {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-    const shouldFocusOnTaskRef = useRef<boolean>(false);
+    const shouldFocusOnTitleRef = useRef<boolean>(false);
     const buttonId = useId();
     const menuId = useId();
     const isOpen = Boolean(anchorEl);
 
-    const handleClose = () => setAnchorEl(null);
+    const closeMenu = () => setAnchorEl(null);
 
     const handleTransitionEnd = () => {
-        if (onEdit && shouldFocusOnTaskRef.current && !isOpen) {
-            onEdit();
-            shouldFocusOnTaskRef.current = false;
+        if (onRenameTitle && shouldFocusOnTitleRef.current && !isOpen) {
+            onRenameTitle();
+            shouldFocusOnTitleRef.current = false;
         }
     };
 
-    const handleEditTaskClick = () => {
-        shouldFocusOnTaskRef.current = true;
-        handleClose();
+    const handleRenameListClick = () => {
+        shouldFocusOnTitleRef.current = true;
+        closeMenu();
     };
 
-    const handleDeleteTaskClick = () => {
-        onDelete?.();
-        handleClose();
+    const handleDeleteListClick = () => {
+        onDeleteTitle?.();
+        closeMenu();
     };
 
     return (
@@ -55,12 +58,12 @@ export default function TaskItemMenu({ onEdit, onDelete }: TaskItemMenuProps) {
                 id={menuId}
                 anchorEl={anchorEl}
                 open={isOpen}
-                onClose={handleClose}
+                onClose={closeMenu}
                 onTransitionEnd={handleTransitionEnd}
                 MenuListProps={{ "aria-labelledby": buttonId, dense: true }}
             >
-                {onEdit && (
-                    <MenuItem onClick={handleEditTaskClick}>
+                {onRenameTitle && (
+                    <MenuItem onClick={handleRenameListClick}>
                         <ListItemIcon
                             sx={{ mr: "1em" }}
                             style={{ minWidth: 0 }}
@@ -70,11 +73,11 @@ export default function TaskItemMenu({ onEdit, onDelete }: TaskItemMenuProps) {
                                 style={{ fontSize: "1em" }}
                             />
                         </ListItemIcon>
-                        Edit task
+                        Rename list
                     </MenuItem>
                 )}
-                {onDelete && (
-                    <MenuItem onClick={handleDeleteTaskClick}>
+                {onDeleteTitle && (
+                    <MenuItem onClick={handleDeleteListClick}>
                         <ListItemIcon
                             sx={{ mr: "1em" }}
                             style={{ minWidth: 0 }}
@@ -84,7 +87,7 @@ export default function TaskItemMenu({ onEdit, onDelete }: TaskItemMenuProps) {
                                 style={{ fontSize: "1em" }}
                             />
                         </ListItemIcon>
-                        Delete task
+                        Delete list
                     </MenuItem>
                 )}
             </Menu>

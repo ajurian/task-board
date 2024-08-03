@@ -27,9 +27,9 @@ const theme = createTheme({
                 },
             },
         },
-        MuiMenu: {
+        MuiPopover: {
             styleOverrides: {
-                paper: ({ theme }) => ({ boxShadow: theme.shadows[1] }),
+                paper: ({ theme }) => ({ boxShadow: theme.shadows[2] }),
             },
         },
     },

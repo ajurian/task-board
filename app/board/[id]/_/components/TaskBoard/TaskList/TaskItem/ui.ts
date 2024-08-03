@@ -1,4 +1,4 @@
-import { Box, InputBase, styled, Typography } from "@mui/material";
+import { Box, Button, InputBase, styled, Typography } from "@mui/material";
 
 export const TaskItemFade = styled(Box, {
     shouldForwardProp: (propName) => propName !== "shouldFadeOut",
@@ -67,6 +67,17 @@ export const TaskItemTitleContainer = styled(Box)(({ theme }) => ({
     gap: theme.spacing(2),
 }));
 
+export const TaskItemBulletPointWrapper = styled(Box)(({ theme }) => ({
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    boxSizing: "content-box",
+    padding: theme.spacing(1.25),
+    width: theme.spacing(4.5),
+    height: theme.spacing(4.5),
+    color: theme.palette.text.secondary,
+}));
+
 export const TaskItemTitleInput = styled(InputBase, {
     shouldForwardProp: (propName) => propName !== "isContainerFocused",
 })<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
@@ -111,14 +122,6 @@ export const TaskItemDetailsInput = styled(InputBase, {
     }),
 }));
 
-export const TaskItemLoadingWrapper = styled(Box)(({ theme }) => ({
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    color: theme.palette.text.secondary,
-    padding: theme.spacing(1.25),
-}));
-
 export const TaskItemDetailsText = styled(Typography, {
     shouldForwardProp: (propName) => propName !== "isContainerFocused",
 })<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
@@ -134,6 +137,11 @@ export const TaskItemDetailsText = styled(Typography, {
         visibility: "hidden",
         pointerEvents: "none",
     }),
+}));
+
+export const TaskItemDueDateSelectCommon = styled(Button)(({ theme }) => ({
+    flex: 1,
+    color: theme.palette.text.secondary,
 }));
 
 export const TaskItemPlaceholderContainer = styled(Box, {

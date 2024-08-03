@@ -1,6 +1,8 @@
 "use client";
 
 import { GlobalStyles, ThemeProvider } from "@mui/material";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PropsWithChildren } from "react";
 import theme from "./_/config/theme";
@@ -16,8 +18,9 @@ export default function GlobalProviders({ children }: PropsWithChildren) {
     return (
         <QueryClientProvider client={queryClient}>
             <ThemeProvider theme={theme}>
-                <GlobalStyles
-                    styles={`
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <GlobalStyles
+                        styles={`
                         body {
                             overflow: hidden;
                         }
@@ -31,8 +34,9 @@ export default function GlobalProviders({ children }: PropsWithChildren) {
                             aspect-ratio: 1 / 1;
                         }
                     `}
-                />
-                {children}
+                    />
+                    {children}
+                </LocalizationProvider>
             </ThemeProvider>
         </QueryClientProvider>
     );

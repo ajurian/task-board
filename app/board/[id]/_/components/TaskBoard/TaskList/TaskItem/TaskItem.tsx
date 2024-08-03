@@ -10,8 +10,8 @@ import { faCheck, faCircleDot } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Draggable } from "@hello-pangea/dnd";
 import { mergeRefs, useInputState } from "@mantine/hooks";
-import { Box, IconButton } from "@mui/material";
-import React, {
+import { IconButton } from "@mui/material";
+import {
     TransitionEventHandler,
     useCallback,
     useMemo,
@@ -19,8 +19,9 @@ import React, {
     useState,
 } from "react";
 import useContentEditable from "../../hooks/useContentEditable";
-import TaskItemMenu from "./TaskItemMenu";
+import TaskItemMenuTrigger from "./TaskItemMenuTrigger";
 import {
+    TaskItemBulletPointWrapper,
     TaskItemContainer,
     TaskItemDetailsInput,
     TaskItemDetailsText,
@@ -34,18 +35,27 @@ export interface TaskItemProps extends Omit<TaskModel, "isDone"> {
     index: number;
 }
 
-export default function TaskItem({ index, id, title, details }: TaskItemProps) {
+export default function TaskItem({
+    index,
+    id,
+    title,
+    details,
+    dueAt,
+}: TaskItemProps) {
     const initialTitle = useMemo(() => title.replace(/\\n/g, "\n"), [title]);
     const initialDetails = useMemo(
         () => details.replace(/\\n/g, "\n"),
         [details]
     );
+    const initialDueAt = useMemo(() => dueAt, [dueAt]);
 
     const [titleInput, setTitleInput] = useInputState(initialTitle);
     const [detailsInput, setDetailsInput] = useInputState(initialDetails);
+    const [dueAtInput, setDueAtInput] = useState<Date | null>(initialDueAt);
 
     const titleRef = useRef<HTMLSpanElement | null>(null);
     const detailsRef = useRef<HTMLSpanElement | null>(null);
+    const dueAtRef = useRef<HTMLParagraphElement | null>(null);
     const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
     const detailsInputRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -70,6 +80,7 @@ export default function TaskItem({ index, id, title, details }: TaskItemProps) {
         onNodeIgnore: (node): boolean =>
             node !== titleRef.current &&
             node !== detailsRef.current &&
+            node !== dueAtRef.current &&
             node !== ref.current,
         onFocus: (node) => {
             if (node === detailsRef.current) {
@@ -82,10 +93,13 @@ export default function TaskItem({ index, id, title, details }: TaskItemProps) {
         onStateReset: () => {
             setTitleInput(initialTitle);
             setDetailsInput(initialDetails);
+            setDueAtInput(initialDueAt);
         },
         onEdit: () => {
             const hasDataChanged =
-                titleInput !== initialTitle || detailsInput !== initialDetails;
+                titleInput !== initialTitle ||
+                detailsInput !== initialDetails ||
+                dueAtInput?.getTime() !== initialDueAt?.getTime();
 
             if (
                 titleInput.length < TASK_TITLE_MIN_LEN ||
@@ -95,7 +109,12 @@ export default function TaskItem({ index, id, title, details }: TaskItemProps) {
                 return;
             }
 
-            editTask({ id, title: titleInput, details: detailsInput });
+            editTask({
+                id,
+                title: titleInput,
+                details: detailsInput,
+                dueAt: dueAtInput,
+            });
         },
     });
 
@@ -141,20 +160,9 @@ export default function TaskItem({ index, id, title, details }: TaskItemProps) {
                     >
                         <TaskItemTitleContainer>
                             {!canUserCompleteTask && (
-                                <Box
-                                    sx={(theme) => ({
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                        boxSizing: "content-box",
-                                        padding: theme.spacing(1.25),
-                                        width: theme.spacing(4.5),
-                                        height: theme.spacing(4.5),
-                                        color: theme.palette.text.secondary,
-                                    })}
-                                >
+                                <TaskItemBulletPointWrapper>
                                     <FontAwesomeIcon icon={faCircleDot} />
-                                </Box>
+                                </TaskItemBulletPointWrapper>
                             )}
                             {canUserCompleteTask && (
                                 <IconButton
@@ -183,6 +191,7 @@ export default function TaskItem({ index, id, title, details }: TaskItemProps) {
                                 inputProps={{
                                     style: { padding: 0 },
                                     maxLength: TASK_TITLE_MAX_LEN,
+                                    "data-disable-multiline": true,
                                 }}
                                 placeholder="Title"
                                 size="small"
@@ -198,7 +207,7 @@ export default function TaskItem({ index, id, title, details }: TaskItemProps) {
                                 {initialTitle}
                             </TaskItemTitleText>
                             {(canUserEditTask || canUserCreateOrDeleteTask) && (
-                                <TaskItemMenu
+                                <TaskItemMenuTrigger
                                     onEdit={
                                         canUserEditTask
                                             ? () => ref.current?.click()
@@ -236,12 +245,7 @@ export default function TaskItem({ index, id, title, details }: TaskItemProps) {
                             isContainerFocused={isFocused}
                             variant="body2"
                         >
-                            {initialDetails.split("\n").map((line, index) => (
-                                <React.Fragment key={index}>
-                                    {line}
-                                    <br />
-                                </React.Fragment>
-                            ))}
+                            {initialDetails}
                         </TaskItemDetailsText>
                     </TaskItemContainer>
                 </TaskItemFade>

@@ -92,19 +92,15 @@ export default function TaskBoardProvider({
     const [channel, setChannel] = useState<PresenceChannel | null>(null);
 
     const [mutationQueue, setMutationQueue] = useState<UpdateMutation[]>([]);
-    const [asyncMutationList, setAsyncMutationList] = useState<
-        UpdateMutation[]
-    >([]);
+    const [asyncMutation, setAsyncMutation] = useState<UpdateMutation[]>([]);
     const previousMutationQueueSize = usePrevious(mutationQueue.length);
-    const previousAsyncMutationListSize = usePrevious(asyncMutationList.length);
+    const previousAsyncMutationSize = usePrevious(asyncMutation.length);
 
     const [searchQuery, setSearchQuery] = useState("");
 
-    const [isMutationOngoing, setIsMutationOngoing] = useState(false);
-
     const isChangesSaved = useMemo(
-        () => mutationQueue.length === 0 && asyncMutationList.length === 0,
-        [mutationQueue, asyncMutationList]
+        () => mutationQueue.length === 0 && asyncMutation.length === 0,
+        [mutationQueue.length, asyncMutation.length]
     );
 
     const taskBoardQuery = useQuery({
@@ -238,6 +234,74 @@ export default function TaskBoardProvider({
         [taskBoardUser.isVisitor]
     );
 
+    const dequeueMutation = useCallback(
+        () => setMutationQueue((mutationQueue) => mutationQueue.slice(1)),
+        []
+    );
+
+    const clearAsyncMutation = useCallback(
+        () =>
+            setAsyncMutation((previousAsyncMutation) =>
+                previousAsyncMutation.filter((mutation) => {
+                    const unsyncedMutation = asyncMutation.find(
+                        (unsyncedMutation) =>
+                            unsyncedMutation.type === mutation.type
+                    )!;
+
+                    return !_.isEqual(
+                        mutation.options,
+                        unsyncedMutation.options
+                    );
+                })
+            ),
+        [asyncMutation]
+    );
+
+    const dispatchMutationQueue = useCallback(() => {
+        if (mutationQueue.length === 0) {
+            return;
+        }
+
+        const { options, onMutate } = mutationQueue[0];
+        onMutate(options).then(dequeueMutation).catch(dequeueMutation);
+    }, [mutationQueue, dequeueMutation]);
+
+    const dispatchAsyncMutation = useCallback(() => {
+        if (asyncMutation.length === 0) {
+            return;
+        }
+
+        Promise.allSettled(
+            asyncMutation.map(({ options, onMutate }) => onMutate(options))
+        )
+            .then(clearAsyncMutation)
+            .catch(clearAsyncMutation);
+    }, [asyncMutation, clearAsyncMutation]);
+
+    const listenAndDispatch = useCallback(
+        (
+            previousSize: number | undefined,
+            currentSize: number,
+            dispatch: () => void
+        ) => {
+            if (previousSize === undefined || currentSize === 0) {
+                return;
+            }
+
+            if (previousSize === 0) {
+                dispatch();
+                return;
+            }
+
+            if (currentSize >= previousSize) {
+                return;
+            }
+
+            dispatch();
+        },
+        []
+    );
+
     const enqueueMutation = useCallback(
         ({ type, options, onMutate }: UpdateMutation) =>
             setMutationQueue((mutationQueue) => {
@@ -258,18 +322,13 @@ export default function TaskBoardProvider({
         []
     );
 
-    const dequeueMutation = useCallback(
-        () => setMutationQueue((mutationQueue) => mutationQueue.slice(1)),
-        []
-    );
-
-    const addAsyncMutation = useCallback(
+    const pushAsyncMutation = useCallback(
         ({ type, options, onMutate }: UpdateMutation) =>
-            setAsyncMutationList((asyncMutationList) => {
-                const newAsyncMutationList = _.cloneDeep(asyncMutationList);
+            setAsyncMutation((asyncMutation) => {
+                const newAsyncMutation = _.cloneDeep(asyncMutation);
 
-                for (let i = newAsyncMutationList.length - 1; i >= 0; i--) {
-                    const mutation = newAsyncMutationList[i];
+                for (let i = newAsyncMutation.length - 1; i >= 0; i--) {
+                    const mutation = newAsyncMutation[i];
 
                     if (mutation.type === type) {
                         mutation.options = {
@@ -277,63 +336,21 @@ export default function TaskBoardProvider({
                             ...options,
                         };
 
-                        return newAsyncMutationList;
+                        return newAsyncMutation;
                     }
                 }
 
-                newAsyncMutationList.push({ type, options, onMutate });
+                newAsyncMutation.push({ type, options, onMutate });
 
-                return newAsyncMutationList;
+                return newAsyncMutation;
             }),
         []
     );
-
-    const clearAsyncMutation = useCallback(
-        () =>
-            setAsyncMutationList((previousAsyncMutationList) =>
-                previousAsyncMutationList.filter((mutation) => {
-                    const unsyncedMutation = asyncMutationList.find(
-                        (unsyncedMutation) =>
-                            unsyncedMutation.type === mutation.type
-                    )!;
-
-                    return !_.isEqual(
-                        mutation.options,
-                        unsyncedMutation.options
-                    );
-                })
-            ),
-        [asyncMutationList]
-    );
-
-    const dispatchMutation = useCallback(() => {
-        if (mutationQueue.length > 0) {
-            const { options, onMutate } = mutationQueue[0];
-            onMutate(options).then(dequeueMutation).catch(dequeueMutation);
-        }
-
-        if (asyncMutationList.length > 0) {
-            Promise.allSettled(
-                asyncMutationList.map(({ options, onMutate }) =>
-                    onMutate(options)
-                )
-            )
-                .then(clearAsyncMutation)
-                .catch(clearAsyncMutation);
-        }
-    }, [mutationQueue, asyncMutationList, dequeueMutation, clearAsyncMutation]);
 
     const renameTaskBoardMutation: TaskBoardContextValue["renameTaskBoardMutation"] =
         useMutation({
             mutationKey: ["renameTaskBoard", selectedTaskBoard.id],
             mutationFn: async (options) => {
-                if (
-                    renameTaskBoardMutation.status !== "idle" &&
-                    renameTaskBoardMutation.status !== "success"
-                ) {
-                    return;
-                }
-
                 const {
                     data: { taskBoard },
                 } = await ClientTaskBoardAPI.patch(
@@ -345,19 +362,13 @@ export default function TaskBoardProvider({
                     RenameTaskBoardOptionsSchema.parse(taskBoard);
                 channel!.trigger("client-rename-task-board", dataNotification);
             },
+            onSuccess: () => renameTaskBoardMutation.reset(),
         });
 
     const updateFlowDirectionMutation: TaskBoardContextValue["updateFlowDirectionMutation"] =
         useMutation({
             mutationKey: ["updateFlowDirection", selectedTaskBoard.id],
             mutationFn: async ({ flowDirection }) => {
-                if (
-                    updateFlowDirectionMutation.status !== "idle" &&
-                    updateFlowDirectionMutation.status !== "success"
-                ) {
-                    return;
-                }
-
                 const {
                     data: { taskBoard },
                 } = await ClientTaskBoardAPI.patch(selectedTaskBoard.id, {
@@ -371,19 +382,13 @@ export default function TaskBoardProvider({
                     dataNotification
                 );
             },
+            onSuccess: () => updateFlowDirectionMutation.reset(),
         });
 
     const moveTaskListMutation: TaskBoardContextValue["moveTaskListMutation"] =
         useMutation({
             mutationKey: ["moveTaskList", selectedTaskBoard.id],
             mutationFn: async (options) => {
-                if (
-                    moveTaskListMutation.status !== "idle" &&
-                    moveTaskListMutation.status !== "success"
-                ) {
-                    return;
-                }
-
                 await ClientTaskListAPI.reorder({
                     ...options,
                     boardId: selectedTaskBoard.id,
@@ -391,19 +396,13 @@ export default function TaskBoardProvider({
 
                 channel!.trigger("client-move-task-list", options);
             },
+            onSuccess: () => moveTaskListMutation.reset(),
         });
 
     const moveTaskMutation: TaskBoardContextValue["moveTaskMutation"] =
         useMutation({
             mutationKey: ["moveTask", selectedTaskBoard.id],
             mutationFn: async (options) => {
-                if (
-                    moveTaskMutation.status !== "idle" &&
-                    moveTaskMutation.status !== "success"
-                ) {
-                    return;
-                }
-
                 await ClientTaskAPI.reorder({
                     ...options,
                     boardId: selectedTaskBoard.id,
@@ -411,19 +410,13 @@ export default function TaskBoardProvider({
 
                 channel!.trigger("client-move-task", options);
             },
+            onSuccess: () => moveTaskMutation.reset(),
         });
 
     const addTaskListMutation: TaskBoardContextValue["addTaskListMutation"] =
         useMutation({
             mutationKey: ["addTaskList", selectedTaskBoard.id],
             mutationFn: async (options) => {
-                if (
-                    addTaskListMutation.status !== "idle" &&
-                    addTaskListMutation.status !== "success"
-                ) {
-                    return;
-                }
-
                 const {
                     data: { taskList },
                 } = await ClientTaskListAPI.post({
@@ -435,19 +428,13 @@ export default function TaskBoardProvider({
                     AddTaskListOptionsSchema.parse(taskList);
                 channel!.trigger("client-add-task-list", dataNotifications);
             },
+            onSuccess: () => addTaskListMutation.reset(),
         });
 
     const renameTaskListMutation: TaskBoardContextValue["renameTaskListMutation"] =
         useMutation({
             mutationKey: ["renameTaskList"],
             mutationFn: async ({ id, title }) => {
-                if (
-                    renameTaskListMutation.status !== "idle" &&
-                    renameTaskListMutation.status !== "success"
-                ) {
-                    return;
-                }
-
                 const {
                     data: { taskList },
                 } = await ClientTaskListAPI.patch(id, { title });
@@ -456,35 +443,23 @@ export default function TaskBoardProvider({
                     RenameTaskListOptionsSchema.parse(taskList);
                 channel!.trigger("client-rename-task-list", dataNotification);
             },
+            onSuccess: () => renameTaskListMutation.reset(),
         });
 
     const deleteTaskListMutation: TaskBoardContextValue["deleteTaskListMutation"] =
         useMutation({
             mutationKey: ["deleteTaskList"],
             mutationFn: async ({ id }) => {
-                if (
-                    deleteTaskListMutation.status !== "idle" &&
-                    deleteTaskListMutation.status !== "success"
-                ) {
-                    return;
-                }
-
                 await ClientTaskListAPI.delete(id);
                 channel!.trigger("client-delete-task-list", { id });
             },
+            onSuccess: () => deleteTaskListMutation.reset(),
         });
 
     const addTaskMutation: TaskBoardContextValue["addTaskMutation"] =
         useMutation({
             mutationKey: ["addTask"],
             mutationFn: async (options) => {
-                if (
-                    addTaskMutation.status !== "idle" &&
-                    addTaskMutation.status !== "success"
-                ) {
-                    return;
-                }
-
                 const {
                     data: { task },
                 } = await ClientTaskAPI.post(options);
@@ -492,19 +467,13 @@ export default function TaskBoardProvider({
                 const dataNotification = AddTaskOptionsSchema.parse(task);
                 channel!.trigger("client-add-task", dataNotification);
             },
+            onSuccess: () => addTaskMutation.reset(),
         });
 
     const editTaskMutation: TaskBoardContextValue["editTaskMutation"] =
         useMutation({
             mutationKey: ["editTask"],
             mutationFn: async ({ id, ...options }) => {
-                if (
-                    editTaskMutation.status !== "idle" &&
-                    editTaskMutation.status !== "success"
-                ) {
-                    return;
-                }
-
                 const {
                     data: { task },
                 } = await ClientTaskAPI.patch(id, options);
@@ -512,22 +481,17 @@ export default function TaskBoardProvider({
                 const dataNotification = EditTaskOptionsSchema.parse(task);
                 channel!.trigger("client-edit-task", dataNotification);
             },
+            onSuccess: () => editTaskMutation.reset(),
         });
 
     const deleteTaskMutation: TaskBoardContextValue["deleteTaskMutation"] =
         useMutation({
             mutationKey: ["deleteTask"],
             mutationFn: async ({ id }) => {
-                if (
-                    deleteTaskMutation.status !== "idle" &&
-                    deleteTaskMutation.status !== "success"
-                ) {
-                    return;
-                }
-
                 await ClientTaskAPI.delete(id);
                 channel!.trigger("client-delete-task", { id });
             },
+            onSuccess: () => deleteTaskMutation.reset(),
         });
 
     const renameTaskBoardOptimistic = useCallback(
@@ -734,7 +698,7 @@ export default function TaskBoardProvider({
         onMutate: renameTaskBoardMutation.mutateAsync,
         onOptimisticUpdate: renameTaskBoardOptimistic,
         /* @ts-expect-error */
-        onMutationStateChange: addAsyncMutation,
+        onMutationStateChange: pushAsyncMutation,
     });
 
     const updateFlowDirection = useNonCreationUpdate({
@@ -742,7 +706,7 @@ export default function TaskBoardProvider({
         onMutate: updateFlowDirectionMutation.mutateAsync,
         onOptimisticUpdate: updateFlowDirectionOptimistic,
         /* @ts-expect-error */
-        onMutationStateChange: addAsyncMutation,
+        onMutationStateChange: pushAsyncMutation,
     });
 
     const moveTaskList = useNonCreationUpdate({
@@ -774,7 +738,7 @@ export default function TaskBoardProvider({
         onMutate: renameTaskListMutation.mutateAsync,
         onOptimisticUpdate: renameTaskListOptimistic,
         /* @ts-expect-error */
-        onMutationStateChange: addAsyncMutation,
+        onMutationStateChange: pushAsyncMutation,
     });
 
     const deleteTaskList = useNonCreationUpdate({
@@ -798,7 +762,7 @@ export default function TaskBoardProvider({
         onMutate: editTaskMutation.mutateAsync,
         onOptimisticUpdate: editTaskOptimistic,
         /* @ts-expect-error */
-        onMutationStateChange: addAsyncMutation,
+        onMutationStateChange: pushAsyncMutation,
     });
 
     const deleteTask = useNonCreationUpdate({
@@ -1003,53 +967,29 @@ export default function TaskBoardProvider({
     ]);
 
     useEffect(() => {
-        if (
-            previousMutationQueueSize === undefined ||
-            previousAsyncMutationListSize === undefined
-        ) {
-            return;
-        }
-
-        if (isChangesSaved) {
-            if (
-                previousMutationQueueSize > 0 ||
-                previousAsyncMutationListSize > 0
-            ) {
-                saveSnapshot().catch(() => {});
-            }
-
-            setIsMutationOngoing(false);
-            return;
-        }
-
-        if (isMutationOngoing) {
-            dispatchMutation();
-            return;
-        }
-
-        if (
-            mutationQueue.length > previousMutationQueueSize ||
-            asyncMutationList.length > previousAsyncMutationListSize
-        ) {
-            takeSnapshot();
-        }
-
-        const timeout = setTimeout(() => {
-            setIsMutationOngoing(true);
-            dispatchMutation();
-        }, 1500);
-
-        return () => clearTimeout(timeout);
+        listenAndDispatch(
+            previousMutationQueueSize,
+            mutationQueue.length,
+            dispatchMutationQueue
+        );
     }, [
-        mutationQueue,
-        asyncMutationList,
+        mutationQueue.length,
         previousMutationQueueSize,
-        previousAsyncMutationListSize,
-        isMutationOngoing,
-        isChangesSaved,
-        dispatchMutation,
-        takeSnapshot,
-        saveSnapshot,
+        dispatchMutationQueue,
+        listenAndDispatch,
+    ]);
+
+    useEffect(() => {
+        listenAndDispatch(
+            previousAsyncMutationSize,
+            asyncMutation.length,
+            dispatchAsyncMutation
+        );
+    }, [
+        asyncMutation.length,
+        previousAsyncMutationSize,
+        dispatchAsyncMutation,
+        listenAndDispatch,
     ]);
 
     useEffect(() => {
@@ -1118,7 +1058,6 @@ export default function TaskBoardProvider({
                 refreshUser,
                 setSearchQuery,
                 searchQuery,
-                isMutationOngoing,
                 isChangesSaved,
             }}
         >

@@ -44,7 +44,10 @@ export default function useContentEditable<T extends HTMLElement>({
 
                 const target = e.target as HTMLTextAreaElement;
 
-                if (target.type === "textarea") {
+                if (
+                    target.type === "textarea" &&
+                    !Boolean(target.dataset["disableMultiline"])
+                ) {
                     return;
                 }
 
@@ -72,6 +75,12 @@ export default function useContentEditable<T extends HTMLElement>({
                 (e.currentTarget.contains(e.relatedTarget) &&
                     e.currentTarget !== e.relatedTarget)
             ) {
+                return;
+            }
+
+            const popover = document.querySelector(".MuiPopover-root");
+
+            if (popover !== null && popover.contains(e.relatedTarget)) {
                 return;
             }
 
@@ -130,6 +139,12 @@ export default function useContentEditable<T extends HTMLElement>({
             }
 
             if (focusedElement === null) {
+                return;
+            }
+
+            const popover = document.querySelector(".MuiPopover-root");
+
+            if (popover !== null && popover.contains(e.target as Node)) {
                 return;
             }
 

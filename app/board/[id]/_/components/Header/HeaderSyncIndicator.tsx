@@ -7,14 +7,9 @@ import { useCallback, useEffect } from "react";
 import { useTaskBoard } from "../../providers/TaskBoardProvider";
 
 export default function HeaderSyncIndicator() {
-    const {
-        taskBoardQuery,
-        refreshBoard,
-        refreshUser,
-        isMutationOngoing,
-        isChangesSaved,
-    } = useTaskBoard();
-    const isLoading = taskBoardQuery.isRefetching || isMutationOngoing;
+    const { taskBoardQuery, refreshBoard, refreshUser, isChangesSaved } =
+        useTaskBoard();
+    const isLoading = taskBoardQuery.isRefetching || !isChangesSaved;
 
     const refreshData = useCallback(() => {
         refreshBoard();
