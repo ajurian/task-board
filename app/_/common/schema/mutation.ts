@@ -31,7 +31,7 @@ export const AddTaskListOptionsSchema = TaskListCreateSchema.omit({
     taskBoardId: true,
 });
 
-export const RenameTaskListOptionsSchema = TaskListUpdateSchema.and(
+export const EditTaskListOptionsSchema = TaskListUpdateSchema.and(
     TaskListModelSchema.pick({ id: true })
 );
 
@@ -56,7 +56,7 @@ export type UpdateFlowDirectionOptions = z.infer<
 export type MoveTaskListOptions = z.infer<typeof MoveTaskListOptionsSchema>;
 export type MoveTaskOptions = z.infer<typeof MoveTaskOptionsSchema>;
 export type AddTaskListOptions = z.infer<typeof AddTaskListOptionsSchema>;
-export type RenameTaskListOptions = z.infer<typeof RenameTaskListOptionsSchema>;
+export type EditTaskListOptions = z.infer<typeof EditTaskListOptionsSchema>;
 export type DeleteTaskListOptions = z.infer<typeof DeleteTaskListOptionsSchema>;
 export type AddTaskOptions = z.infer<typeof AddTaskOptionsSchema>;
 export type EditTaskOptions = z.infer<typeof EditTaskOptionsSchema>;

@@ -4,13 +4,11 @@ import TaskItem from "./TaskItem";
 import { TaskListItemsContainer } from "./ui";
 
 interface TaskListItemsWrapperProps {
-    id: string;
     order: number;
     tasks: TaskModel[];
 }
 
 export default function TaskListItemsWrapper({
-    id,
     order,
     tasks,
 }: TaskListItemsWrapperProps) {
@@ -19,7 +17,7 @@ export default function TaskListItemsWrapper({
             {({ innerRef: droppableRef, placeholder, droppableProps }) => (
                 <TaskListItemsContainer {...droppableProps} ref={droppableRef}>
                     {tasks.map((task, index) => (
-                        <TaskItem key={index} index={index} {...task} />
+                        <TaskItem key={index} {...task} />
                     ))}
                     {placeholder}
                 </TaskListItemsContainer>

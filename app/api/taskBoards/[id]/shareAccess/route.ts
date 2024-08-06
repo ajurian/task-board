@@ -15,6 +15,7 @@ import {
 } from "@/api/_/utils/errorResponse";
 import runTransaction from "@/api/_/utils/runTransaction";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 interface Segment {
     params: {
@@ -59,10 +60,15 @@ export async function POST(request: NextRequest, { params }: Segment) {
 
     const { userEmails, role } = data;
 
+    const validUserEmails = userEmails.filter((userEmail) => {
+        const { success } = z.string().email().safeParse(userEmail);
+        return success;
+    });
+
     await runTransaction(async (prisma) => {
         const queries = [];
 
-        for (const userEmail of userEmails) {
+        for (const userEmail of validUserEmails) {
             const userWithRespectToEmail = await prisma.user.findUnique({
                 where: { email: userEmail },
                 select: { googleId: true },
@@ -102,7 +108,7 @@ export async function POST(request: NextRequest, { params }: Segment) {
 
     await Mail.sendMail({
         from: `${user.displayName} <${process.env.GMAIL_SERVICE_ACCOUNT!}>`,
-        to: userEmails.join(", "),
+        to: validUserEmails.join(", "),
         subject: `${user.displayName} shared a board with you`,
         html: `<p>${user.displayName} ${user.email} shared a board with you.</p><br /><a href='${baseUrl}?hint={{ contact.EMAIL }}&redirectUri=${redirectUri}'>Open board</a>`,
     });

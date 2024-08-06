@@ -33,7 +33,7 @@ export default function TaskBoardHeader() {
     const searchParams = useSearchParams();
     const shareParams = useMemo(() => {
         const share = searchParams.get("share");
-        return share === null ? [] : share.split(" ");
+        return share === null ? [] : share.split(",");
     }, [searchParams]);
 
     const [

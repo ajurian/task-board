@@ -1,18 +1,29 @@
+import { TaskListModel } from "@/_/common/schema/taskList";
 import {
+    faCheck,
     faEllipsisVertical,
     faPen,
     faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconButton, ListItemIcon, Menu, MenuItem } from "@mui/material";
+import {
+    Divider,
+    IconButton,
+    ListItemIcon,
+    Menu,
+    MenuItem,
+    Typography,
+} from "@mui/material";
 import { useId, useRef, useState } from "react";
 
 interface TaskListHeaderMenuTriggerProps {
+    sortBy: TaskListModel["sortBy"];
     onRenameTitle?: () => void;
     onDeleteTitle?: () => void;
 }
 
 export default function TaskListHeaderMenuTrigger({
+    sortBy,
     onRenameTitle,
     onDeleteTitle,
 }: TaskListHeaderMenuTriggerProps) {
@@ -62,6 +73,49 @@ export default function TaskListHeaderMenuTrigger({
                 onTransitionEnd={handleTransitionEnd}
                 MenuListProps={{ "aria-labelledby": buttonId, dense: true }}
             >
+                {/* <Typography
+                    variant="body2"
+                    sx={{ ml: 11, mb: 1, fontSize: "0.8125rem" }}
+                >
+                    Sort by
+                </Typography>
+                <MenuItem>
+                    {sortBy === "order" && (
+                        <ListItemIcon style={{ minWidth: 0 }}>
+                            <FontAwesomeIcon
+                                icon={faCheck}
+                                style={{ fontSize: "1em" }}
+                            />
+                        </ListItemIcon>
+                    )}
+                    <Typography
+                        sx={{
+                            font: "inherit",
+                            ml: sortBy === "order" ? "1em" : "2em",
+                        }}
+                    >
+                        Custom order
+                    </Typography>
+                </MenuItem>
+                <MenuItem>
+                    {sortBy === "dueAt" && (
+                        <ListItemIcon style={{ minWidth: 0 }}>
+                            <FontAwesomeIcon
+                                icon={faCheck}
+                                style={{ fontSize: "1em" }}
+                            />
+                        </ListItemIcon>
+                    )}
+                    <Typography
+                        sx={{
+                            font: "inherit",
+                            ml: sortBy === "dueAt" ? "1em" : "2em",
+                        }}
+                    >
+                        Due date
+                    </Typography>
+                </MenuItem>
+                <Divider /> */}
                 {onRenameTitle && (
                     <MenuItem onClick={handleRenameListClick}>
                         <ListItemIcon

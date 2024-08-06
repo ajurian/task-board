@@ -1,6 +1,7 @@
 import {
     PERMISSION_CONTENT_READ,
     PERMISSION_TASK_LIST_CREATE_DELETE,
+    PERMISSION_TASK_LIST_UPDATE_SORT_BY,
     PERMISSION_TASK_LIST_UPDATE_TITLE,
 } from "@/_/common/constants/permissions";
 import prisma from "@/_/common/lib/prisma";
@@ -39,7 +40,6 @@ export async function GET(request: NextRequest, { params }: Segment) {
 }
 
 export async function PATCH(request: NextRequest, { params }: Segment) {
-    const { id } = params;
     let data;
 
     try {
@@ -51,8 +51,17 @@ export async function PATCH(request: NextRequest, { params }: Segment) {
         });
     }
 
+    const { title, sortBy } = data;
+    let requiredPermission = 0;
+
+    if (title !== undefined)
+        requiredPermission = PERMISSION_TASK_LIST_UPDATE_TITLE;
+    if (sortBy !== undefined)
+        requiredPermission = PERMISSION_TASK_LIST_UPDATE_SORT_BY;
+
+    const { id } = params;
     const authority = await checkAuthorityWithDocument({
-        requiredPermission: PERMISSION_TASK_LIST_UPDATE_TITLE,
+        requiredPermission,
         documentType: "taskList",
         documentId: id,
     });

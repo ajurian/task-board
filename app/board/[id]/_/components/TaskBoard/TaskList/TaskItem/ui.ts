@@ -1,4 +1,11 @@
-import { Box, Button, InputBase, styled, Typography } from "@mui/material";
+import {
+    Box,
+    Button,
+    InputBase,
+    MenuItem,
+    styled,
+    Typography,
+} from "@mui/material";
 
 export const TaskItemFade = styled(Box, {
     shouldForwardProp: (propName) => propName !== "shouldFadeOut",
@@ -139,8 +146,53 @@ export const TaskItemDetailsText = styled(Typography, {
     }),
 }));
 
-export const TaskItemDueDateSelectCommon = styled(Button)(({ theme }) => ({
+export const TaskItemDueDateTagWrapper = styled(Box, {
+    shouldForwardProp: (propName) => propName !== "isContainerFocused",
+})<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
+    marginTop: theme.spacing(1),
+    marginLeft: theme.spacing(1.75),
+    ...(isContainerFocused && {
+        display: "none",
+        visibility: "hidden",
+        pointerEvents: "none",
+    }),
+}));
+
+export const TaskItemDueDateTagText = styled(Typography)(({ theme }) => ({
+    display: "inline-block",
+    fontSize: "0.8125rem",
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: theme.palette.warning.light,
+    paddingInline: theme.spacing(2.5),
+    paddingBlock: theme.spacing(0.25),
+    borderRadius: "100vw",
+}));
+
+export const TaskItemDueDateSelectTriggerWrapper = styled(Box, {
+    shouldForwardProp: (propName) => propName !== "isContainerFocused",
+})<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
+    marginTop: theme.spacing(1),
+    marginLeft: theme.spacing(1.75),
+    ...(!isContainerFocused && {
+        display: "none",
+        visibility: "hidden",
+        pointerEvents: "none",
+    }),
+}));
+
+export const TaskItemDueDateSelectTriggerButton = styled(Button)(
+    ({ theme }) => ({
+        borderRadius: "100vw",
+        display: "inline-block",
+        paddingInline: theme.spacing(2.5),
+        paddingBlock: theme.spacing(0.25),
+    })
+);
+
+export const TaskItemDueDateSelectCommon = styled(MenuItem)(({ theme }) => ({
     flex: 1,
+    borderRadius: theme.shape.borderRadius,
     color: theme.palette.text.secondary,
 }));
 

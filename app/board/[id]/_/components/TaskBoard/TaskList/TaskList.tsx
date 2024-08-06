@@ -8,15 +8,13 @@ import TaskListHeader from "./TaskListHeader";
 import TaskListItemsWrapper from "./TaskListItemsWrapper";
 import { TaskListContainer } from "./ui";
 
-export interface TaskListProps extends AggregatedTaskListModel {
-    index: number;
-}
+export interface TaskListProps extends AggregatedTaskListModel {}
 
 export default function TaskList({
-    index,
     id,
     order,
     title,
+    sortBy,
     tasks,
 }: TaskListProps) {
     const [isCompletedItemsOpen, setIsCompletedItemsOpen] = useState(false);
@@ -39,7 +37,7 @@ export default function TaskList({
         <Draggable
             key={id}
             draggableId={id}
-            index={index}
+            index={order}
             isDragDisabled={isDragDisabled}
         >
             {(
@@ -55,13 +53,9 @@ export default function TaskList({
                     isDragDisabled={isDragDisabled}
                     tabIndex={0}
                 >
-                    <TaskListHeader listId={id} title={title} />
+                    <TaskListHeader listId={id} title={title} sortBy={sortBy} />
                     <TaskItemPlaceholder listId={id} />
-                    <TaskListItemsWrapper
-                        id={id}
-                        order={order}
-                        tasks={pendingTasks}
-                    />
+                    <TaskListItemsWrapper order={order} tasks={pendingTasks} />
                     {completedTasks.length > 0 && (
                         <TaskListCompletedItems
                             tasks={completedTasks}

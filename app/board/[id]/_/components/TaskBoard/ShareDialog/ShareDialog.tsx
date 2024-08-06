@@ -1,23 +1,23 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useMounted, usePrevious } from "@mantine/hooks";
 import {
     Box,
     Dialog,
-    DialogActions,
     IconButton,
     Slide,
     useMediaQuery,
     useTheme,
 } from "@mui/material";
 import { TransitionProps } from "@mui/material/transitions";
-import React, { useId } from "react";
+import React, { useId, useMemo } from "react";
 import { useTaskBoard } from "../../../providers/TaskBoardProvider";
-import ShareDialogSubmit from "./ShareDialogSubmit";
 import ShareDialogAddPeople from "./ShareDialogAddPeople";
 import ShareDialogGeneralAccess from "./ShareDialogGeneralAccess";
 import ShareDialogPeopleWithAccess from "./ShareDialogPeopleWithAccess";
 import ShareDialogProgress from "./ShareDialogProgress";
 import ShareDialogProvider from "./ShareDialogProvider";
+import ShareDialogSubmit from "./ShareDialogSubmit";
 import {
     ShareDialogContent,
     ShareDialogHeader,
@@ -44,6 +44,11 @@ export default function ShareDialog({
     isOpen,
     onClose,
 }: ShareDialogProps) {
+    const emails = useMemo(
+        () => shareParams.filter((shareParam) => shareParam.length > 0),
+        [shareParams]
+    );
+
     const {
         displayName,
         defaultPermission,
@@ -54,8 +59,10 @@ export default function ShareDialog({
 
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
-
     const dialogLabelId = useId();
+
+    const isMounted = useMounted();
+    const previousIsMounted = usePrevious(isMounted);
 
     return (
         <Dialog
@@ -66,6 +73,15 @@ export default function ShareDialog({
             onClose={onClose}
             TransitionComponent={fullScreen ? SlideUp : undefined}
             aria-labelledby={dialogLabelId}
+            transitionDuration={{
+                enter:
+                    shareParams.length === 0
+                        ? theme.transitions.duration.enteringScreen
+                        : isMounted === previousIsMounted
+                        ? theme.transitions.duration.enteringScreen
+                        : 0,
+                exit: theme.transitions.duration.leavingScreen,
+            }}
         >
             <ShareDialogProvider
                 initialDefaultPermission={defaultPermission}
@@ -94,7 +110,7 @@ export default function ShareDialog({
                     )}
                 </ShareDialogHeader>
                 <ShareDialogContent>
-                    <ShareDialogAddPeople emails={shareParams} />
+                    <ShareDialogAddPeople emails={emails} />
                     {canUserChangeRole && !isUserVisitor && (
                         <ShareDialogPeopleWithAccess />
                     )}

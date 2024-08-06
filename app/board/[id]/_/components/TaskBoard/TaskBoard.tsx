@@ -32,11 +32,7 @@ export default function TaskBoard() {
                             direction={flowDirection}
                         >
                             {taskLists.map((taskList, index) => (
-                                <TaskList
-                                    key={index}
-                                    index={index}
-                                    {...taskList}
-                                />
+                                <TaskList key={index} {...taskList} />
                             ))}
                             {placeholder}
                             <TaskListPlaceholder />

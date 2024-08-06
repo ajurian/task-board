@@ -10,6 +10,7 @@ import {
     PERMISSION_TASK_CREATE_DELETE,
     PERMISSION_TASK_LIST_CREATE_DELETE,
     PERMISSION_TASK_LIST_REORDER,
+    PERMISSION_TASK_LIST_UPDATE_SORT_BY,
     PERMISSION_TASK_LIST_UPDATE_TITLE,
     PERMISSION_TASK_REORDER,
     PERMISSION_TASK_UPDATE_DETAILS,
@@ -24,15 +25,19 @@ import {
     AddTaskOptions,
     AddTaskOptionsSchema,
     DeleteTaskListOptions,
+    DeleteTaskListOptionsSchema,
     DeleteTaskOptions,
+    DeleteTaskOptionsSchema,
+    EditTaskListOptions,
+    EditTaskListOptionsSchema,
     EditTaskOptions,
     EditTaskOptionsSchema,
     MoveTaskListOptions,
+    MoveTaskListOptionsSchema,
     MoveTaskOptions,
+    MoveTaskOptionsSchema,
     RenameTaskBoardOptions,
     RenameTaskBoardOptionsSchema,
-    RenameTaskListOptions,
-    RenameTaskListOptionsSchema,
     UpdateFlowDirectionOptions,
     UpdateFlowDirectionOptionsSchema,
 } from "@/_/common/schema/mutation";
@@ -213,6 +218,8 @@ export default function TaskBoardProvider({
         (taskBoardUser.permission & PERMISSION_TASK_LIST_CREATE_DELETE) !== 0;
     const canUserRenameTaskList =
         (taskBoardUser.permission & PERMISSION_TASK_LIST_UPDATE_TITLE) !== 0;
+    const canUserUpdateSortBy =
+        (taskBoardUser.permission & PERMISSION_TASK_LIST_UPDATE_SORT_BY) !== 0;
     const canUserReorderTaskList =
         (taskBoardUser.permission & PERMISSION_TASK_LIST_REORDER) !== 0;
 
@@ -431,19 +438,19 @@ export default function TaskBoardProvider({
             onSuccess: () => addTaskListMutation.reset(),
         });
 
-    const renameTaskListMutation: TaskBoardContextValue["renameTaskListMutation"] =
+    const editTaskListMutation: TaskBoardContextValue["editTaskListMutation"] =
         useMutation({
-            mutationKey: ["renameTaskList"],
-            mutationFn: async ({ id, title }) => {
+            mutationKey: ["editTaskList"],
+            mutationFn: async ({ id, ...options }) => {
                 const {
                     data: { taskList },
-                } = await ClientTaskListAPI.patch(id, { title });
+                } = await ClientTaskListAPI.patch(id, options);
 
                 const dataNotification =
-                    RenameTaskListOptionsSchema.parse(taskList);
-                channel!.trigger("client-rename-task-list", dataNotification);
+                    EditTaskListOptionsSchema.parse(taskList);
+                channel!.trigger("client-edit-task-list", dataNotification);
             },
-            onSuccess: () => renameTaskListMutation.reset(),
+            onSuccess: () => editTaskListMutation.reset(),
         });
 
     const deleteTaskListMutation: TaskBoardContextValue["deleteTaskListMutation"] =
@@ -566,6 +573,7 @@ export default function TaskBoardProvider({
                 taskBoardId: selectedTaskBoard.id,
                 order: taskLists.length,
                 title,
+                sortBy: "order",
                 createdAt: new Date(),
                 tasks: [],
             });
@@ -574,20 +582,17 @@ export default function TaskBoardProvider({
         },
     });
 
-    const renameTaskListOptimistic = useOptimisticUpdate<RenameTaskListOptions>(
-        {
-            setTaskLists,
-            onTaskListsChange: (taskLists, { id, title }) => {
-                const index = taskLists.findIndex(
-                    (taskList) => taskList.id === id
-                );
+    const editTaskListOptimistic = useOptimisticUpdate<EditTaskListOptions>({
+        setTaskLists,
+        onTaskListsChange: (taskLists, { id, title, sortBy }) => {
+            const index = taskLists.findIndex((taskList) => taskList.id === id);
 
-                taskLists[index].title = title;
+            if (title !== undefined) taskLists[index].title = title;
+            if (sortBy !== undefined) taskLists[index].sortBy = sortBy;
 
-                return taskLists;
-            },
-        }
-    );
+            return taskLists;
+        },
+    });
 
     const deleteTaskListOptimistic = useOptimisticUpdate<DeleteTaskListOptions>(
         {
@@ -733,10 +738,10 @@ export default function TaskBoardProvider({
         onMutationStateChange: enqueueMutation,
     });
 
-    const renameTaskList = useNonCreationUpdate({
-        type: "renameTaskList",
-        onMutate: renameTaskListMutation.mutateAsync,
-        onOptimisticUpdate: renameTaskListOptimistic,
+    const editTaskList = useNonCreationUpdate({
+        type: "editTaskList",
+        onMutate: editTaskListMutation.mutateAsync,
+        onOptimisticUpdate: editTaskListOptimistic,
         /* @ts-expect-error */
         onMutationStateChange: pushAsyncMutation,
     });
@@ -919,37 +924,55 @@ export default function TaskBoardProvider({
             return;
         }
 
-        channel.bind("client-rename-task-board", renameTaskBoardOptimistic);
-        channel.bind(
-            "client-update-flow-direction",
-            updateFlowDirectionOptimistic
-        );
-        channel.bind("client-move-task-list", moveTaskListOptimistic);
-        channel.bind("client-move-task", moveTaskOptimistic);
-        channel.bind("client-add-task-list", addTaskListOptimistic);
-        channel.bind("client-rename-task-list", renameTaskListOptimistic);
-        channel.bind("client-delete-task-list", deleteTaskListOptimistic);
-        channel.bind("client-add-task", addTaskOptimistic);
-        channel.bind("client-edit-task", editTaskOptimistic);
-        channel.bind("client-delete-task", deleteTaskOptimistic);
+        const renameTaskBoard = (options: {}) =>
+            renameTaskBoardOptimistic(
+                RenameTaskBoardOptionsSchema.parse(options)
+            );
+        const updateFlowDirection = (options: {}) =>
+            updateFlowDirectionOptimistic(
+                UpdateFlowDirectionOptionsSchema.parse(options)
+            );
+        const moveTaskList = (options: {}) =>
+            moveTaskListOptimistic(MoveTaskListOptionsSchema.parse(options));
+        const moveTask = (options: {}) =>
+            moveTaskOptimistic(MoveTaskOptionsSchema.parse(options));
+        const addTaskList = (options: {}) =>
+            addTaskListOptimistic(AddTaskListOptionsSchema.parse(options));
+        const editTaskList = (options: {}) =>
+            editTaskListOptimistic(EditTaskListOptionsSchema.parse(options));
+        const deleteTaskList = (options: {}) =>
+            deleteTaskListOptimistic(
+                DeleteTaskListOptionsSchema.parse(options)
+            );
+        const addTask = (options: {}) =>
+            addTaskOptimistic(AddTaskOptionsSchema.parse(options));
+        const editTask = (options: {}) =>
+            editTaskOptimistic(EditTaskOptionsSchema.parse(options));
+        const deleteTask = (options: {}) =>
+            deleteTaskOptimistic(DeleteTaskOptionsSchema.parse(options));
+
+        channel.bind("client-rename-task-board", renameTaskBoard);
+        channel.bind("client-update-flow-direction", updateFlowDirection);
+        channel.bind("client-move-task-list", moveTaskList);
+        channel.bind("client-move-task", moveTask);
+        channel.bind("client-add-task-list", addTaskList);
+        channel.bind("client-edit-task-list", editTaskList);
+        channel.bind("client-delete-task-list", deleteTaskList);
+        channel.bind("client-add-task", addTask);
+        channel.bind("client-edit-task", editTask);
+        channel.bind("client-delete-task", deleteTask);
 
         return () => {
-            channel.unbind(
-                "client-rename-task-board",
-                renameTaskBoardOptimistic
-            );
-            channel.unbind(
-                "client-update-flow-direction",
-                updateFlowDirectionOptimistic
-            );
-            channel.unbind("client-move-task-list", moveTaskListOptimistic);
-            channel.unbind("client-move-task", moveTaskOptimistic);
-            channel.unbind("client-add-task-list", addTaskListOptimistic);
-            channel.unbind("client-rename-task-list", renameTaskListOptimistic);
-            channel.unbind("client-delete-task-list", deleteTaskListOptimistic);
-            channel.unbind("client-add-task", addTaskOptimistic);
-            channel.unbind("client-edit-task", editTaskOptimistic);
-            channel.unbind("client-delete-task", deleteTaskOptimistic);
+            channel.unbind("client-rename-task-board", renameTaskBoard);
+            channel.unbind("client-update-flow-direction", updateFlowDirection);
+            channel.unbind("client-move-task-list", moveTaskList);
+            channel.unbind("client-move-task", moveTask);
+            channel.unbind("client-add-task-list", addTaskList);
+            channel.unbind("client-edit-task-list", editTaskList);
+            channel.unbind("client-delete-task-list", deleteTaskList);
+            channel.unbind("client-add-task", addTask);
+            channel.unbind("client-edit-task", editTask);
+            channel.unbind("client-delete-task", deleteTask);
         };
     }, [
         channel,
@@ -959,7 +982,7 @@ export default function TaskBoardProvider({
         moveTaskListOptimistic,
         moveTaskOptimistic,
         addTaskListOptimistic,
-        renameTaskListOptimistic,
+        editTaskListOptimistic,
         deleteTaskListOptimistic,
         addTaskOptimistic,
         editTaskOptimistic,
@@ -1026,6 +1049,7 @@ export default function TaskBoardProvider({
                 canUserUpdateThumbnail,
                 canUserCreateOrDeleteTaskList,
                 canUserRenameTaskList,
+                canUserUpdateSortBy,
                 canUserReorderTaskList,
                 canUserCreateOrDeleteTask,
                 canUserUpdateTaskTitle,
@@ -1039,7 +1063,7 @@ export default function TaskBoardProvider({
                 moveTaskListMutation,
                 moveTaskMutation,
                 addTaskListMutation,
-                renameTaskListMutation,
+                editTaskListMutation,
                 deleteTaskListMutation,
                 addTaskMutation,
                 editTaskMutation,
@@ -1049,7 +1073,7 @@ export default function TaskBoardProvider({
                 moveTaskList,
                 moveTask,
                 addTaskList,
-                renameTaskList,
+                editTaskList,
                 deleteTaskList,
                 addTask,
                 editTask,

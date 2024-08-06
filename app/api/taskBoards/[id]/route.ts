@@ -18,6 +18,7 @@ import { checkAuthorityWithDocument } from "@/api/_/utils/checkAuthority";
 import runTransaction from "@/api/_/utils/runTransaction";
 import { NextRequest, NextResponse } from "next/server";
 import { unprocessableEntityErrorResponse } from "../../_/utils/errorResponse";
+import { EJSON } from "bson";
 
 interface Segment {
     params: {
@@ -46,10 +47,6 @@ export async function GET(request: NextRequest, { params }: Segment) {
     const shouldFilterBySearchQuery =
         searchQuery !== null && searchQuery.length > 0;
 
-    const sortByField = shouldFilterBySearchQuery
-        ? { score: -1, order: 1 }
-        : { order: 1 };
-
     if (shouldFilterBySearchQuery) {
         tasksPipeline.push({
             $search: {
@@ -72,11 +69,16 @@ export async function GET(request: NextRequest, { params }: Segment) {
                 createdAt: {
                     $toString: "$createdAt",
                 },
-                dueAt: { $toString: "$dueAt" },
                 score: { $ifNull: [{ $meta: "searchScore" }, 0] },
+                fakeDueAt: {
+                    $cond: [
+                        { $eq: ["$dueAt", null] },
+                        EJSON.serialize(new Date(8640000000000000)),
+                        "$dueAt",
+                    ],
+                },
             },
         },
-        { $sort: sortByField },
         { $unset: "_id" }
     );
 
@@ -93,6 +95,7 @@ export async function GET(request: NextRequest, { params }: Segment) {
                     localField: "_id",
                     foreignField: "taskBoardId",
                     as: "taskLists",
+                    let: { sortBy: "$sortBy" },
                     pipeline: [
                         {
                             $lookup: {
@@ -109,10 +112,66 @@ export async function GET(request: NextRequest, { params }: Segment) {
                                 taskBoardId: { $toString: "$taskBoardId" },
                                 createdAt: { $toString: "$createdAt" },
                                 score: { $sum: "$tasks.score" },
+                                tasks: {
+                                    $cond: [
+                                        { $eq: ["$sortBy", "dueAt"] },
+                                        {
+                                            $sortArray: {
+                                                input: "$tasks",
+                                                sortBy: shouldFilterBySearchQuery
+                                                    ? {
+                                                          score: -1,
+                                                          fakeDueAt: 1,
+                                                      }
+                                                    : { fakeDueAt: 1 },
+                                            },
+                                        },
+                                        {
+                                            $sortArray: {
+                                                input: "$tasks",
+                                                sortBy: shouldFilterBySearchQuery
+                                                    ? { score: -1, order: 1 }
+                                                    : { order: 1 },
+                                            },
+                                        },
+                                    ],
+                                },
                             },
                         },
-                        { $sort: sortByField },
-                        { $unset: ["_id", "score", "tasks.score"] },
+                        {
+                            $addFields: {
+                                tasks: {
+                                    $map: {
+                                        input: "$tasks",
+                                        as: "task",
+                                        in: {
+                                            $mergeObjects: [
+                                                "$$task",
+                                                {
+                                                    dueAt: {
+                                                        $toString:
+                                                            "$$task.dueAt",
+                                                    },
+                                                },
+                                            ],
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                        {
+                            $sort: shouldFilterBySearchQuery
+                                ? { score: -1, order: 1 }
+                                : { order: 1 },
+                        },
+                        {
+                            $unset: [
+                                "_id",
+                                "score",
+                                "tasks.score",
+                                "tasks.fakeDueAt",
+                            ],
+                        },
                     ],
                 },
             },

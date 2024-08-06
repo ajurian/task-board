@@ -12,6 +12,7 @@ import {
     unprocessableEntityErrorResponse,
 } from "@/api/_/utils/errorResponse";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 interface Segment {
     params: {
@@ -56,8 +57,15 @@ export async function POST(request: NextRequest, { params }: Segment) {
     }
 
     const { user } = authority;
-    const redirectUri = `${getCurrentURL()}/board/${id}?share=${data.userEmails.join(
-        " "
+    const { userEmails } = data;
+
+    const validUserEmails = userEmails.filter((userEmail) => {
+        const { success } = z.string().email().safeParse(userEmail);
+        return success;
+    });
+
+    const redirectUri = `${getCurrentURL()}/board/${id}?share=${validUserEmails.join(
+        ","
     )}`;
     const link = new URL(`${getCurrentURL()}/auth/login`);
 

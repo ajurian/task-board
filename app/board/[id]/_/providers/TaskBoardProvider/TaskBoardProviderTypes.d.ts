@@ -3,11 +3,11 @@ import {
     AddTaskOptions,
     DeleteTaskListOptions,
     DeleteTaskOptions,
+    EditTaskListOptions,
     EditTaskOptions,
     MoveTaskListOptions,
     MoveTaskOptions,
     RenameTaskBoardOptions,
-    RenameTaskListOptions,
     UpdateFlowDirectionOptions,
     UserActiveOptions,
 } from "@/_/common/schema/mutation";
@@ -41,7 +41,7 @@ type NonCreationType =
     | "updateFlowDirection"
     | "moveTaskList"
     | "moveTask"
-    | "renameTaskList"
+    | "editTaskList"
     | "deleteTaskList"
     | "editTask"
     | "deleteTask";
@@ -50,7 +50,7 @@ type NonCreationOptions = {
     updateFlowDirection: UpdateFlowDirectionOptions;
     moveTaskList: MoveTaskListOptions;
     moveTask: MoveTaskOptions;
-    renameTaskList: RenameTaskListOptions;
+    editTaskList: EditTaskListOptions;
     deleteTaskList: DeleteTaskListOptions;
     editTask: EditTaskOptions;
     deleteTask: DeleteTaskOptions;
@@ -98,6 +98,7 @@ interface TaskBoardContextValue {
     canUserUpdateThumbnail: boolean;
     canUserCreateOrDeleteTaskList: boolean;
     canUserRenameTaskList: boolean;
+    canUserUpdateSortBy: boolean;
     canUserReorderTaskList: boolean;
     canUserCreateOrDeleteTask: boolean;
     canUserUpdateTaskTitle: boolean;
@@ -119,11 +120,7 @@ interface TaskBoardContextValue {
     moveTaskListMutation: UseMutationResult<void, Error, MoveTaskListOptions>;
     moveTaskMutation: UseMutationResult<void, Error, MoveTaskOptions>;
     addTaskListMutation: UseMutationResult<void, Error, AddTaskListOptions>;
-    renameTaskListMutation: UseMutationResult<
-        void,
-        Error,
-        RenameTaskListOptions
-    >;
+    editTaskListMutation: UseMutationResult<void, Error, EditTaskListOptions>;
     deleteTaskListMutation: UseMutationResult<
         void,
         Error,
@@ -137,7 +134,7 @@ interface TaskBoardContextValue {
     moveTaskList: (options: MoveTaskListOptions) => void;
     moveTask: (options: MoveTaskOptions) => void;
     addTaskList: (options: Omit<AddTaskListOptions, "id">) => void;
-    renameTaskList: (options: RenameTaskListOptions) => void;
+    editTaskList: (options: EditTaskListOptions) => void;
     deleteTaskList: (options: DeleteTaskListOptions) => void;
     addTask: (options: Omit<AddTaskOptions, "id">) => void;
     editTask: (options: EditTaskOptions) => void;

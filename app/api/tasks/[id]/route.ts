@@ -53,6 +53,7 @@ export async function PATCH(request: NextRequest, { params }: Segment) {
         });
     }
 
+    console.log(data);
     const { title, details, isDone, dueAt } = data;
     let requiredPermission = 0;
 

@@ -114,7 +114,7 @@ export default function useContentEditable<T extends HTMLElement>({
     useEffect(() => {
         const localElement = ref.current;
 
-        if (localElement === null) {
+        if (isEditDisabled || localElement === null) {
             return;
         }
 
@@ -155,7 +155,7 @@ export default function useContentEditable<T extends HTMLElement>({
         window.addEventListener("click", onClick);
 
         return () => window.removeEventListener("click", onClick);
-    }, [onNodeIgnore, onStateReset, onEdit, focusedElement]);
+    }, [isEditDisabled, onNodeIgnore, onStateReset, onEdit, focusedElement]);
 
     return {
         ref,

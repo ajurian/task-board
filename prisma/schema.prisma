@@ -53,6 +53,7 @@ model TaskList {
     taskBoard   TaskBoard @relation(fields: [taskBoardId], references: [id])
     order       Int
     title       String
+    sortBy      SortBy    @default(order)
     createdAt   DateTime  @default(now())
     tasks       Task[]
 
@@ -76,4 +77,9 @@ model Task {
 enum FlowDirection {
     row
     column
+}
+
+enum SortBy {
+    order
+    dueAt
 }

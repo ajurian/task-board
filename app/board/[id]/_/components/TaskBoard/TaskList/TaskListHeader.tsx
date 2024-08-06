@@ -2,6 +2,7 @@ import {
     TASK_LIST_TITLE_MAX_LEN,
     TASK_LIST_TITLE_MIN_LEN,
 } from "@/_/common/constants/constraints";
+import { TaskListModel } from "@/_/common/schema/taskList";
 import { useInputState } from "@mantine/hooks";
 import { useRef } from "react";
 import { useTaskBoard } from "../../../providers/TaskBoardProvider";
@@ -17,21 +18,29 @@ import {
 interface TaskListHeaderProps {
     listId: string;
     title: string;
+    sortBy: TaskListModel["sortBy"];
 }
 
-export default function TaskListHeader({ listId, title }: TaskListHeaderProps) {
+export default function TaskListHeader({
+    listId,
+    title,
+    sortBy,
+}: TaskListHeaderProps) {
     const [titleInput, setTitleInput] = useInputState(title);
     const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
 
     const {
         canUserCreateOrDeleteTaskList,
         canUserRenameTaskList,
-        renameTaskList,
+        canUserUpdateSortBy,
+        editTaskList,
         deleteTaskList,
     } = useTaskBoard();
 
+    const canUserEditTaskList = canUserRenameTaskList && canUserUpdateSortBy;
+
     const { ref, isFocused, contentEditableProps } = useContentEditable({
-        isEditDisabled: !canUserRenameTaskList,
+        isEditDisabled: !canUserEditTaskList,
         onFocus: () => titleInputRef.current?.focus(),
         onStateReset: () => setTitleInput(title),
         onEdit: () => {
@@ -42,7 +51,7 @@ export default function TaskListHeader({ listId, title }: TaskListHeaderProps) {
                 return;
             }
 
-            renameTaskList({ id: listId, title: titleInput });
+            editTaskList({ id: listId, title: titleInput });
         },
     });
 
@@ -74,6 +83,7 @@ export default function TaskListHeader({ listId, title }: TaskListHeaderProps) {
             </TaskListHeaderTitleContainer>
             {(canUserRenameTaskList || canUserCreateOrDeleteTaskList) && (
                 <TaskListHeaderMenuTrigger
+                    sortBy={sortBy}
                     onRenameTitle={
                         canUserRenameTaskList
                             ? () => ref.current?.click()
