@@ -38,7 +38,7 @@ export default function TaskBoardCardRenameDialog({
             return;
         }
 
-        titleInputRef.current?.select();
+        titleInputRef.current?.focus();
         setTitle(initialTitle);
     };
 
@@ -72,6 +72,7 @@ export default function TaskBoardCardRenameDialog({
                     inputRef={titleInputRef}
                     value={title}
                     onChange={setTitle}
+                    onFocus={(e) => e.currentTarget.select()}
                     size="small"
                     fullWidth
                     sx={{ mt: "1px" }}
