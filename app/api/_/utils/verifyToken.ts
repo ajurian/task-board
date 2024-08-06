@@ -54,7 +54,11 @@ export default async function verifyToken() {
             return null;
         }
 
-        const userInfo = await refreshAccessToken();
-        return userInfo;
+        try {
+            const userInfo = await refreshAccessToken();
+            return userInfo;
+        } catch (e) {
+            return null;
+        }
     }
 }
