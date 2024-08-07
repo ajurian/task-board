@@ -54,7 +54,7 @@ export default function TaskList({
                     tabIndex={0}
                 >
                     <TaskListHeader listId={id} title={title} sortBy={sortBy} />
-                    <TaskItemPlaceholder listId={id} />
+                    <TaskItemPlaceholder listId={id} taskCount={tasks.length} />
                     <TaskListItemsWrapper order={order} tasks={pendingTasks} />
                     {completedTasks.length > 0 && (
                         <TaskListCompletedItems

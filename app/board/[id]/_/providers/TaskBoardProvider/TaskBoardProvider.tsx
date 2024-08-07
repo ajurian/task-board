@@ -168,6 +168,16 @@ export default function TaskBoardProvider({
         [taskBoardQuery.data.defaultPermission]
     );
 
+    const maxTaskLists = useMemo(
+        () => taskBoardQuery.data.maxTaskLists,
+        [taskBoardQuery.data.maxTaskLists]
+    );
+
+    const maxTasks = useMemo(
+        () => taskBoardQuery.data.maxTasks,
+        [taskBoardQuery.data.maxTasks]
+    );
+
     const [taskLists, setTaskLists] = useState<AggregatedTaskListModel[]>(
         taskBoardQuery.data.taskLists
     );
@@ -1037,6 +1047,8 @@ export default function TaskBoardProvider({
                 displayName,
                 flowDirection,
                 defaultPermission,
+                maxTaskLists,
+                maxTasks,
                 taskLists,
                 users,
                 taskBoardUser,

@@ -26,6 +26,8 @@ model TaskBoard {
     defaultPermission Int             @default(0)
     thumbnailData     Bytes?
     createdAt         DateTime        @default(now())
+    maxTaskLists      Int             @default(14)
+    maxTasks          Int             @default(30)
     taskLists         TaskList[]
     users             TaskBoardUser[]
 

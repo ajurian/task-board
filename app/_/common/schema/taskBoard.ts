@@ -52,6 +52,8 @@ export const TaskBoardModelSchema = z.object({
         })
         .nullable(),
     createdAt: z.coerce.date(),
+    maxTaskLists: z.number().int().positive(),
+    maxTasks: z.number().int().positive(),
 });
 
 export const TaskBoardCreateSchema = TaskBoardModelSchema.omit({
@@ -60,12 +62,16 @@ export const TaskBoardCreateSchema = TaskBoardModelSchema.omit({
     defaultPermission: true,
     thumbnailData: true,
     createdAt: true,
+    maxTaskLists: true,
+    maxTasks: true,
 });
 
 export const TaskBoardUpdateSchema = TaskBoardModelSchema.omit({
     id: true,
     thumbnailData: true,
     createdAt: true,
+    maxTaskLists: true,
+    maxTasks: true,
 })
     .extend({
         thumbnailData: z

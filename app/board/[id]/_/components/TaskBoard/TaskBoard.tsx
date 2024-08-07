@@ -35,7 +35,9 @@ export default function TaskBoard() {
                                 <TaskList key={index} {...taskList} />
                             ))}
                             {placeholder}
-                            <TaskListPlaceholder />
+                            <TaskListPlaceholder
+                                taskListCount={taskLists.length}
+                            />
                         </TaskBoardListContainer>
                     )}
                 </Droppable>

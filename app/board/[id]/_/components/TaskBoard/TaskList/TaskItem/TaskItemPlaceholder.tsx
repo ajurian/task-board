@@ -1,4 +1,3 @@
-import { PERMISSION_TASK_CREATE_DELETE } from "@/_/common/constants/permissions";
 import { useTaskBoard } from "@/board/[id]/_/providers/TaskBoardProvider";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -16,19 +15,24 @@ import {
 
 interface TaskItemPlaceholderProps {
     listId: string;
+    taskCount: number;
 }
 
 export default function TaskItemPlaceholder({
     listId,
+    taskCount,
 }: TaskItemPlaceholderProps) {
     const [titleInput, setTitleInput] = useInputState("");
     const [detailsInput, setDetailsInput] = useInputState("");
     const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
     const detailsInputRef = useRef<HTMLTextAreaElement | null>(null);
 
-    const { canUserCreateOrDeleteTask, addTask } = useTaskBoard();
+    const { maxTasks, canUserCreateOrDeleteTask, addTask } = useTaskBoard();
+
+    const isEditDisabled = taskCount >= maxTasks;
 
     const { ref, isFocused, contentEditableProps } = useContentEditable({
+        isEditDisabled,
         onFocus: () => titleInputRef.current?.focus(),
         onStateReset: () => {
             setTitleInput("");
@@ -57,6 +61,7 @@ export default function TaskItemPlaceholder({
             {...contentEditableProps}
             ref={ref}
             isFocused={isFocused}
+            isDisabled={isEditDisabled}
         >
             <TaskItemPlaceholderTitleContainer>
                 <TaskItemPlaceholderTIconWrapper>

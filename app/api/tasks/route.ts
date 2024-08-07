@@ -72,6 +72,19 @@ export async function POST(request: NextRequest) {
     }
 
     const task = await runTransaction(async (prisma) => {
+        const { maxTasks } = await prisma.taskBoard.findUniqueOrThrow({
+            where: { id: authority.document.taskBoard.id },
+            select: { maxTasks: true },
+        });
+
+        const taskCount = await prisma.task.count({
+            where: { taskListId: data.taskListId },
+        });
+
+        if (taskCount >= maxTasks) {
+            throw new Error("Task list reached maximum task limit");
+        }
+
         await prisma.task.updateMany({
             where: { taskListId: data.taskListId },
             data: { order: { increment: 1 } },

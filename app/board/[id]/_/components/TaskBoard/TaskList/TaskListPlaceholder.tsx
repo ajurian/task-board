@@ -11,15 +11,28 @@ import {
     TaskListPlaceholderTextContainer,
 } from "./ui";
 
-export default function TaskListPlaceholder() {
+interface TaskListPlaceholderProps {
+    taskListCount: number;
+}
+
+export default function TaskListPlaceholder({
+    taskListCount,
+}: TaskListPlaceholderProps) {
     const [titleInput, setTitleInput] = useInputState("");
     const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
 
-    const { flowDirection, canUserCreateOrDeleteTaskList, addTaskList } =
-        useTaskBoard();
+    const {
+        flowDirection,
+        maxTaskLists,
+        canUserCreateOrDeleteTaskList,
+        addTaskList,
+    } = useTaskBoard();
+
+    const isEditDisabled = taskListCount >= maxTaskLists;
 
     const { ref, isFocused, contentEditableProps } =
         useContentEditable<HTMLDivElement>({
+            isEditDisabled,
             onFocus: () => titleInputRef.current?.focus(),
             onStateReset: () => setTitleInput(""),
             onEdit: () => {
@@ -41,6 +54,7 @@ export default function TaskListPlaceholder() {
             ref={ref}
             direction={flowDirection}
             isFocused={isFocused}
+            isDisabled={isEditDisabled}
         >
             <TaskListPlaceholderInput
                 inputRef={titleInputRef}

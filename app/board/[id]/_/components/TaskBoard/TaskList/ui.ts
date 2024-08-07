@@ -102,9 +102,11 @@ export const AddTaskButton = styled(Button)(({ theme }) => ({
 
 export const TaskListPlaceholderContainer = styled(Box, {
     shouldForwardProp: (propName) =>
-        propName !== "direction" && propName !== "isFocused",
-})<{ direction: FlowDirection; isFocused: boolean }>(
-    ({ theme, direction, isFocused }) => ({
+        propName !== "direction" &&
+        propName !== "isFocused" &&
+        propName !== "isDisabled",
+})<{ direction: FlowDirection; isFocused: boolean; isDisabled: boolean }>(
+    ({ theme, direction, isFocused, isDisabled }) => ({
         WebkitTapHighlightColor: "transparent",
         display: "flex",
         alignItems: "center",
@@ -128,6 +130,10 @@ export const TaskListPlaceholderContainer = styled(Box, {
         ...(direction === "column" && {
             width: "100%",
             marginBottom: theme.spacing(80),
+        }),
+        ...(isDisabled && {
+            cursor: "default",
+            opacity: 0.5,
         }),
         ":focus-visible": {
             outline: 0,

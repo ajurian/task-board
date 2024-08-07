@@ -85,7 +85,7 @@ export default function Main() {
                                 variant="h6"
                                 sx={{
                                     "::after": {
-                                        content: "'Your list is empty'",
+                                        content: "'List is empty'",
                                     },
                                 }}
                             />

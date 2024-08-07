@@ -86,6 +86,8 @@ interface TaskBoardContextValue {
     displayName: string;
     flowDirection: FlowDirection;
     defaultPermission: number;
+    maxTaskLists: number;
+    maxTasks: number;
     taskLists: AggregatedTaskListModel[];
     users: AggregatedTaskBoardModel["users"];
     taskBoardUser: TaskBoardUserModel;

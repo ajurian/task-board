@@ -197,35 +197,46 @@ export const TaskItemDueDateSelectCommon = styled(MenuItem)(({ theme }) => ({
 }));
 
 export const TaskItemPlaceholderContainer = styled(Box, {
-    shouldForwardProp: (propName) => propName !== "isFocused",
-})<{ isFocused: boolean }>(({ theme, isFocused }) => ({
-    WebkitTapHighlightColor: "transparent",
-    paddingInline: theme.spacing(2.75),
-    paddingBlock: theme.spacing(1.5),
-    color: theme.palette.primary.main,
-    transition: theme.transitions.create(["box-shadow", "background-color"], {
-        duration: theme.transitions.duration.shortest,
-    }),
-    boxShadow: theme.shadows[0],
-    backgroundColor: theme.palette.background.paper,
-    ":focus-visible": {
-        outline: 0,
-        backgroundColor: theme.palette.grey[100],
-    },
-    ...(isFocused && {
-        zIndex: 2,
-        cursor: "default",
-        boxShadow: theme.shadows[1],
-        backgroundColor: theme.palette.grey[200],
-    }),
-    ...(!isFocused && {
-        ":hover": {
-            zIndex: 1,
-            cursor: "pointer",
+    shouldForwardProp: (propName) =>
+        propName !== "isFocused" && propName !== "isDisabled",
+})<{ isFocused: boolean; isDisabled: boolean }>(
+    ({ theme, isFocused, isDisabled }) => ({
+        WebkitTapHighlightColor: "transparent",
+        paddingInline: theme.spacing(2.75),
+        paddingBlock: theme.spacing(1.5),
+        color: theme.palette.primary.main,
+        transition: theme.transitions.create(
+            ["box-shadow", "background-color"],
+            {
+                duration: theme.transitions.duration.shortest,
+            }
+        ),
+        boxShadow: theme.shadows[0],
+        backgroundColor: theme.palette.background.paper,
+        ":focus-visible": {
+            outline: 0,
             backgroundColor: theme.palette.grey[100],
         },
-    }),
-}));
+        ...(isFocused && {
+            zIndex: 2,
+            cursor: "default",
+            boxShadow: theme.shadows[1],
+            backgroundColor: theme.palette.grey[200],
+        }),
+        ...(!isFocused &&
+            !isDisabled && {
+                cursor: "pointer",
+                ":hover": {
+                    zIndex: 1,
+                    backgroundColor: theme.palette.grey[100],
+                },
+            }),
+        ...(isDisabled && {
+            cursor: "default",
+            opacity: 0.5,
+        }),
+    })
+);
 
 export const TaskItemPlaceholderTitleContainer = styled(Box)(({ theme }) => ({
     display: "flex",
