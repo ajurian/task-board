@@ -863,6 +863,12 @@ export default function TaskBoardProvider({
     ]);
 
     useEffect(() => {
+        ClientTaskBoardUserAPI.patch(taskBoardUser.id, {
+            recentlyAccessedAt: new Date(),
+        }).catch(() => {});
+    }, [taskBoardUser.id]);
+
+    useEffect(() => {
         const channel = pusherClient.subscribe(
             `presence-${id}`
         ) as PresenceChannel;
