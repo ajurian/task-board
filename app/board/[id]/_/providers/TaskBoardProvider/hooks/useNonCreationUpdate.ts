@@ -1,5 +1,5 @@
 import { UseMutateAsyncFunction, useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
     NonCreationMutation,
     NonCreationOptions,
@@ -26,6 +26,21 @@ export default function useNonCreationUpdate<
     onMutationStateChange,
 }: UseNonCreationUpdateOptions<T, O>) {
     const queryClient = useQueryClient();
+    const onMutateRef = useRef(onMutate);
+    const onOptimisticUpdateRef = useRef(onOptimisticUpdate);
+    const onMutationStateChangeRef = useRef(onMutationStateChange);
+
+    useEffect(() => {
+        onMutateRef.current = onMutate;
+    }, [onMutate]);
+
+    useEffect(() => {
+        onOptimisticUpdateRef.current = onOptimisticUpdate;
+    }, [onOptimisticUpdate]);
+
+    useEffect(() => {
+        onMutationStateChangeRef.current = onMutationStateChange;
+    }, [onMutationStateChange]);
 
     return useCallback(
         (options: O) => {
@@ -35,9 +50,13 @@ export default function useNonCreationUpdate<
                 type: "active",
             });
 
-            onOptimisticUpdate(options);
-            onMutationStateChange({ type, options, onMutate });
+            onOptimisticUpdateRef.current(options);
+            onMutationStateChangeRef.current({
+                type,
+                options,
+                onMutate: onMutateRef.current,
+            });
         },
-        [type, onMutate, onOptimisticUpdate, onMutationStateChange, queryClient]
+        [type, queryClient]
     );
 }

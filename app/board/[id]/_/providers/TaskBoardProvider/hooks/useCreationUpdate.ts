@@ -1,6 +1,6 @@
 import { UseMutateAsyncFunction, useQueryClient } from "@tanstack/react-query";
 import { ObjectId } from "bson";
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
     CreationMutation,
     CreationOptions,
@@ -27,6 +27,21 @@ export default function useCreationUpdate<
     onMutationStateChange,
 }: UseCreationUpdateOptions<T, O>) {
     const queryClient = useQueryClient();
+    const onMutateRef = useRef(onMutate);
+    const onOptimisticUpdateRef = useRef(onOptimisticUpdate);
+    const onMutationStateChangeRef = useRef(onMutationStateChange);
+
+    useEffect(() => {
+        onMutateRef.current = onMutate;
+    }, [onMutate]);
+
+    useEffect(() => {
+        onOptimisticUpdateRef.current = onOptimisticUpdate;
+    }, [onOptimisticUpdate]);
+
+    useEffect(() => {
+        onMutationStateChangeRef.current = onMutationStateChange;
+    }, [onMutationStateChange]);
 
     return useCallback(
         (options: Omit<O, "id">) => {
@@ -39,13 +54,13 @@ export default function useCreationUpdate<
                 type: "active",
             });
 
-            onOptimisticUpdate(optionsWithId);
-            onMutationStateChange({
+            onOptimisticUpdateRef.current(optionsWithId);
+            onMutationStateChangeRef.current({
                 type,
                 options: optionsWithId,
-                onMutate,
+                onMutate: onMutateRef.current,
             });
         },
-        [onOptimisticUpdate, onMutationStateChange, type, onMutate, queryClient]
+        [type, queryClient]
     );
 }

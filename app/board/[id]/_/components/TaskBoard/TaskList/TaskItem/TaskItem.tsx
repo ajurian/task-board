@@ -5,7 +5,7 @@ import {
     TASK_TITLE_MIN_LEN,
 } from "@/_/common/constants/constraints";
 import { TaskModel } from "@/_/common/schema/task";
-import { useTaskBoard } from "@/board/[id]/_/providers/TaskBoardProvider";
+import { TaskBoardContextValue } from "@/board/[id]/_/providers/TaskBoardProvider/TaskBoardProviderTypes";
 import {
     faCalendar,
     faCheck,
@@ -15,7 +15,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Draggable } from "@hello-pangea/dnd";
 import { mergeRefs, useInputState } from "@mantine/hooks";
 import { IconButton } from "@mui/material";
+import _ from "lodash";
 import {
+    memo,
     TransitionEventHandler,
     useCallback,
     useMemo,
@@ -39,14 +41,43 @@ import {
     TaskItemTitleText,
 } from "./ui";
 
-export interface TaskItemProps extends Omit<TaskModel, "isDone"> {}
+const INPUT_TYPE = {
+    NONE: 0,
+    TITLE: 1,
+    DETIALS: 2,
+    DUE_AT: 3,
+} as const;
 
-export default function TaskItem({
+export interface TaskItemProps
+    extends Omit<TaskModel, "isDone">,
+        Pick<
+            TaskBoardContextValue,
+            | "canUserCreateOrDeleteTask"
+            | "canUserUpdateTaskTitle"
+            | "canUserUpdateTaskDetails"
+            | "canUserCompleteTask"
+            | "canUserScheduleTask"
+            | "canUserReorderTask"
+            | "editTask"
+            | "deleteTask"
+            | "searchQuery"
+        > {}
+
+const TaskItem = memo(function TaskItem({
     id,
     order,
     title,
     details,
     dueAt,
+    canUserCreateOrDeleteTask,
+    canUserUpdateTaskTitle,
+    canUserUpdateTaskDetails,
+    canUserCompleteTask,
+    canUserScheduleTask,
+    canUserReorderTask,
+    editTask,
+    deleteTask,
+    searchQuery,
 }: TaskItemProps) {
     const initialTitle = useMemo(() => title.replace(/\\n/g, "\n"), [title]);
     const initialDetails = useMemo(
@@ -65,21 +96,11 @@ export default function TaskItem({
     const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
     const detailsInputRef = useRef<HTMLTextAreaElement | null>(null);
     const dueAtInputRef = useRef<HTMLButtonElement | null>(null);
+    const focusedRef = useRef<number>(INPUT_TYPE.NONE);
 
     const [actionAfterFade, setActionAfterFade] = useState<(() => void) | null>(
         null
     );
-    const {
-        canUserCreateOrDeleteTask,
-        canUserUpdateTaskTitle,
-        canUserUpdateTaskDetails,
-        canUserCompleteTask,
-        canUserScheduleTask,
-        canUserReorderTask,
-        editTask,
-        deleteTask,
-        searchQuery,
-    } = useTaskBoard();
 
     const canUserEditTask =
         canUserUpdateTaskTitle &&
@@ -95,12 +116,27 @@ export default function TaskItem({
             node !== ref.current,
         onFocus: (node) => {
             if (node === detailsRef.current) {
-                detailsInputRef.current?.focus();
+                focusedRef.current = INPUT_TYPE.DETIALS;
                 return;
             }
 
             if (node === dueAtRef.current) {
-                setTimeout(() => dueAtInputRef.current?.click());
+                focusedRef.current = INPUT_TYPE.DUE_AT;
+                return;
+            }
+
+            focusedRef.current = INPUT_TYPE.TITLE;
+        },
+        onFocusAfter: () => {
+            const focused = focusedRef.current;
+
+            if (focused === INPUT_TYPE.DETIALS) {
+                detailsInputRef.current?.focus();
+                return;
+            }
+
+            if (focused === INPUT_TYPE.DUE_AT) {
+                dueAtInputRef.current?.click();
                 return;
             }
 
@@ -201,33 +237,38 @@ export default function TaskItem({
                                         <FontAwesomeIcon icon={faCheck} />
                                     </IconButton>
                                 )}
-                                <TaskItemTitleInput
-                                    inputRef={titleInputRef}
-                                    isContainerFocused={isFocused}
-                                    value={titleInput}
-                                    onChange={setTitleInput}
-                                    onFocus={(e) => e.currentTarget.select()}
-                                    onKeyDown={(e) =>
-                                        e.key === "Enter" && e.preventDefault()
-                                    }
-                                    inputProps={{
-                                        style: { padding: 0 },
-                                        maxLength: TASK_TITLE_MAX_LEN,
-                                        "data-disable-multiline": true,
-                                    }}
-                                    placeholder="Title"
-                                    size="small"
-                                    multiline
-                                    fullWidth
-                                />
-                                <TaskItemTitleText
-                                    ref={titleRef}
-                                    isContainerFocused={isFocused}
-                                    variant="subtitle1"
-                                    noWrap
-                                >
-                                    {initialTitle}
-                                </TaskItemTitleText>
+                                {isFocused && (
+                                    <TaskItemTitleInput
+                                        inputRef={titleInputRef}
+                                        value={titleInput}
+                                        onChange={setTitleInput}
+                                        onFocus={(e) =>
+                                            e.currentTarget.select()
+                                        }
+                                        onKeyDown={(e) =>
+                                            e.key === "Enter" &&
+                                            e.preventDefault()
+                                        }
+                                        inputProps={{
+                                            style: { padding: 0 },
+                                            maxLength: TASK_TITLE_MAX_LEN,
+                                            "data-disable-multiline": true,
+                                        }}
+                                        placeholder="Title"
+                                        size="small"
+                                        multiline
+                                        fullWidth
+                                    />
+                                )}
+                                {!isFocused && (
+                                    <TaskItemTitleText
+                                        ref={titleRef}
+                                        variant="subtitle1"
+                                        noWrap
+                                    >
+                                        {initialTitle}
+                                    </TaskItemTitleText>
+                                )}
                                 {(canUserEditTask ||
                                     canUserCreateOrDeleteTask) && (
                                     <TaskItemMenuTrigger
@@ -248,32 +289,32 @@ export default function TaskItem({
                                     />
                                 )}
                             </TaskItemTitleContainer>
-                            <TaskItemDetailsInput
-                                inputRef={detailsInputRef}
-                                isContainerFocused={isFocused}
-                                value={detailsInput}
-                                onChange={setDetailsInput}
-                                onFocus={(e) => e.currentTarget.select()}
-                                inputProps={{
-                                    style: { padding: 0 },
-                                    maxLength: TASK_DETAILS_MAX_LEN,
-                                }}
-                                placeholder="Details"
-                                size="small"
-                                multiline
-                                fullWidth
-                            />
-                            <TaskItemDetailsText
-                                ref={detailsRef}
-                                isContainerFocused={isFocused}
-                                variant="body2"
-                            >
-                                {initialDetails}
-                            </TaskItemDetailsText>
-                            {dueAt !== null && (
-                                <TaskItemDueDateTagWrapper
-                                    isContainerFocused={isFocused}
+                            {isFocused && (
+                                <TaskItemDetailsInput
+                                    inputRef={detailsInputRef}
+                                    value={detailsInput}
+                                    onChange={setDetailsInput}
+                                    onFocus={(e) => e.currentTarget.select()}
+                                    inputProps={{
+                                        style: { padding: 0 },
+                                        maxLength: TASK_DETAILS_MAX_LEN,
+                                    }}
+                                    placeholder="Details"
+                                    size="small"
+                                    multiline
+                                    fullWidth
+                                />
+                            )}
+                            {!isFocused && (
+                                <TaskItemDetailsText
+                                    ref={detailsRef}
+                                    variant="body2"
                                 >
+                                    {initialDetails}
+                                </TaskItemDetailsText>
+                            )}
+                            {!isFocused && dueAt !== null && (
+                                <TaskItemDueDateTagWrapper>
                                     <TaskItemDueDateTagText
                                         ref={dueAtRef}
                                         variant="button"
@@ -291,19 +332,22 @@ export default function TaskItem({
                                     </TaskItemDueDateTagText>
                                 </TaskItemDueDateTagWrapper>
                             )}
-                            <TaskItemDueDateSelectTriggerWrapper
-                                isContainerFocused={isFocused}
-                            >
-                                <TaskItemDueDateSelectTrigger
-                                    ref={dueAtInputRef}
-                                    date={dueAtInput}
-                                    onDateChange={setDueAtInput}
-                                />
-                            </TaskItemDueDateSelectTriggerWrapper>
+                            {isFocused && (
+                                <TaskItemDueDateSelectTriggerWrapper>
+                                    <TaskItemDueDateSelectTrigger
+                                        ref={dueAtInputRef}
+                                        date={dueAtInput}
+                                        onDateChange={setDueAtInput}
+                                    />
+                                </TaskItemDueDateSelectTriggerWrapper>
+                            )}
                         </TaskItemContainer>
                     </TaskItemFade>
                 )}
             </Draggable>
         </>
     );
-}
+},
+_.isEqual);
+
+export default TaskItem;

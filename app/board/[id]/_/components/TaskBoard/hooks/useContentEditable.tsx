@@ -15,6 +15,7 @@ interface UseContentEditableOptions {
     isEditDisabled?: boolean;
     onNodeIgnore?: (node: HTMLElement) => boolean;
     onFocus?: (node: HTMLElement) => void;
+    onFocusAfter?: (node: HTMLElement) => void;
     onStateReset?: () => void;
     onEdit?: () => void;
 }
@@ -23,6 +24,7 @@ export default function useContentEditable<T extends HTMLElement>({
     isEditDisabled = false,
     onNodeIgnore,
     onFocus,
+    onFocusAfter,
     onStateReset,
     onEdit,
 }: UseContentEditableOptions) {
@@ -37,8 +39,9 @@ export default function useContentEditable<T extends HTMLElement>({
             if (e.key === "Enter") {
                 if (focusedElement === null) {
                     e.preventDefault();
-                    onStateReset?.();
                     setFocusedElement(e.currentTarget);
+                    onFocus?.(e.currentTarget);
+                    onStateReset?.();
                     return;
                 }
 
@@ -52,8 +55,9 @@ export default function useContentEditable<T extends HTMLElement>({
                 }
 
                 e.preventDefault();
-                onEdit?.();
                 setFocusedElement(null);
+                onEdit?.();
+
                 return;
             }
 
@@ -64,7 +68,7 @@ export default function useContentEditable<T extends HTMLElement>({
                 return;
             }
         },
-        [onStateReset, onEdit, focusedElement]
+        [onFocus, onStateReset, onEdit, focusedElement]
     );
 
     const onBlur: FocusEventHandler<T> = useCallback(
@@ -108,8 +112,8 @@ export default function useContentEditable<T extends HTMLElement>({
             return;
         }
 
-        onFocus?.(focusedElement);
-    }, [onFocus, focusedElement, previousFocusedElement]);
+        onFocusAfter?.(focusedElement);
+    }, [onFocusAfter, focusedElement, previousFocusedElement]);
 
     useEffect(() => {
         const localElement = ref.current;
@@ -126,12 +130,11 @@ export default function useContentEditable<T extends HTMLElement>({
                     const ignoreNode =
                         onNodeIgnore?.(e.target as HTMLElement) ?? false;
 
-                    onStateReset?.();
-
                     if (ignoreNode) {
-                        setFocusedElement(null);
                         return;
                     }
+
+                    onFocus?.(eventTarget);
                 }
 
                 setFocusedElement(eventTarget);
@@ -155,7 +158,14 @@ export default function useContentEditable<T extends HTMLElement>({
         window.addEventListener("click", onClick);
 
         return () => window.removeEventListener("click", onClick);
-    }, [isEditDisabled, onNodeIgnore, onStateReset, onEdit, focusedElement]);
+    }, [
+        isEditDisabled,
+        onNodeIgnore,
+        onFocus,
+        onStateReset,
+        onEdit,
+        focusedElement,
+    ]);
 
     return {
         ref,

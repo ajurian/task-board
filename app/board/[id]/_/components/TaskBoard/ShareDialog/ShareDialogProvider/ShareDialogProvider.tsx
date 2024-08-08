@@ -1,5 +1,5 @@
+import { PERMISSION_TO_ROLE } from "@/_/common/constants/permissions";
 import ClientTaskBoardAPI from "@/api/_/common/layers/client/TaskBoardAPI";
-import ClientTaskBoardUserAPI from "@/api/_/common/layers/client/TaskBoardUserAPI";
 import { useTaskBoard } from "@/board/[id]/_/providers/TaskBoardProvider";
 import _ from "lodash";
 import {
@@ -14,10 +14,6 @@ import {
     ShareDialogProviderProps,
     UsersMap,
 } from "./ShareDialogProviderTypes";
-import {
-    PERMISSION_ROLE_EDITOR,
-    PERMISSION_TO_ROLE,
-} from "@/_/common/constants/permissions";
 
 const ShareDialogContext = createContext<ShareDialogContextValue | null>(null);
 

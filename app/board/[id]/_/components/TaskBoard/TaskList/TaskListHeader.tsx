@@ -5,7 +5,7 @@ import {
 import { TaskListModel } from "@/_/common/schema/taskList";
 import { useInputState } from "@mantine/hooks";
 import { useRef } from "react";
-import { useTaskBoard } from "../../../providers/TaskBoardProvider";
+import { TaskBoardContextValue } from "../../../providers/TaskBoardProvider/TaskBoardProviderTypes";
 import useContentEditable from "../hooks/useContentEditable";
 import TaskListHeaderMenuTrigger from "./TaskListHeaderMenuTrigger";
 import {
@@ -15,7 +15,15 @@ import {
     TaskListHeaderTitleText,
 } from "./ui";
 
-interface TaskListHeaderProps {
+interface TaskListHeaderProps
+    extends Pick<
+        TaskBoardContextValue,
+        | "canUserCreateOrDeleteTaskList"
+        | "canUserRenameTaskList"
+        | "canUserUpdateSortBy"
+        | "editTaskList"
+        | "deleteTaskList"
+    > {
     listId: string;
     title: string;
     sortBy: TaskListModel["sortBy"];
@@ -25,23 +33,20 @@ export default function TaskListHeader({
     listId,
     title,
     sortBy,
+    canUserCreateOrDeleteTaskList,
+    canUserRenameTaskList,
+    canUserUpdateSortBy,
+    editTaskList,
+    deleteTaskList,
 }: TaskListHeaderProps) {
     const [titleInput, setTitleInput] = useInputState(title);
     const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
-
-    const {
-        canUserCreateOrDeleteTaskList,
-        canUserRenameTaskList,
-        canUserUpdateSortBy,
-        editTaskList,
-        deleteTaskList,
-    } = useTaskBoard();
 
     const canUserEditTaskList = canUserRenameTaskList && canUserUpdateSortBy;
 
     const { ref, isFocused, contentEditableProps } = useContentEditable({
         isEditDisabled: !canUserEditTaskList,
-        onFocus: () => titleInputRef.current?.focus(),
+        onFocusAfter: () => titleInputRef.current?.focus(),
         onStateReset: () => setTitleInput(title),
         onEdit: () => {
             if (
@@ -62,24 +67,28 @@ export default function TaskListHeader({
                 ref={ref}
                 isFocused={isFocused}
                 onFocus={(e) => e.currentTarget.click()}
+                tabIndex={-1}
             >
-                <TaskListHeaderTitleInput
-                    inputRef={titleInputRef}
-                    isContainerFocused={isFocused}
-                    value={titleInput}
-                    onChange={setTitleInput}
-                    onFocus={(e) => e.currentTarget.select()}
-                    inputProps={{
-                        style: { padding: 0 },
-                        maxLength: TASK_LIST_TITLE_MAX_LEN,
-                    }}
-                    placeholder="Title"
-                    size="small"
-                    fullWidth
-                />
-                <TaskListHeaderTitleText isContainerFocused={isFocused} noWrap>
-                    {title}
-                </TaskListHeaderTitleText>
+                {isFocused && (
+                    <TaskListHeaderTitleInput
+                        inputRef={titleInputRef}
+                        value={titleInput}
+                        onChange={setTitleInput}
+                        onFocus={(e) => e.currentTarget.select()}
+                        inputProps={{
+                            style: { padding: 0 },
+                            maxLength: TASK_LIST_TITLE_MAX_LEN,
+                        }}
+                        placeholder="Title"
+                        size="small"
+                        fullWidth
+                    />
+                )}
+                {!isFocused && (
+                    <TaskListHeaderTitleText noWrap>
+                        {title}
+                    </TaskListHeaderTitleText>
+                )}
             </TaskListHeaderTitleContainer>
             {(canUserRenameTaskList || canUserCreateOrDeleteTaskList) && (
                 <TaskListHeaderMenuTrigger

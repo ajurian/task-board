@@ -1,3 +1,7 @@
+import {
+    TASK_BOARD_DISPLAY_NAME_MAX_LEN,
+    TASK_BOARD_DISPLAY_NAME_MIN_LEN,
+} from "@/_/common/constants/constraints";
 import { faShare } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useDisclosure, useInputState } from "@mantine/hooks";
@@ -14,10 +18,6 @@ import {
     TaskBoardHeaderDisplayNameInput,
     TaskBoardHeaderDisplayNameText,
 } from "./ui";
-import {
-    TASK_BOARD_DISPLAY_NAME_MAX_LEN,
-    TASK_BOARD_DISPLAY_NAME_MIN_LEN,
-} from "@/_/common/constants/constraints";
 
 export default function TaskBoardHeader() {
     const {
@@ -43,7 +43,7 @@ export default function TaskBoardHeader() {
 
     const { ref, isFocused, contentEditableProps } = useContentEditable({
         isEditDisabled: !canUserRenameTaskBoard,
-        onFocus: () => displayNameInputRef.current?.focus(),
+        onFocusAfter: () => displayNameInputRef.current?.focus(),
         onStateReset: () => setDisplayNameInput(displayName),
         onEdit: () => {
             if (
@@ -68,26 +68,25 @@ export default function TaskBoardHeader() {
                 isFocused={isFocused}
                 onFocus={(e) => e.currentTarget.click()}
             >
-                <TaskBoardHeaderDisplayNameInput
-                    inputRef={displayNameInputRef}
-                    isContainerFocused={isFocused}
-                    value={displayNameInput}
-                    onChange={setDisplayNameInput}
-                    onFocus={(e) => e.currentTarget.select()}
-                    inputProps={{
-                        style: { padding: 0 },
-                        maxLength: TASK_BOARD_DISPLAY_NAME_MAX_LEN,
-                    }}
-                    size="small"
-                    fullWidth
-                />
-                <TaskBoardHeaderDisplayNameText
-                    variant="h6"
-                    isContainerFocused={isFocused}
-                    noWrap
-                >
-                    {displayName}
-                </TaskBoardHeaderDisplayNameText>
+                {isFocused && (
+                    <TaskBoardHeaderDisplayNameInput
+                        inputRef={displayNameInputRef}
+                        value={displayNameInput}
+                        onChange={setDisplayNameInput}
+                        onFocus={(e) => e.currentTarget.select()}
+                        inputProps={{
+                            style: { padding: 0 },
+                            maxLength: TASK_BOARD_DISPLAY_NAME_MAX_LEN,
+                        }}
+                        size="small"
+                        fullWidth
+                    />
+                )}
+                {!isFocused && (
+                    <TaskBoardHeaderDisplayNameText variant="h6" noWrap>
+                        {displayName}
+                    </TaskBoardHeaderDisplayNameText>
+                )}
             </TaskBoardHeaderDisplayNameContainer>
             {canUserRenameTaskBoard && (
                 <TaskBoardHeaderMenuTrigger

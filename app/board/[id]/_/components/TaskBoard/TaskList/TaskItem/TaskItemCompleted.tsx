@@ -1,5 +1,5 @@
 import { TaskModel } from "@/_/common/schema/task";
-import { useTaskBoard } from "@/board/[id]/_/providers/TaskBoardProvider";
+import { TaskBoardContextValue } from "@/board/[id]/_/providers/TaskBoardProvider/TaskBoardProviderTypes";
 import { faTrash, faUndo } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useHover } from "@mantine/hooks";
@@ -11,14 +11,17 @@ import {
     TaskItemTitleText,
 } from "./ui";
 
-export interface TaskItemCompletedProps extends Omit<TaskModel, "isDone"> {}
+export interface TaskItemCompletedProps
+    extends Omit<TaskModel, "isDone">,
+        Pick<TaskBoardContextValue, "editTask" | "deleteTask"> {}
 
 export default function TaskItemCompleted({
     id,
     title,
+    editTask,
+    deleteTask,
 }: TaskItemCompletedProps) {
     const theme = useTheme();
-    const { editTask, deleteTask } = useTaskBoard();
     const [actionAfterFade, setActionAfterFade] = useState<(() => void) | null>(
         null
     );
@@ -61,7 +64,6 @@ export default function TaskItemCompleted({
                         <FontAwesomeIcon icon={faUndo} />
                     </IconButton>
                     <TaskItemTitleText
-                        isContainerFocused={false}
                         variant="subtitle1"
                         sx={{ textDecoration: "line-through" }}
                     >

@@ -1,26 +1,33 @@
 import { AggregatedTaskListModel } from "@/_/common/schema/taskList";
 import { Draggable } from "@hello-pangea/dnd";
-import { useMemo, useState } from "react";
-import { useTaskBoard } from "../../../providers/TaskBoardProvider";
+import _ from "lodash";
+import { memo, useMemo, useState } from "react";
+import { TaskBoardContextValue } from "../../../providers/TaskBoardProvider/TaskBoardProviderTypes";
+import SelectFromTaskBoardContext from "../SelectFromTaskBoardContext";
 import TaskItemPlaceholder from "./TaskItem/TaskItemPlaceholder";
 import TaskListCompletedItems from "./TaskListCompletedItems";
 import TaskListHeader from "./TaskListHeader";
-import TaskListItemsWrapper from "./TaskListItemsWrapper";
+import TaskListItemsPending from "./TaskListItemsPending";
 import { TaskListContainer } from "./ui";
 
-export interface TaskListProps extends AggregatedTaskListModel {}
+export interface TaskListProps
+    extends AggregatedTaskListModel,
+        Pick<
+            TaskBoardContextValue,
+            "flowDirection" | "canUserReorderTaskList" | "searchQuery"
+        > {}
 
-export default function TaskList({
+const TaskList = memo(function TaskList({
     id,
     order,
     title,
     sortBy,
     tasks,
+    flowDirection,
+    canUserReorderTaskList,
+    searchQuery,
 }: TaskListProps) {
     const [isCompletedItemsOpen, setIsCompletedItemsOpen] = useState(false);
-    const { flowDirection, canUserReorderTaskList, searchQuery } =
-        useTaskBoard();
-
     const isDragDisabled = searchQuery.length > 0 || !canUserReorderTaskList;
 
     const pendingTasks = useMemo(
@@ -53,9 +60,42 @@ export default function TaskList({
                     isDragDisabled={isDragDisabled}
                     tabIndex={0}
                 >
-                    <TaskListHeader listId={id} title={title} sortBy={sortBy} />
-                    <TaskItemPlaceholder listId={id} taskCount={tasks.length} />
-                    <TaskListItemsWrapper order={order} tasks={pendingTasks} />
+                    <SelectFromTaskBoardContext
+                        selector={(state) => ({
+                            canUserCreateOrDeleteTaskList:
+                                state.canUserCreateOrDeleteTaskList,
+                            canUserRenameTaskList: state.canUserRenameTaskList,
+                            canUserUpdateSortBy: state.canUserUpdateSortBy,
+                            editTaskList: state.editTaskList,
+                            deleteTaskList: state.deleteTaskList,
+                        })}
+                    >
+                        {(state) => (
+                            <TaskListHeader
+                                listId={id}
+                                title={title}
+                                sortBy={sortBy}
+                                {...state}
+                            />
+                        )}
+                    </SelectFromTaskBoardContext>
+                    <SelectFromTaskBoardContext
+                        selector={(state) => ({
+                            maxTasks: state.maxTasks,
+                            canUserCreateOrDeleteTask:
+                                state.canUserCreateOrDeleteTask,
+                            addTask: state.addTask,
+                        })}
+                    >
+                        {(state) => (
+                            <TaskItemPlaceholder
+                                listId={id}
+                                taskCount={tasks.length}
+                                {...state}
+                            />
+                        )}
+                    </SelectFromTaskBoardContext>
+                    <TaskListItemsPending order={order} tasks={pendingTasks} />
                     {completedTasks.length > 0 && (
                         <TaskListCompletedItems
                             tasks={completedTasks}
@@ -67,4 +107,7 @@ export default function TaskList({
             )}
         </Draggable>
     );
-}
+},
+_.isEqual);
+
+export default TaskList;

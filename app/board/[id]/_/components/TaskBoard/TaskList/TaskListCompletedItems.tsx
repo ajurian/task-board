@@ -3,6 +3,7 @@ import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box } from "@mui/material";
 import { Dispatch, SetStateAction } from "react";
+import SelectFromTaskBoardContext from "../SelectFromTaskBoardContext/SelectFromTaskBoardContext";
 import useHeight from "./hooks/useHeight";
 import TaskItemCompleted from "./TaskItem/TaskItemCompleted";
 import {
@@ -43,9 +44,22 @@ export default function TaskListCompletedItems({
             </TaskListCompletedItemsTrigger>
             <TaskListCompletedItemsWrapper height={height} isOpen={isOpen}>
                 <TaskListItemsContainer ref={itemsWrapperRef}>
-                    {tasks.map((task, index) => (
-                        <TaskItemCompleted key={index} {...task} />
-                    ))}
+                    <SelectFromTaskBoardContext
+                        selector={(state) => ({
+                            editTask: state.editTask,
+                            deleteTask: state.deleteTask,
+                        })}
+                    >
+                        {(state) =>
+                            tasks.map((task, index) => (
+                                <TaskItemCompleted
+                                    key={index}
+                                    {...task}
+                                    {...state}
+                                />
+                            ))
+                        }
+                    </SelectFromTaskBoardContext>
                 </TaskListItemsContainer>
             </TaskListCompletedItemsWrapper>
         </TaskListCompletedItemsContainer>

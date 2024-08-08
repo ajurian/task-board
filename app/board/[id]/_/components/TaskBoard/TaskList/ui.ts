@@ -8,6 +8,10 @@ export const TaskListContainer = styled(Box, {
         propName !== "isDragDisabled",
 })<{ direction: FlowDirection; isDragging: boolean; isDragDisabled: boolean }>(
     ({ theme, direction, isDragging, isDragDisabled }) => ({
+        position: "relative",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
         borderStyle: "solid",
         borderWidth: 1,
         borderColor: theme.palette.divider,
@@ -18,9 +22,6 @@ export const TaskListContainer = styled(Box, {
         }),
         cursor: isDragDisabled ? "inherit" : "grab",
         ...(direction === "row" && {
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
             maxHeight: "calc(100vh - 7.0625rem - 18px)",
             minWidth: theme.spacing(80),
             maxWidth: theme.spacing(80),
@@ -29,6 +30,7 @@ export const TaskListContainer = styled(Box, {
         ...(direction === "column" && {
             width: "100%",
             maxWidth: "calc(100vw - 3rem)",
+            maxHeight: theme.spacing(160),
             marginBottom: theme.spacing(2),
         }),
         ":focus-visible": {
@@ -59,29 +61,18 @@ export const TaskListHeaderTitleContainer = styled(Box, {
     WebkitTapHighlightColor: "transparent",
     overflowX: "auto",
     flexGrow: isFocused ? 1 : 0,
+    ":focus-visible": {
+        outline: 0,
+    },
 }));
 
-export const TaskListHeaderTitleInput = styled(InputBase, {
-    shouldForwardProp: (propName) => propName !== "isContainerFocused",
-})<{ isContainerFocused: boolean }>(({ isContainerFocused }) => ({
+export const TaskListHeaderTitleInput = styled(InputBase)(() => ({
     height: `1lh`,
     paddingBlock: 0,
-    ...(!isContainerFocused && {
-        display: "none",
-        visibility: "hidden",
-        pointerEvents: "none",
-    }),
 }));
 
-export const TaskListHeaderTitleText = styled(Typography, {
-    shouldForwardProp: (propName) => propName !== "isContainerFocused",
-})<{ isContainerFocused: boolean }>(({ isContainerFocused }) => ({
+export const TaskListHeaderTitleText = styled(Typography)(() => ({
     cursor: "text",
-    ...(isContainerFocused && {
-        display: "none",
-        visibility: "hidden",
-        pointerEvents: "none",
-    }),
 }));
 
 export const TaskListHeaderLoadingWrapper = styled(Box)(({ theme }) => ({
@@ -142,31 +133,17 @@ export const TaskListPlaceholderContainer = styled(Box, {
     })
 );
 
-export const TaskListPlaceholderInput = styled(InputBase, {
-    shouldForwardProp: (propName) => propName !== "isContainerFocused",
-})<{ isContainerFocused: boolean }>(({ isContainerFocused }) => ({
+export const TaskListPlaceholderInput = styled(InputBase)(() => ({
     height: `1lh`,
-    ...(!isContainerFocused && {
-        display: "none",
-        visibility: "hidden",
-        pointerEvents: "none",
-    }),
 }));
 
-export const TaskListPlaceholderTextContainer = styled(Box, {
-    shouldForwardProp: (propName) => propName !== "isContainerFocused",
-})<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
+export const TaskListPlaceholderTextContainer = styled(Box)(({ theme }) => ({
     flex: 1,
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     gap: theme.spacing(2),
     color: theme.palette.text.secondary,
-    ...(isContainerFocused && {
-        display: "none",
-        visibility: "hidden",
-        pointerEvents: "none",
-    }),
 }));
 
 export const TaskListCompletedItemsContainer = styled(Box)(({ theme }) => ({

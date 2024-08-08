@@ -1,6 +1,12 @@
 import { AggregatedTaskListModel } from "@/_/common/schema/taskList";
 import _ from "lodash";
-import { Dispatch, SetStateAction, useCallback } from "react";
+import {
+    Dispatch,
+    SetStateAction,
+    useCallback,
+    useEffect,
+    useRef,
+} from "react";
 import { UpdateOptions } from "../TaskBoardProviderTypes";
 
 interface UseOptimisticUpdateOptions<O extends UpdateOptions> {
@@ -15,11 +21,22 @@ export default function useOptimisticUpdate<O extends UpdateOptions>({
     setTaskLists,
     onTaskListsChange,
 }: UseOptimisticUpdateOptions<O>) {
+    const setTaskListsRef = useRef(setTaskLists);
+    const onTaskListsChangeRef = useRef(onTaskListsChange);
+
+    useEffect(() => {
+        setTaskListsRef.current = setTaskLists;
+    }, [setTaskLists]);
+
+    useEffect(() => {
+        onTaskListsChangeRef.current = onTaskListsChange;
+    }, [onTaskListsChange]);
+
     return useCallback(
         (options: O) =>
-            setTaskLists((taskLists) =>
-                onTaskListsChange(_.cloneDeep(taskLists), options)
+            setTaskListsRef.current((taskLists) =>
+                onTaskListsChangeRef.current(_.cloneDeep(taskLists), options)
             ),
-        [setTaskLists, onTaskListsChange]
+        []
     );
 }

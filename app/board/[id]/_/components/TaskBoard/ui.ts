@@ -64,33 +64,23 @@ export const TaskBoardHeaderDisplayNameContainer = styled(Box, {
     flexGrow: isFocused ? 1 : 0,
 }));
 
-export const TaskBoardHeaderDisplayNameInput = styled(InputBase, {
-    shouldForwardProp: (propName) => propName !== "isContainerFocused",
-})<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
-    ...theme.typography.h6,
-    height: `1lh`,
-    paddingBlock: 0,
-    fontWeight: 400,
-    color: theme.palette.text.secondary,
-    ...(!isContainerFocused && {
-        display: "none",
-        visibility: "hidden",
-        pointerEvents: "none",
-    }),
-}));
+export const TaskBoardHeaderDisplayNameInput = styled(InputBase)(
+    ({ theme }) => ({
+        ...theme.typography.h6,
+        height: `1lh`,
+        paddingBlock: 0,
+        fontWeight: 400,
+        color: theme.palette.text.secondary,
+    })
+);
 
-export const TaskBoardHeaderDisplayNameText = styled(Typography, {
-    shouldForwardProp: (propName) => propName !== "isContainerFocused",
-})<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
-    color: theme.palette.text.secondary,
-    fontWeight: 400,
-    cursor: "text",
-    ...(isContainerFocused && {
-        display: "none",
-        visibility: "hidden",
-        pointerEvents: "none",
-    }),
-}));
+export const TaskBoardHeaderDisplayNameText = styled(Typography)(
+    ({ theme }) => ({
+        color: theme.palette.text.secondary,
+        fontWeight: 400,
+        cursor: "text",
+    })
+);
 
 export const TaskBoardListContainer = styled(Box, {
     shouldForwardProp: (propName) => propName !== "direction",

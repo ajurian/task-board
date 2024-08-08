@@ -85,53 +85,30 @@ export const TaskItemBulletPointWrapper = styled(Box)(({ theme }) => ({
     color: theme.palette.text.secondary,
 }));
 
-export const TaskItemTitleInput = styled(InputBase, {
-    shouldForwardProp: (propName) => propName !== "isContainerFocused",
-})<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
+export const TaskItemTitleInput = styled(InputBase)(({ theme }) => ({
     ...theme.typography.subtitle1,
     minHeight: "1lh",
     paddingBlock: 0,
-    ...(!isContainerFocused && {
-        display: "none",
-        visibility: "hidden",
-        pointerEvents: "none",
-    }),
 }));
 
-export const TaskItemTitleText = styled(Typography, {
-    shouldForwardProp: (propName) => propName !== "isContainerFocused",
-})<{ isContainerFocused: boolean }>(({ isContainerFocused }) => ({
+export const TaskItemTitleText = styled(Typography)(() => ({
     flex: 1,
     whiteSpace: "pre-wrap",
     wordWrap: "break-word",
     overflowWrap: "break-word",
     wordBreak: "break-word",
-    ...(isContainerFocused && {
-        display: "none",
-        visibility: "hidden",
-        pointerEvents: "none",
-    }),
 }));
 
-export const TaskItemDetailsInput = styled(InputBase, {
-    shouldForwardProp: (propName) => propName !== "isContainerFocused",
-})<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
+export const TaskItemDetailsInput = styled(InputBase)(({ theme }) => ({
     ...theme.typography.body2,
     minHeight: "1lh",
     paddingBlock: 0,
     paddingLeft: theme.spacing(9),
     paddingRight: theme.spacing(1.25),
     color: theme.palette.text.secondary,
-    ...(!isContainerFocused && {
-        display: "none",
-        visibility: "hidden",
-        pointerEvents: "none",
-    }),
 }));
 
-export const TaskItemDetailsText = styled(Typography, {
-    shouldForwardProp: (propName) => propName !== "isContainerFocused",
-})<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
+export const TaskItemDetailsText = styled(Typography)(({ theme }) => ({
     whiteSpace: "pre-wrap",
     wordWrap: "break-word",
     overflowWrap: "break-word",
@@ -139,23 +116,11 @@ export const TaskItemDetailsText = styled(Typography, {
     paddingLeft: theme.spacing(9),
     paddingRight: theme.spacing(1.25),
     color: theme.palette.text.secondary,
-    ...(isContainerFocused && {
-        display: "none",
-        visibility: "hidden",
-        pointerEvents: "none",
-    }),
 }));
 
-export const TaskItemDueDateTagWrapper = styled(Box, {
-    shouldForwardProp: (propName) => propName !== "isContainerFocused",
-})<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
+export const TaskItemDueDateTagWrapper = styled(Box)(({ theme }) => ({
     marginTop: theme.spacing(1),
     marginLeft: theme.spacing(1.75),
-    ...(isContainerFocused && {
-        display: "none",
-        visibility: "hidden",
-        pointerEvents: "none",
-    }),
 }));
 
 export const TaskItemDueDateTagText = styled(Typography)(({ theme }) => ({
@@ -169,16 +134,9 @@ export const TaskItemDueDateTagText = styled(Typography)(({ theme }) => ({
     borderRadius: "100vw",
 }));
 
-export const TaskItemDueDateSelectTriggerWrapper = styled(Box, {
-    shouldForwardProp: (propName) => propName !== "isContainerFocused",
-})<{ isContainerFocused: boolean }>(({ theme, isContainerFocused }) => ({
+export const TaskItemDueDateSelectTriggerWrapper = styled(Box)(({ theme }) => ({
     marginTop: theme.spacing(1),
     marginLeft: theme.spacing(1.75),
-    ...(!isContainerFocused && {
-        display: "none",
-        visibility: "hidden",
-        pointerEvents: "none",
-    }),
 }));
 
 export const TaskItemDueDateSelectTriggerButton = styled(Button)(

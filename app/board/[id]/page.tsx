@@ -11,8 +11,6 @@ import TaskBoard from "./_/components/TaskBoard";
 import DragDropProvider from "./_/providers/DragDropProvider";
 import TaskBoardProvider from "./_/providers/TaskBoardProvider";
 
-export const dynamic = "force-dynamic";
-
 interface BoardPageProps {
     params: {
         id: string;
