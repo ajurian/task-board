@@ -8,12 +8,13 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ListItemIcon, MenuList, Popover } from "@mui/material";
 import { DateCalendar } from "@mui/x-date-pickers";
-import dayjs, { Dayjs } from "dayjs";
 import React, { MouseEventHandler, useId, useMemo, useState } from "react";
 import {
     TaskItemDueDateSelectCommon,
     TaskItemDueDateSelectTriggerButton,
 } from "./ui";
+import dayjs from "@/_/common/lib/dayjs";
+import { Dayjs } from "dayjs";
 
 interface TaskItemDueDateMenuTriggerProps {
     date: Date | null;
@@ -83,8 +84,9 @@ const TaskItemDueDateSelectTrigger = React.forwardRef<
                     />
                 }
                 onClick={openPopover}
+                sx={{ textTransform: "capitalize" }}
             >
-                {date === null ? "No date" : date.toLocaleDateString()}
+                {date === null ? "No date" : dayjs().to(date)}
             </TaskItemDueDateSelectTriggerButton>
             <Popover
                 id={popoverId}

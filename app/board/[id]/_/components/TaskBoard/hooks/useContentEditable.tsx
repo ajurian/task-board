@@ -88,7 +88,6 @@ export default function useContentEditable<T extends HTMLElement>({
                 return;
             }
 
-            console.log("?");
             setFocusedElement(null);
             onStateReset?.();
         },
@@ -135,6 +134,7 @@ export default function useContentEditable<T extends HTMLElement>({
                         return;
                     }
 
+                    onStateReset?.();
                     onFocus?.(eventTarget);
                 }
 
@@ -153,7 +153,6 @@ export default function useContentEditable<T extends HTMLElement>({
             }
 
             setFocusedElement(null);
-            onStateReset?.();
             onEdit?.();
         };
 

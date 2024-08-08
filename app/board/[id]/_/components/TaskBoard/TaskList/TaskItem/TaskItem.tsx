@@ -40,6 +40,7 @@ import {
     TaskItemTitleInput,
     TaskItemTitleText,
 } from "./ui";
+import dayjs from "@/_/common/lib/dayjs";
 
 const INPUT_TYPE = {
     NONE: 0,
@@ -328,7 +329,7 @@ const TaskItem = memo(function TaskItem({
                                                 marginLeft: "-2px",
                                             }}
                                         />
-                                        {dueAt.toLocaleDateString()}
+                                        {dayjs().to(dueAt)}
                                     </TaskItemDueDateTagText>
                                 </TaskItemDueDateTagWrapper>
                             )}

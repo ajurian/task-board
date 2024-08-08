@@ -96,6 +96,11 @@ export const TaskItemTitleText = styled(Typography)(() => ({
     wordWrap: "break-word",
     overflowWrap: "break-word",
     wordBreak: "break-word",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    display: "-webkit-box",
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: "vertical",
 }));
 
 export const TaskItemDetailsInput = styled(InputBase)(({ theme }) => ({
@@ -112,6 +117,11 @@ export const TaskItemDetailsText = styled(Typography)(({ theme }) => ({
     wordWrap: "break-word",
     overflowWrap: "break-word",
     wordBreak: "break-word",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    display: "-webkit-box",
+    WebkitLineClamp: 4,
+    WebkitBoxOrient: "vertical",
     paddingLeft: theme.spacing(9),
     paddingRight: theme.spacing(1.25),
     color: theme.palette.text.secondary,
@@ -132,6 +142,7 @@ export const TaskItemDueDateTagText = styled(Typography)(({ theme }) => ({
     paddingInline: theme.spacing(2.5),
     paddingBlock: theme.spacing(0.25),
     borderRadius: "100vw",
+    textTransform: "capitalize",
 }));
 
 export const TaskItemDueDateSelectTriggerWrapper = styled(Box)(({ theme }) => ({

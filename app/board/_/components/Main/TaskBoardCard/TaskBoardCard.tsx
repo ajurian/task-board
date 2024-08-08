@@ -29,6 +29,7 @@ import {
 } from "../ui";
 import TaskBoardCardMenu, { MenuPosition } from "./TaskBoardCardMenu";
 import TaskBoardCardRenameDialog from "./TaskBoardCardRenameDialog";
+import dayjs from "dayjs";
 
 interface TaskBoardCardProps {
     boardUserId: string;
@@ -168,7 +169,7 @@ export default function TaskBoardCard({
                         )}
                     </TaskBoardCardTitleContainer>
                     <Typography variant="caption">
-                        {accessedAt.toLocaleString()}
+                        Opened {dayjs(accessedAt).format("ddd, MMM D YYYY")}
                     </Typography>
                 </TaskBoardCardHeader>
                 <Divider sx={{ borderColor: "inherit" }} />
