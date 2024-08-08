@@ -63,8 +63,8 @@ export default function useContentEditable<T extends HTMLElement>({
 
             if (e.key === "Escape") {
                 e.preventDefault();
-                onStateReset?.();
                 setFocusedElement(null);
+                onStateReset?.();
                 return;
             }
         },
@@ -88,6 +88,7 @@ export default function useContentEditable<T extends HTMLElement>({
                 return;
             }
 
+            console.log("?");
             setFocusedElement(null);
             onStateReset?.();
         },
@@ -151,8 +152,9 @@ export default function useContentEditable<T extends HTMLElement>({
                 return;
             }
 
-            onEdit?.();
             setFocusedElement(null);
+            onStateReset?.();
+            onEdit?.();
         };
 
         window.addEventListener("click", onClick);

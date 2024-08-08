@@ -210,8 +210,8 @@ const TaskItem = memo(function TaskItem({
                             {...contentEditableProps}
                             ref={mergeRefs(innerRef, ref)}
                             isDragging={isDragging}
-                            isDragDisabled={isDragDisabled}
                             isFocused={isFocused}
+                            isEditDisabled={!canUserEditTask}
                         >
                             <TaskItemTitleContainer>
                                 {!canUserCompleteTask && (
