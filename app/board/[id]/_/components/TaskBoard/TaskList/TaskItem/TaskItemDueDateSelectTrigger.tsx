@@ -15,6 +15,7 @@ import {
 } from "./ui";
 import dayjs from "@/_/common/lib/dayjs";
 import { Dayjs } from "dayjs";
+import _ from "lodash";
 
 interface TaskItemDueDateMenuTriggerProps {
     date: Date | null;
@@ -48,10 +49,13 @@ const TaskItemDueDateSelectTrigger = React.forwardRef<
     const popoverId = useId();
     const isOpen = Boolean(anchorPosition);
 
+    const now = dayjs();
+    const isDuePast = useMemo(() => now.isAfter(dateValue), [now, dateValue]);
+
     const openPopover: MouseEventHandler<HTMLButtonElement> = (e) => {
         const rect = e.currentTarget.getBoundingClientRect();
 
-        setMinDate(dayjs());
+        setMinDate(now);
         setAnchorPosition({
             left: rect.x,
             top: rect.y + rect.height,
@@ -73,9 +77,8 @@ const TaskItemDueDateSelectTrigger = React.forwardRef<
                 aria-haspopup={true}
                 aria-controls={isOpen ? popoverId : undefined}
                 aria-expanded={isOpen}
-                tabIndex={-1}
                 size="small"
-                color="warning"
+                color={isDuePast ? "error" : "warning"}
                 variant="outlined"
                 startIcon={
                     <FontAwesomeIcon
@@ -84,9 +87,8 @@ const TaskItemDueDateSelectTrigger = React.forwardRef<
                     />
                 }
                 onClick={openPopover}
-                sx={{ textTransform: "capitalize" }}
             >
-                {date === null ? "No date" : dayjs().to(date)}
+                {date === null ? "No date" : _.capitalize(dayjs().to(date))}
             </TaskItemDueDateSelectTriggerButton>
             <Popover
                 id={popoverId}

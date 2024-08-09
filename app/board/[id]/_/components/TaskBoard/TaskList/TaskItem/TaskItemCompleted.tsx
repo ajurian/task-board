@@ -54,7 +54,7 @@ export default function TaskItemCompleted({
             shouldFadeOut={actionAfterFade !== null}
             onTransitionEnd={handleTransitionEnd}
         >
-            <TaskItemCompletedContainer ref={ref}>
+            <TaskItemCompletedContainer ref={ref} tabIndex={0}>
                 <TaskItemTitleContainer>
                     {canUserCompleteTask && (
                         <IconButton

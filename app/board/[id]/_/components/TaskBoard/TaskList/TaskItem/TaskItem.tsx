@@ -173,6 +173,9 @@ const TaskItem = memo(function TaskItem({
         },
     });
 
+    const now = dayjs();
+    const isDuePast = useMemo(() => now.isAfter(dueAt), [now, dueAt]);
+
     const isDragDisabled =
         isFocused || searchQuery.length > 0 || !canUserReorderTask;
 
@@ -320,8 +323,13 @@ const TaskItem = memo(function TaskItem({
                                     <TaskItemDueDateTagWrapper>
                                         <TaskItemDueDateTagText
                                             ref={dueAtRef}
+                                            isPast={isDuePast}
                                             variant="button"
-                                            color="warning.main"
+                                            color={
+                                                isDuePast
+                                                    ? "error.main"
+                                                    : "warning.main"
+                                            }
                                         >
                                             <FontAwesomeIcon
                                                 icon={faCalendar}
@@ -331,7 +339,7 @@ const TaskItem = memo(function TaskItem({
                                                     marginLeft: "-2px",
                                                 }}
                                             />
-                                            {dayjs().to(dueAt)}
+                                            {_.capitalize(now.to(dueAt))}
                                         </TaskItemDueDateTagText>
                                     </TaskItemDueDateTagWrapper>
                                 )}

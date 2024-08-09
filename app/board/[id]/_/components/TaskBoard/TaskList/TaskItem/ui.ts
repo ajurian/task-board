@@ -67,6 +67,10 @@ export const TaskItemCompletedContainer = styled(Box)(({ theme }) => ({
     transition: theme.transitions.create("background-color", {
         duration: theme.transitions.duration.shortest,
     }),
+    ":focus-visible": {
+        outline: 0,
+        backgroundColor: theme.palette.grey[100],
+    },
     ":hover": {
         zIndex: 1,
         backgroundColor: theme.palette.grey[100],
@@ -147,16 +151,20 @@ export const TaskItemDueDateTagWrapper = styled(Box)(({ theme }) => ({
     marginRight: "auto",
 }));
 
-export const TaskItemDueDateTagText = styled(Typography)(({ theme }) => ({
+export const TaskItemDueDateTagText = styled(Typography, {
+    shouldForwardProp: (propName) => propName !== "isPast",
+})<{ isPast: boolean }>(({ theme, isPast }) => ({
     display: "inline-block",
     fontSize: "0.8125rem",
     borderWidth: 1,
     borderStyle: "solid",
-    borderColor: theme.palette.warning.light,
+    borderColor: isPast
+        ? theme.palette.error.light
+        : theme.palette.warning.light,
     paddingInline: theme.spacing(2.5),
     paddingBlock: theme.spacing(0.25),
     borderRadius: "100vw",
-    textTransform: "capitalize",
+    textTransform: "none",
 }));
 
 export const TaskItemDueDateSelectTriggerWrapper = styled(Box)(({ theme }) => ({

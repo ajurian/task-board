@@ -3,16 +3,14 @@ import { FlowDirection } from "@prisma/client";
 
 export const TaskListContainer = styled(Box, {
     shouldForwardProp: (propName) =>
-        propName !== "scrollbarHeight" &&
         propName !== "direction" &&
         propName !== "isDragging" &&
         propName !== "isDragDisabled",
 })<{
-    scrollbarHeight: number;
     direction: FlowDirection;
     isDragging: boolean;
     isDragDisabled: boolean;
-}>(({ theme, scrollbarHeight, direction, isDragging, isDragDisabled }) => ({
+}>(({ theme, direction, isDragging, isDragDisabled }) => ({
     position: "relative",
     overflow: "hidden",
     display: "flex",
@@ -27,7 +25,7 @@ export const TaskListContainer = styled(Box, {
     }),
     cursor: isDragDisabled ? "inherit" : "grab",
     ...(direction === "row" && {
-        maxHeight: `calc(100vh - 7.0625rem - ${18 + scrollbarHeight}px)`,
+        maxHeight: `calc(100vh - 7.0625rem - 18px)`,
         minWidth: theme.spacing(80),
         maxWidth: theme.spacing(80),
         marginRight: theme.spacing(4),
@@ -153,7 +151,7 @@ export const TaskListPlaceholderTextContainer = styled(Box)(({ theme }) => ({
 export const TaskListCompletedItemsContainer = styled(Box)(({ theme }) => ({
     overflow: "hidden",
     flexShrink: 0,
-    marginBottom: theme.spacing(2),
+    marginBottom: theme.spacing(1.5),
 }));
 
 export const TaskListCompletedItemsTrigger = styled(Button)(({ theme }) => ({

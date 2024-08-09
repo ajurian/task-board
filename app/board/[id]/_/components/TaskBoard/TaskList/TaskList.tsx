@@ -1,5 +1,6 @@
 import { AggregatedTaskListModel } from "@/_/common/schema/taskList";
 import { Draggable } from "@hello-pangea/dnd";
+import { Divider } from "@mui/material";
 import _ from "lodash";
 import { memo, useMemo, useState } from "react";
 import { TaskBoardContextValue } from "../../../providers/TaskBoardProvider/TaskBoardProviderTypes";
@@ -55,11 +56,9 @@ const TaskList = memo(function TaskList({
                     {...draggableProps}
                     {...dragHandleProps}
                     ref={draggableRef}
-                    scrollbarHeight={0}
                     direction={flowDirection}
                     isDragging={isDragging}
                     isDragDisabled={isDragDisabled}
-                    tabIndex={0}
                 >
                     <SelectFromTaskBoardContext
                         selector={(state) => ({

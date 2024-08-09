@@ -64,7 +64,6 @@ export default function TaskListHeader({
                 ref={ref}
                 isFocused={isFocused}
                 onFocus={(e) => e.currentTarget.click()}
-                tabIndex={-1}
             >
                 {isFocused && canUserRenameTaskList && (
                     <TaskListHeaderTitleInput
