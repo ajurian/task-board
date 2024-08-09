@@ -32,6 +32,7 @@ export default function TaskListPlaceholder({
 
     const { ref, isFocused, contentEditableProps } =
         useContentEditable<HTMLDivElement>({
+            isFocusable: !isEditDisabled,
             isEditDisabled,
             onFocusAfter: () => titleInputRef.current?.focus(),
             onStateReset: () => setTitleInput(""),

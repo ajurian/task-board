@@ -42,6 +42,7 @@ export default function TaskItemPlaceholder({
     const isEditDisabled = taskCount >= maxTasks;
 
     const { ref, isFocused, contentEditableProps } = useContentEditable({
+        isFocusable: !isEditDisabled,
         isEditDisabled,
         onFocusAfter: () => titleInputRef.current?.focus(),
         onStateReset: () => {
