@@ -3,6 +3,8 @@ import {
     FocusEventHandler,
     HTMLAttributes,
     KeyboardEventHandler,
+    MouseEventHandler,
+    TouchEventHandler,
     useCallback,
     useEffect,
     useLayoutEffect,
@@ -12,6 +14,7 @@ import {
 } from "react";
 
 interface UseContentEditableOptions {
+    isFocusable?: boolean;
     isEditDisabled?: boolean;
     onNodeIgnore?: (node: HTMLElement) => boolean;
     onFocus?: (node: HTMLElement) => void;
@@ -21,6 +24,7 @@ interface UseContentEditableOptions {
 }
 
 export default function useContentEditable<T extends HTMLElement>({
+    isFocusable = true,
     isEditDisabled = false,
     onNodeIgnore,
     onFocus,
@@ -32,15 +36,36 @@ export default function useContentEditable<T extends HTMLElement>({
         null
     );
     const previousFocusedElement = usePrevious(focusedElement);
+    const blurReasonRef = useRef<"click" | "key" | null>(null);
     const ref = useRef<T | null>(null);
+
+    const onMouseDown: MouseEventHandler<T> = useCallback((e) => {
+        blurReasonRef.current = "click";
+    }, []);
+    const onTouchStart: TouchEventHandler<T> = useCallback((e) => {
+        blurReasonRef.current = "click";
+    }, []);
+    const onKeyDown: KeyboardEventHandler<T> = useCallback((e) => {
+        blurReasonRef.current = "key";
+    }, []);
 
     const onKeyUp: KeyboardEventHandler<T> = useCallback(
         (e) => {
             if (e.key === "Enter") {
                 if (focusedElement === null) {
                     e.preventDefault();
+
+                    if (!isFocusable) {
+                        return;
+                    }
+
                     setFocusedElement(e.currentTarget);
                     onFocus?.(e.currentTarget);
+
+                    if (isEditDisabled) {
+                        return;
+                    }
+
                     onStateReset?.();
                     return;
                 }
@@ -55,25 +80,52 @@ export default function useContentEditable<T extends HTMLElement>({
                 }
 
                 e.preventDefault();
-                setFocusedElement(null);
-                onEdit?.();
 
+                if (!isFocusable) {
+                    return;
+                }
+
+                setFocusedElement(null);
+
+                if (isEditDisabled) {
+                    return;
+                }
+
+                onEdit?.();
                 return;
             }
 
             if (e.key === "Escape") {
                 e.preventDefault();
+
+                if (!isFocusable) {
+                    return;
+                }
+
                 setFocusedElement(null);
+
+                if (isEditDisabled) {
+                    return;
+                }
+
                 onStateReset?.();
                 return;
             }
         },
-        [onFocus, onStateReset, onEdit, focusedElement]
+        [
+            isFocusable,
+            isEditDisabled,
+            onFocus,
+            onStateReset,
+            onEdit,
+            focusedElement,
+        ]
     );
 
     const onBlur: FocusEventHandler<T> = useCallback(
         (e) => {
             if (
+                !isFocusable ||
                 focusedElement === null ||
                 e.relatedTarget === null ||
                 (e.currentTarget.contains(e.relatedTarget) &&
@@ -88,37 +140,56 @@ export default function useContentEditable<T extends HTMLElement>({
                 return;
             }
 
+            if (isEditDisabled && blurReasonRef.current === "click") {
+                return;
+            }
+
             setFocusedElement(null);
             onStateReset?.();
         },
-        [onStateReset, focusedElement]
+        [isFocusable, isEditDisabled, onStateReset, focusedElement]
     );
 
     const contentEditableProps = useMemo<HTMLAttributes<T>>(
         () =>
-            isEditDisabled
-                ? {}
-                : {
+            isFocusable
+                ? {
                       role: focusedElement === null ? "button" : undefined,
                       tabIndex: focusedElement === null ? 0 : -1,
+                      onMouseDown,
+                      onTouchStart,
+                      onKeyDown,
                       onKeyUp,
                       onBlur,
-                  },
-        [isEditDisabled, onKeyUp, onBlur, focusedElement]
+                  }
+                : {},
+        [
+            isFocusable,
+            onMouseDown,
+            onTouchStart,
+            onKeyDown,
+            onKeyUp,
+            onBlur,
+            focusedElement,
+        ]
     );
 
     useLayoutEffect(() => {
-        if (focusedElement === null || previousFocusedElement !== null) {
+        if (
+            !isFocusable ||
+            focusedElement === null ||
+            previousFocusedElement !== null
+        ) {
             return;
         }
 
         onFocusAfter?.(focusedElement);
-    }, [onFocusAfter, focusedElement, previousFocusedElement]);
+    }, [isFocusable, onFocusAfter, focusedElement, previousFocusedElement]);
 
     useEffect(() => {
         const localElement = ref.current;
 
-        if (isEditDisabled || localElement === null) {
+        if (localElement === null) {
             return;
         }
 
@@ -126,6 +197,10 @@ export default function useContentEditable<T extends HTMLElement>({
             const eventTarget = e.target as HTMLElement;
 
             if (localElement.contains(eventTarget)) {
+                if (!isFocusable) {
+                    return;
+                }
+
                 if (focusedElement === null) {
                     const ignoreNode =
                         onNodeIgnore?.(e.target as HTMLElement) ?? false;
@@ -153,6 +228,11 @@ export default function useContentEditable<T extends HTMLElement>({
             }
 
             setFocusedElement(null);
+
+            if (isEditDisabled) {
+                return;
+            }
+
             onEdit?.();
         };
 
@@ -160,6 +240,7 @@ export default function useContentEditable<T extends HTMLElement>({
 
         return () => window.removeEventListener("click", onClick);
     }, [
+        isFocusable,
         isEditDisabled,
         onNodeIgnore,
         onFocus,

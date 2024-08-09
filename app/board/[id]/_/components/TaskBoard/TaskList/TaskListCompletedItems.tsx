@@ -46,6 +46,9 @@ export default function TaskListCompletedItems({
                 <TaskListItemsContainer ref={itemsWrapperRef}>
                     <SelectFromTaskBoardContext
                         selector={(state) => ({
+                            canUserCreateOrDeleteTask:
+                                state.canUserCreateOrDeleteTask,
+                            canUserCompleteTask: state.canUserCompleteTask,
                             editTask: state.editTask,
                             deleteTask: state.deleteTask,
                         })}

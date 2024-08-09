@@ -18,53 +18,59 @@ export const TaskItemFade = styled(Box, {
 
 export const TaskItemContainer = styled(Box, {
     shouldForwardProp: (propName) =>
-        propName !== "isDragging" &&
-        propName !== "isFocused" &&
-        propName !== "isEditDisabled",
-})<{
-    isDragging: boolean;
-    isFocused: boolean;
-    isEditDisabled: boolean;
-}>(({ theme, isDragging, isFocused, isEditDisabled }) => ({
-    WebkitTapHighlightColor: "transparent",
-    position: "relative",
-    paddingInline: theme.spacing(2.75),
-    paddingBlock: theme.spacing(1.5),
-    display: "flex",
-    flexDirection: "column",
-    transition: theme.transitions.create(["box-shadow", "background-color"], {
-        duration: theme.transitions.duration.shortest,
-    }),
-    boxShadow: theme.shadows[0],
-    backgroundColor: theme.palette.background.paper,
-    cursor: isEditDisabled ? "inherit" : "pointer",
-    ":focus-visible": {
-        outline: 0,
-        backgroundColor: theme.palette.grey[100],
-    },
-    ...(!isFocused && {
-        ":hover": {
-            zIndex: 1,
+        propName !== "isDragging" && propName !== "isFocused",
+})<{ isDragging: boolean; isFocused: boolean }>(
+    ({ theme, isDragging, isFocused }) => ({
+        WebkitTapHighlightColor: "transparent",
+        position: "relative",
+        paddingInline: theme.spacing(2.75),
+        paddingBlock: theme.spacing(1.5),
+        display: "flex",
+        flexDirection: "column",
+        transition: theme.transitions.create(
+            ["box-shadow", "background-color"],
+            {
+                duration: theme.transitions.duration.shortest,
+            }
+        ),
+        boxShadow: theme.shadows[0],
+        backgroundColor: theme.palette.background.paper,
+        cursor: "pointer",
+        ":focus-visible": {
+            outline: 0,
             backgroundColor: theme.palette.grey[100],
         },
-    }),
-    ...(isFocused && {
-        zIndex: 2,
-        cursor: "default",
-        boxShadow: theme.shadows[1],
-        backgroundColor: theme.palette.grey[200],
-    }),
-    ...(isDragging && {
-        zIndex: 3,
-        boxShadow: theme.shadows[2],
-        backgroundColor: theme.palette.grey[100],
-    }),
-}));
+        ...(!isFocused && {
+            ":hover": {
+                zIndex: 1,
+                backgroundColor: theme.palette.grey[100],
+            },
+        }),
+        ...(isFocused && {
+            zIndex: 2,
+            cursor: "default",
+            boxShadow: theme.shadows[1],
+            backgroundColor: theme.palette.grey[200],
+        }),
+        ...(isDragging && {
+            zIndex: 3,
+            boxShadow: theme.shadows[2],
+            backgroundColor: theme.palette.grey[100],
+        }),
+    })
+);
 
 export const TaskItemCompletedContainer = styled(Box)(({ theme }) => ({
     paddingInline: theme.spacing(2.75),
     paddingBlock: theme.spacing(1.5),
     backgroundColor: theme.palette.background.paper,
+    transition: theme.transitions.create("background-color", {
+        duration: theme.transitions.duration.shortest,
+    }),
+    ":hover": {
+        zIndex: 1,
+        backgroundColor: theme.palette.grey[100],
+    },
 }));
 
 export const TaskItemTitleContainer = styled(Box)(({ theme }) => ({
@@ -79,8 +85,8 @@ export const TaskItemBulletPointWrapper = styled(Box)(({ theme }) => ({
     alignItems: "center",
     boxSizing: "content-box",
     padding: theme.spacing(1.25),
-    width: theme.spacing(4.5),
-    height: theme.spacing(4.5),
+    minWidth: theme.spacing(4.5),
+    minHeight: theme.spacing(4.5),
     color: theme.palette.text.secondary,
 }));
 
@@ -90,17 +96,21 @@ export const TaskItemTitleInput = styled(InputBase)(({ theme }) => ({
     paddingBlock: 0,
 }));
 
-export const TaskItemTitleText = styled(Typography)(() => ({
+export const TaskItemTitleText = styled(Typography, {
+    shouldForwardProp: (propName) => propName !== "shouldClampLine",
+})<{ shouldClampLine: boolean }>(({ shouldClampLine }) => ({
     flex: 1,
     whiteSpace: "pre-wrap",
     wordWrap: "break-word",
     overflowWrap: "break-word",
     wordBreak: "break-word",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    display: "-webkit-box",
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: "vertical",
+    ...(shouldClampLine && {
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        display: "-webkit-box",
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: "vertical",
+    }),
 }));
 
 export const TaskItemDetailsInput = styled(InputBase)(({ theme }) => ({
@@ -112,19 +122,23 @@ export const TaskItemDetailsInput = styled(InputBase)(({ theme }) => ({
     color: theme.palette.text.secondary,
 }));
 
-export const TaskItemDetailsText = styled(Typography)(({ theme }) => ({
+export const TaskItemDetailsText = styled(Typography, {
+    shouldForwardProp: (propName) => propName !== "shouldClampLine",
+})<{ shouldClampLine: boolean }>(({ theme, shouldClampLine }) => ({
     whiteSpace: "pre-wrap",
     wordWrap: "break-word",
     overflowWrap: "break-word",
     wordBreak: "break-word",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    display: "-webkit-box",
-    WebkitLineClamp: 4,
-    WebkitBoxOrient: "vertical",
     paddingLeft: theme.spacing(9),
     paddingRight: theme.spacing(1.25),
     color: theme.palette.text.secondary,
+    ...(shouldClampLine && {
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        display: "-webkit-box",
+        WebkitLineClamp: 4,
+        WebkitBoxOrient: "vertical",
+    }),
 }));
 
 export const TaskItemDueDateTagWrapper = styled(Box)(({ theme }) => ({

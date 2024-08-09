@@ -3,45 +3,49 @@ import { FlowDirection } from "@prisma/client";
 
 export const TaskListContainer = styled(Box, {
     shouldForwardProp: (propName) =>
+        propName !== "scrollbarHeight" &&
         propName !== "direction" &&
         propName !== "isDragging" &&
         propName !== "isDragDisabled",
-})<{ direction: FlowDirection; isDragging: boolean; isDragDisabled: boolean }>(
-    ({ theme, direction, isDragging, isDragDisabled }) => ({
-        position: "relative",
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-        borderStyle: "solid",
-        borderWidth: 1,
-        borderColor: theme.palette.divider,
-        backgroundColor: theme.palette.background.paper,
-        borderRadius: theme.shape.borderRadius,
-        transition: theme.transitions.create("box-shadow", {
-            duration: theme.transitions.duration.shortest,
-        }),
-        cursor: isDragDisabled ? "inherit" : "grab",
-        ...(direction === "row" && {
-            maxHeight: "calc(100vh - 7.0625rem - 18px)",
-            minWidth: theme.spacing(80),
-            maxWidth: theme.spacing(80),
-            marginRight: theme.spacing(4),
-        }),
-        ...(direction === "column" && {
-            width: "100%",
-            maxWidth: "calc(100vw - 3rem)",
-            maxHeight: theme.spacing(160),
-            marginBottom: theme.spacing(2),
-        }),
-        ":focus-visible": {
-            outline: 0,
-            boxShadow: theme.shadows[1],
-        },
-        ...(isDragging && {
-            boxShadow: theme.shadows[2],
-        }),
-    })
-);
+})<{
+    scrollbarHeight: number;
+    direction: FlowDirection;
+    isDragging: boolean;
+    isDragDisabled: boolean;
+}>(({ theme, scrollbarHeight, direction, isDragging, isDragDisabled }) => ({
+    position: "relative",
+    overflow: "hidden",
+    display: "flex",
+    flexDirection: "column",
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderColor: theme.palette.divider,
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: theme.shape.borderRadius,
+    transition: theme.transitions.create("box-shadow", {
+        duration: theme.transitions.duration.shortest,
+    }),
+    cursor: isDragDisabled ? "inherit" : "grab",
+    ...(direction === "row" && {
+        maxHeight: `calc(100vh - 7.0625rem - ${18 + scrollbarHeight}px)`,
+        minWidth: theme.spacing(80),
+        maxWidth: theme.spacing(80),
+        marginRight: theme.spacing(4),
+    }),
+    ...(direction === "column" && {
+        width: "100%",
+        maxWidth: "calc(100vw - 3rem)",
+        maxHeight: theme.spacing(160),
+        marginBottom: theme.spacing(2),
+    }),
+    ":focus-visible": {
+        outline: 0,
+        boxShadow: theme.shadows[1],
+    },
+    ...(isDragging && {
+        boxShadow: theme.shadows[2],
+    }),
+}));
 
 export const TaskListHeaderContainer = styled(Box)(({ theme }) => ({
     display: "flex",

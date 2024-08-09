@@ -42,6 +42,7 @@ export default function TaskBoardHeader() {
     ] = useDisclosure(shareParams.length > 0);
 
     const { ref, isFocused, contentEditableProps } = useContentEditable({
+        isFocusable: canUserRenameTaskBoard,
         isEditDisabled: !canUserRenameTaskBoard,
         onFocusAfter: () => displayNameInputRef.current?.focus(),
         onStateReset: () => setDisplayNameInput(displayName),
@@ -68,7 +69,7 @@ export default function TaskBoardHeader() {
                 isFocused={isFocused}
                 onFocus={(e) => e.currentTarget.click()}
             >
-                {isFocused && (
+                {isFocused && canUserRenameTaskBoard && (
                     <TaskBoardHeaderDisplayNameInput
                         inputRef={displayNameInputRef}
                         value={displayNameInput}
@@ -82,7 +83,7 @@ export default function TaskBoardHeader() {
                         fullWidth
                     />
                 )}
-                {!isFocused && (
+                {!(isFocused && canUserRenameTaskBoard) && (
                     <TaskBoardHeaderDisplayNameText variant="h6" noWrap>
                         {displayName}
                     </TaskBoardHeaderDisplayNameText>

@@ -55,6 +55,7 @@ const TaskList = memo(function TaskList({
                     {...draggableProps}
                     {...dragHandleProps}
                     ref={draggableRef}
+                    scrollbarHeight={0}
                     direction={flowDirection}
                     isDragging={isDragging}
                     isDragDisabled={isDragDisabled}
@@ -65,7 +66,6 @@ const TaskList = memo(function TaskList({
                             canUserCreateOrDeleteTaskList:
                                 state.canUserCreateOrDeleteTaskList,
                             canUserRenameTaskList: state.canUserRenameTaskList,
-                            canUserUpdateSortBy: state.canUserUpdateSortBy,
                             editTaskList: state.editTaskList,
                             deleteTaskList: state.deleteTaskList,
                         })}

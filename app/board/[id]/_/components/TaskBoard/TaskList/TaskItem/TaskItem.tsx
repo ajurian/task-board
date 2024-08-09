@@ -4,6 +4,7 @@ import {
     TASK_TITLE_MAX_LEN,
     TASK_TITLE_MIN_LEN,
 } from "@/_/common/constants/constraints";
+import dayjs from "@/_/common/lib/dayjs";
 import { TaskModel } from "@/_/common/schema/task";
 import { TaskBoardContextValue } from "@/board/[id]/_/providers/TaskBoardProvider/TaskBoardProviderTypes";
 import {
@@ -40,7 +41,6 @@ import {
     TaskItemTitleInput,
     TaskItemTitleText,
 } from "./ui";
-import dayjs from "@/_/common/lib/dayjs";
 
 const INPUT_TYPE = {
     NONE: 0,
@@ -212,7 +212,6 @@ const TaskItem = memo(function TaskItem({
                             ref={mergeRefs(innerRef, ref)}
                             isDragging={isDragging}
                             isFocused={isFocused}
-                            isEditDisabled={!canUserEditTask}
                         >
                             <TaskItemTitleContainer>
                                 {!canUserCompleteTask && (
@@ -238,7 +237,7 @@ const TaskItem = memo(function TaskItem({
                                         <FontAwesomeIcon icon={faCheck} />
                                     </IconButton>
                                 )}
-                                {isFocused && (
+                                {isFocused && canUserEditTask && (
                                     <TaskItemTitleInput
                                         inputRef={titleInputRef}
                                         value={titleInput}
@@ -261,9 +260,10 @@ const TaskItem = memo(function TaskItem({
                                         fullWidth
                                     />
                                 )}
-                                {!isFocused && (
+                                {!(isFocused && canUserEditTask) && (
                                     <TaskItemTitleText
                                         ref={titleRef}
+                                        shouldClampLine={!isFocused}
                                         variant="subtitle1"
                                         noWrap
                                     >
@@ -290,7 +290,7 @@ const TaskItem = memo(function TaskItem({
                                     />
                                 )}
                             </TaskItemTitleContainer>
-                            {isFocused && (
+                            {isFocused && canUserEditTask && (
                                 <TaskItemDetailsInput
                                     inputRef={detailsInputRef}
                                     value={detailsInput}
@@ -306,34 +306,36 @@ const TaskItem = memo(function TaskItem({
                                     fullWidth
                                 />
                             )}
-                            {!isFocused && (
+                            {!(isFocused && canUserEditTask) && (
                                 <TaskItemDetailsText
                                     ref={detailsRef}
+                                    shouldClampLine={!isFocused}
                                     variant="body2"
                                 >
                                     {initialDetails}
                                 </TaskItemDetailsText>
                             )}
-                            {!isFocused && dueAt !== null && (
-                                <TaskItemDueDateTagWrapper>
-                                    <TaskItemDueDateTagText
-                                        ref={dueAtRef}
-                                        variant="button"
-                                        color="warning.main"
-                                    >
-                                        <FontAwesomeIcon
-                                            icon={faCalendar}
-                                            style={{
-                                                fontSize: "1em",
-                                                marginRight: "8px",
-                                                marginLeft: "-2px",
-                                            }}
-                                        />
-                                        {dayjs().to(dueAt)}
-                                    </TaskItemDueDateTagText>
-                                </TaskItemDueDateTagWrapper>
-                            )}
-                            {isFocused && (
+                            {!(isFocused && canUserEditTask) &&
+                                dueAt !== null && (
+                                    <TaskItemDueDateTagWrapper>
+                                        <TaskItemDueDateTagText
+                                            ref={dueAtRef}
+                                            variant="button"
+                                            color="warning.main"
+                                        >
+                                            <FontAwesomeIcon
+                                                icon={faCalendar}
+                                                style={{
+                                                    fontSize: "1em",
+                                                    marginRight: "8px",
+                                                    marginLeft: "-2px",
+                                                }}
+                                            />
+                                            {dayjs().to(dueAt)}
+                                        </TaskItemDueDateTagText>
+                                    </TaskItemDueDateTagWrapper>
+                                )}
+                            {isFocused && canUserEditTask && (
                                 <TaskItemDueDateSelectTriggerWrapper>
                                     <TaskItemDueDateSelectTrigger
                                         ref={dueAtInputRef}

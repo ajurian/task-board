@@ -20,7 +20,6 @@ interface TaskListHeaderProps
         TaskBoardContextValue,
         | "canUserCreateOrDeleteTaskList"
         | "canUserRenameTaskList"
-        | "canUserUpdateSortBy"
         | "editTaskList"
         | "deleteTaskList"
     > {
@@ -35,17 +34,15 @@ export default function TaskListHeader({
     sortBy,
     canUserCreateOrDeleteTaskList,
     canUserRenameTaskList,
-    canUserUpdateSortBy,
     editTaskList,
     deleteTaskList,
 }: TaskListHeaderProps) {
     const [titleInput, setTitleInput] = useInputState(title);
     const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
 
-    const canUserEditTaskList = canUserRenameTaskList && canUserUpdateSortBy;
-
     const { ref, isFocused, contentEditableProps } = useContentEditable({
-        isEditDisabled: !canUserEditTaskList,
+        isFocusable: canUserRenameTaskList,
+        isEditDisabled: !canUserRenameTaskList,
         onFocusAfter: () => titleInputRef.current?.focus(),
         onStateReset: () => setTitleInput(title),
         onEdit: () => {
@@ -69,7 +66,7 @@ export default function TaskListHeader({
                 onFocus={(e) => e.currentTarget.click()}
                 tabIndex={-1}
             >
-                {isFocused && (
+                {isFocused && canUserRenameTaskList && (
                     <TaskListHeaderTitleInput
                         inputRef={titleInputRef}
                         value={titleInput}
@@ -84,7 +81,7 @@ export default function TaskListHeader({
                         fullWidth
                     />
                 )}
-                {!isFocused && (
+                {!(isFocused && canUserRenameTaskList) && (
                     <TaskListHeaderTitleText noWrap>
                         {title}
                     </TaskListHeaderTitleText>

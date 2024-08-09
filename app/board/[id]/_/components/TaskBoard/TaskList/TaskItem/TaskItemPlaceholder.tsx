@@ -103,6 +103,7 @@ export default function TaskItemPlaceholder({
                     )}
                     {!isFocused && (
                         <TaskItemTitleText
+                            shouldClampLine={false}
                             variant="subtitle1"
                             sx={{ fontWeight: 500 }}
                         >
