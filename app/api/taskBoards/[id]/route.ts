@@ -223,7 +223,7 @@ export async function GET(request: NextRequest, { params }: Segment) {
                     createdAt: { $toString: "$createdAt" },
                 },
             },
-            { $unset: "_id" },
+            { $unset: ["_id", "thumbnailData"] },
         ],
     });
 

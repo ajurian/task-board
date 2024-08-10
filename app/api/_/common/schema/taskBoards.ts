@@ -8,7 +8,7 @@ import { AggregatedTaskBoardModelSchema } from "@/_/common/schema/taskBoard.aggr
 import { z } from "zod";
 
 export const TaskBoardsGetResponseSchema = z.object({
-    taskBoards: TaskBoardModelSchema.array(),
+    taskBoards: TaskBoardModelSchema.omit({ thumbnailData: true }).array(),
 });
 
 export const TaskBoardsPostResponseSchema = z.object({
