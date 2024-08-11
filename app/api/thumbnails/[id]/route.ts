@@ -1,6 +1,5 @@
 import prisma from "@/_/common/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import sharp from "sharp";
 
 interface Segment {
     params: {
@@ -18,17 +17,13 @@ export async function GET(request: NextRequest, { params }: Segment) {
     let imageData = thumbnailData;
 
     if (imageData === null) {
-        imageData = await sharp({
-            create: {
-                width: 512,
-                height: 512,
-                channels: 3,
-                background: "#fafafa",
-            },
-        })
-            .toFormat("jpeg")
-            .raw()
-            .toBuffer();
+        imageData = Buffer.alloc(512 * 512 * 3);
+
+        for (let i = 0; i < imageData.length; i += 3) {
+            imageData[i] = 0xfa;
+            imageData[i + 1] = 0xfa;
+            imageData[i + 2] = 0xfa;
+        }
     }
 
     return new NextResponse(imageData, {
