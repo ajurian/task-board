@@ -49,7 +49,8 @@ export const TaskBoardModelSchema = z.object({
             }
 
             return null;
-        }),
+        })
+        .refine((thumbnailData) => thumbnailData !== null),
     createdAt: z.coerce.date(),
     maxTaskLists: z.number().int().positive(),
     maxTasks: z.number().int().positive(),
@@ -96,7 +97,8 @@ export const TaskBoardUpdateSchema = TaskBoardModelSchema.omit({
                 }
 
                 return null;
-            }),
+            })
+            .refine((thumbnailData) => thumbnailData !== null),
     })
     .partial()
     .refine(
