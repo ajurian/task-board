@@ -24,7 +24,7 @@ model TaskBoard {
     displayName       String
     flowDirection     FlowDirection   @default(row)
     defaultPermission Int             @default(0)
-    thumbnailData     Bytes?
+    thumbnailData     Bytes
     createdAt         DateTime        @default(now())
     maxTaskLists      Int             @default(14)
     maxTasks          Int             @default(30)

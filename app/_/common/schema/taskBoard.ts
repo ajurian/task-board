@@ -49,8 +49,7 @@ export const TaskBoardModelSchema = z.object({
             }
 
             return null;
-        })
-        .nullable(),
+        }),
     createdAt: z.coerce.date(),
     maxTaskLists: z.number().int().positive(),
     maxTasks: z.number().int().positive(),

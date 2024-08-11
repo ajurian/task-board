@@ -12,14 +12,16 @@ export const TaskBoardsGetResponseSchema = z.object({
 });
 
 export const TaskBoardsPostResponseSchema = z.object({
-    taskBoard: TaskBoardModelSchema.nullable(),
+    taskBoard: TaskBoardModelSchema.omit({ thumbnailData: true }).nullable(),
 });
 
 export const TaskBoardGetResponseSchema = z.object({
-    taskBoard: AggregatedTaskBoardModelSchema.nullable(),
+    taskBoard: AggregatedTaskBoardModelSchema.omit({
+        thumbnailData: true,
+    }).nullable(),
 });
 export const TaskBoardPatchResponseSchema = z.object({
-    taskBoard: TaskBoardModelSchema.nullable(),
+    taskBoard: TaskBoardModelSchema.omit({ thumbnailData: true }).nullable(),
 });
 export const TaskBoardDeleteResponseSchema = TaskBoardPatchResponseSchema;
 

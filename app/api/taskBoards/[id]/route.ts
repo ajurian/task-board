@@ -16,9 +16,9 @@ import {
 } from "@/api/_/common/schema/taskBoards";
 import { checkAuthorityWithDocument } from "@/api/_/utils/checkAuthority";
 import runTransaction from "@/api/_/utils/runTransaction";
+import { EJSON } from "bson";
 import { NextRequest, NextResponse } from "next/server";
 import { unprocessableEntityErrorResponse } from "../../_/utils/errorResponse";
-import { EJSON } from "bson";
 
 interface Segment {
     params: {
@@ -223,7 +223,7 @@ export async function GET(request: NextRequest, { params }: Segment) {
                     createdAt: { $toString: "$createdAt" },
                 },
             },
-            { $unset: ["_id", "thumbnailData"] },
+            { $unset: ["_id"] },
         ],
     });
 
@@ -280,7 +280,19 @@ export async function PATCH(request: NextRequest, { params }: Segment) {
             });
         }
 
-        return prisma.taskBoard.update({ where: { id }, data });
+        return prisma.taskBoard.update({
+            where: { id },
+            data,
+            select: {
+                id: true,
+                displayName: true,
+                flowDirection: true,
+                defaultPermission: true,
+                createdAt: true,
+                maxTaskLists: true,
+                maxTasks: true,
+            },
+        });
     });
 
     return NextResponse.json({ taskBoard: updatedTaskBoard });
@@ -307,7 +319,18 @@ export async function DELETE(request: NextRequest, { params }: Segment) {
         await prisma.taskList.deleteMany({ where: { taskBoardId: id } });
         await prisma.taskBoardUser.deleteMany({ where: { taskBoardId: id } });
 
-        return prisma.taskBoard.delete({ where: { id } });
+        return prisma.taskBoard.delete({
+            where: { id },
+            select: {
+                id: true,
+                displayName: true,
+                flowDirection: true,
+                defaultPermission: true,
+                createdAt: true,
+                maxTaskLists: true,
+                maxTasks: true,
+            },
+        });
     });
 
     return NextResponse.json({ taskBoard: deletedTaskBoard });

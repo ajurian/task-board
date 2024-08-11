@@ -16,7 +16,20 @@ export async function GET(request: NextRequest) {
     if (taskBoardId === null) {
         const taskBoardUsers = await prisma.taskBoardUser.findMany({
             where: { userGoogleId },
-            include: { taskBoard: { include: { users: true } } },
+            include: {
+                taskBoard: {
+                    select: {
+                        id: true,
+                        displayName: true,
+                        flowDirection: true,
+                        defaultPermission: true,
+                        createdAt: true,
+                        maxTaskLists: true,
+                        maxTasks: true,
+                        users: true,
+                    },
+                },
+            },
             orderBy: { recentlyAccessedAt: "desc" },
         });
 
@@ -32,7 +45,18 @@ export async function GET(request: NextRequest) {
         },
         include: {
             user: { include: { taskBoards: true } },
-            taskBoard: { include: { users: true } },
+            taskBoard: {
+                select: {
+                    id: true,
+                    displayName: true,
+                    flowDirection: true,
+                    defaultPermission: true,
+                    createdAt: true,
+                    maxTaskLists: true,
+                    maxTasks: true,
+                    users: true,
+                },
+            },
         },
     });
 

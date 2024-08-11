@@ -71,7 +71,6 @@ import {
     UpdateMutation,
 } from "./TaskBoardProviderTypes";
 import reorderArray from "./utils/reorderArray";
-import { AggregatedTaskBoardModel } from "@/_/common/schema/taskBoard.aggregation";
 
 const TaskBoardContext = createContext<TaskBoardContextValue | null>(null);
 

@@ -80,8 +80,10 @@ type UpdateMutation<
     : never;
 
 interface TaskBoardContextValue {
-    selectedTaskBoard: AggregatedTaskBoardModel;
-    taskBoardQuery: DefinedUseQueryResult<AggregatedTaskBoardModel>;
+    selectedTaskBoard: Omit<AggregatedTaskBoardModel, "thumbnailData">;
+    taskBoardQuery: DefinedUseQueryResult<
+        Omit<AggregatedTaskBoardModel, "thumbnailData">
+    >;
     id: string;
     displayName: string;
     flowDirection: FlowDirection;
@@ -149,6 +151,6 @@ interface TaskBoardContextValue {
 }
 
 interface TaskBoardProviderProps extends PropsWithChildren {
-    selectedTaskBoard: AggregatedTaskBoardModel;
+    selectedTaskBoard: Omit<AggregatedTaskBoardModel, "thumbnailData">;
     taskBoardUser: TaskBoardUserModel;
 }

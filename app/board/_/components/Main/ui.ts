@@ -135,6 +135,7 @@ export const TaskBoardCardTitleContainer = styled(Box)(({ theme }) => ({
 }));
 
 export const ThumbnailImageWrapper = styled(Box)(({ theme }) => ({
+    backgroundColor: theme.palette.grey[50],
     position: "relative",
     aspectRatio: 1,
 }));

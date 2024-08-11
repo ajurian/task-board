@@ -8,21 +8,22 @@ import {
     TaskBoardUserPatchBody,
     TaskBoardUserPatchResponse,
     TaskBoardUserPatchResponseSchema,
-    TaskBoardUsersGetResponse,
+    TaskBoardUsersGetResponseManyWithTaskBoards,
     TaskBoardUsersGetResponseManyWithTaskBoardsSchema,
-    TaskBoardUsersGetResponseSingleSchema,
+    TaskBoardUsersGetResponseSingle,
+    TaskBoardUsersGetResponseSingleSchema
 } from "../../schema/taskBoardUsers";
 
 const API_URL = "/taskBoardUsers";
 
 const ClientTaskBoardUserAPI = {
     get: (config?: AxiosRequestConfig<{}>) =>
-        ClientAPI.get<TaskBoardUsersGetResponse<null>>(API_URL, {
+        ClientAPI.get<TaskBoardUsersGetResponseManyWithTaskBoards>(API_URL, {
             ...config,
             schema: TaskBoardUsersGetResponseManyWithTaskBoardsSchema,
         }),
     getFromTaskBoard: (id: string, config?: AxiosRequestConfig<{}>) =>
-        ClientAPI.get<TaskBoardUsersGetResponse<string>>(API_URL, {
+        ClientAPI.get<TaskBoardUsersGetResponseSingle>(API_URL, {
             ...config,
             schema: TaskBoardUsersGetResponseSingleSchema,
             params: { taskBoardId: id },
