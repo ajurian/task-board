@@ -1,7 +1,8 @@
 import { gauth } from "@/_/common/lib/google";
+import ServerUserAPI from "@/api/_/common/layers/server/UserAPI";
 import { badRequestErrorResponse } from "@/api/_/utils/errorResponse";
 import saveTokens from "@/api/_/utils/saveTokens";
-import { cookies } from "next/headers";
+import verifyToken from "@/api/_/utils/verifyToken";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -25,6 +26,14 @@ export async function GET(request: NextRequest) {
         const accessTokenExpiration = z.number().parse(tokens.expiry_date);
 
         saveTokens({ accessToken, refreshToken, accessTokenExpiration });
+
+        const userInfo = await verifyToken();
+
+        await ServerUserAPI.put(userInfo!.sub, {
+            email: userInfo!.email,
+            displayName: userInfo!.name,
+            photoURL: userInfo!.picture,
+        });
 
         const rawState = searchParams.get("state");
 

@@ -27,7 +27,6 @@ const BoardPage: React.FC<BoardPageProps> = async ({ params }) => {
         } = await ServerTaskBoardAPI.get(id);
         selectedTaskBoard = taskBoard;
     } catch (e) {
-        console.log(e);
         if (isAxiosError(e) && e.response?.status === 403) {
             return <ForbiddenError taskBoardId={id} />;
         }

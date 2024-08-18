@@ -4,6 +4,7 @@ import ClientTaskBoardAPI from "@/api/_/common/layers/client/TaskBoardAPI";
 import { Box, Button, TextField, Typography } from "@mui/material";
 import { FormEventHandler, useCallback, useRef } from "react";
 import { Container, Wrapper } from "./ui";
+import Link from "next/link";
 
 interface ForbiddenErrorProps {
     taskBoardId: string;
@@ -31,7 +32,15 @@ export default function ForbiddenError({ taskBoardId }: ForbiddenErrorProps) {
     return (
         <Wrapper>
             <Container>
-                <Typography variant="h6">TaskBoard</Typography>
+                <Typography
+                    component={Link}
+                    variant="h6"
+                    color="text.secondary"
+                    href="/board"
+                    sx={{ textDecoration: "none" }}
+                >
+                    TaskBoard
+                </Typography>
                 <Typography variant="h4" sx={{ mt: 4 }}>
                     You need access
                 </Typography>

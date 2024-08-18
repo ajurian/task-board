@@ -4,7 +4,7 @@ import {
     faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ListItemIcon, Menu, MenuItem } from "@mui/material";
+import { ListItemIcon, Menu, MenuItem, Tooltip } from "@mui/material";
 import Link from "next/link";
 
 export interface MenuPosition {
