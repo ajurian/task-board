@@ -79,6 +79,7 @@ export default function TaskBoardHeader() {
                             style: { padding: 0 },
                             maxLength: TASK_BOARD_DISPLAY_NAME_MAX_LEN,
                         }}
+                        placeholder="Title"
                         size="small"
                         fullWidth
                     />

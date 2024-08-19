@@ -63,9 +63,6 @@ export const TaskListHeaderTitleContainer = styled(Box, {
     WebkitTapHighlightColor: "transparent",
     overflowX: "auto",
     flexGrow: isFocused ? 1 : 0,
-    ":focus-visible": {
-        outline: 0,
-    },
 }));
 
 export const TaskListHeaderTitleInput = styled(InputBase)(() => ({

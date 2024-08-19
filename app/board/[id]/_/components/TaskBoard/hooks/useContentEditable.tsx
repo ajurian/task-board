@@ -3,8 +3,6 @@ import {
     FocusEventHandler,
     HTMLAttributes,
     KeyboardEventHandler,
-    MouseEventHandler,
-    TouchEventHandler,
     useCallback,
     useEffect,
     useLayoutEffect,
@@ -12,6 +10,7 @@ import {
     useRef,
     useState,
 } from "react";
+import { useBlurReason } from "../providers/BlurReasonProvider";
 
 interface UseContentEditableOptions {
     isFocusable?: boolean;
@@ -36,18 +35,8 @@ export default function useContentEditable<T extends HTMLElement>({
         null
     );
     const previousFocusedElement = usePrevious(focusedElement);
-    const blurReasonRef = useRef<"click" | "key" | null>(null);
+    const blurReasonRef = useBlurReason();
     const ref = useRef<T | null>(null);
-
-    const onMouseDown: MouseEventHandler<T> = useCallback((e) => {
-        blurReasonRef.current = "click";
-    }, []);
-    const onTouchStart: TouchEventHandler<T> = useCallback((e) => {
-        blurReasonRef.current = "click";
-    }, []);
-    const onKeyDown: KeyboardEventHandler<T> = useCallback((e) => {
-        blurReasonRef.current = "key";
-    }, []);
 
     const onKeyUp: KeyboardEventHandler<T> = useCallback(
         (e) => {
@@ -140,14 +129,20 @@ export default function useContentEditable<T extends HTMLElement>({
                 return;
             }
 
-            if (isEditDisabled && blurReasonRef.current === "click") {
+            if (isEditDisabled || blurReasonRef.current === "click") {
                 return;
             }
 
             setFocusedElement(null);
             onStateReset?.();
         },
-        [isFocusable, isEditDisabled, onStateReset, focusedElement]
+        [
+            isFocusable,
+            isEditDisabled,
+            onStateReset,
+            focusedElement,
+            blurReasonRef,
+        ]
     );
 
     const contentEditableProps = useMemo<HTMLAttributes<T>>(
@@ -156,22 +151,11 @@ export default function useContentEditable<T extends HTMLElement>({
                 ? {
                       role: focusedElement === null ? "button" : undefined,
                       tabIndex: focusedElement === null ? 0 : -1,
-                      onMouseDown,
-                      onTouchStart,
-                      onKeyDown,
                       onKeyUp,
                       onBlur,
                   }
                 : {},
-        [
-            isFocusable,
-            onMouseDown,
-            onTouchStart,
-            onKeyDown,
-            onKeyUp,
-            onBlur,
-            focusedElement,
-        ]
+        [isFocusable, onKeyUp, onBlur, focusedElement]
     );
 
     useLayoutEffect(() => {
@@ -236,9 +220,9 @@ export default function useContentEditable<T extends HTMLElement>({
             onEdit?.();
         };
 
-        window.addEventListener("click", onClick);
+        window.addEventListener("click", onClick, true);
 
-        return () => window.removeEventListener("click", onClick);
+        return () => window.removeEventListener("click", onClick, true);
     }, [
         isFocusable,
         isEditDisabled,

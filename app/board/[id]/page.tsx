@@ -8,6 +8,7 @@ import { notFound } from "next/navigation";
 import ForbiddenError from "./_/components/ForbiddenError";
 import Header from "./_/components/Header";
 import TaskBoard from "./_/components/TaskBoard";
+import BlurReasonProvider from "./_/components/TaskBoard/providers/BlurReasonProvider";
 import DragDropProvider from "./_/providers/DragDropProvider";
 import TaskBoardProvider from "./_/providers/TaskBoardProvider";
 
@@ -48,7 +49,9 @@ const BoardPage: React.FC<BoardPageProps> = async ({ params }) => {
             >
                 <DragDropProvider>
                     <Header />
-                    <TaskBoard />
+                    <BlurReasonProvider>
+                        <TaskBoard />
+                    </BlurReasonProvider>
                 </DragDropProvider>
             </TaskBoardProvider>
         </NoSsr>
