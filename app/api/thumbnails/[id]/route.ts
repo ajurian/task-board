@@ -15,7 +15,7 @@ export async function GET(request: NextRequest, { params }: Segment) {
         where: { id },
     });
 
-    return new NextResponse(thumbnailData, {
+    return new NextResponse(new Uint8Array(thumbnailData), {
         headers: {
             "Content-Type": "image/jpeg",
         },
