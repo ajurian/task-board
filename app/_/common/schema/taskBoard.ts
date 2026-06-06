@@ -83,7 +83,7 @@ export const TaskBoardUpdateSchema = TaskBoardModelSchema.omit({
                     data: z.number().int().array(),
                 }),
             ])
-            .transform((bufferLike) => {
+            .transform((bufferLike): Buffer => {
                 if (bufferLike instanceof Buffer) {
                     return bufferLike;
                 }
@@ -96,9 +96,8 @@ export const TaskBoardUpdateSchema = TaskBoardModelSchema.omit({
                     return Buffer.from(bufferLike.data);
                 }
 
-                return null;
-            })
-            .refine((thumbnailData) => thumbnailData !== null),
+                throw new Error("Invalid thumbnail data");
+            }),
     })
     .partial()
     .refine(
@@ -106,7 +105,7 @@ export const TaskBoardUpdateSchema = TaskBoardModelSchema.omit({
             displayName !== undefined ||
             flowDirection !== undefined ||
             defaultPermission !== undefined ||
-            thumbnailData !== undefined
+            thumbnailData !== undefined,
     );
 
 export type TaskBoardModel = z.infer<typeof TaskBoardModelSchema>;
